@@ -286,6 +286,9 @@ void postgresql_session_backend::rollback()
 void postgresql_session_backend::deallocate_prepared_statement(
     const std::string & statementName)
 {
+    if (!deallocatePreparedStatements_)
+        return;
+
     const std::string & query = "DEALLOCATE " + statementName;
 
     hard_exec(*this, conn_, query.c_str(),

@@ -399,6 +399,18 @@ struct SOCI_POSTGRESQL_DECL postgresql_session_backend : details::session_backen
     void commit() override;
     void rollback() override;
 
+    // This PostgreSQL-specific function can be used to prevent statement
+    // deallocation, which happens by default when a prepared statement is
+    // destroyed. This can be used to optimize the running time of short-lived
+    // sessions, but should be avoided for long-running programs as allocated
+    // statements consume server resources.
+    void set_deallocate_prepared_statements(bool deallocate)
+    {
+        deallocatePreparedStatements_ = deallocate;
+    }
+
+    // Does nothing if set_deallocate_prepared_statements(false) was called,
+    // otherwise deallocates the statement with the given name.
     void deallocate_prepared_statement(const std::string & statementName);
 
     bool get_next_sequence_value(session & s,
@@ -420,6 +432,7 @@ struct SOCI_POSTGRESQL_DECL postgresql_session_backend : details::session_backen
     std::string get_column_descriptions_query() const override;
 
     int statementCount_;
+    bool deallocatePreparedStatements_ = true;
     bool single_row_mode_;
     PGconn * conn_;
     connection_parameters connectionParameters_;

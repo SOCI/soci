@@ -156,3 +156,9 @@ The PostgreSQL backend provides the following concrete classes for native API ac
 
 The PostgreSQL backend supports working with data stored in columns of type UUID via simple string operations. All string representations of UUID supported by PostgreSQL are accepted on input, the backend will return the standard
 format of UUID on output. See the test `test_uuid_column_type_support` for usage examples.
+
+### Optimizing Prepared Statements Deallocation
+
+By default, this backend executes `DEALLOCATE` statement for each prepared statement when it is destroyed. This is correct, but may be surprisingly time-consuming and is not necessary for short-running programs as all resources associated with a connection, including any statements prepared by it, are deallocated when it is closed in any case.
+
+To save time spent on deallocation, `postgresql_session_backend::set_deallocate_prepared_statements(bool)` function can be used to disable automatic deallocation of prepared statements. This function can be called at any time, but will only affect statements destroyed after its call, so it is recommended to do it early.
