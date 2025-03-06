@@ -413,6 +413,10 @@ struct SOCI_POSTGRESQL_DECL postgresql_session_backend : details::session_backen
     // otherwise deallocates the statement with the given name.
     void deallocate_prepared_statement(const std::string & statementName);
 
+    // Deallocate all prepared statements. This should only be called when no
+    // active statements exist, as it would make them unusable.
+    void deallocate_all_prepared_statements();
+
     bool get_next_sequence_value(session & s,
         std::string const & sequence, long long & value) override;
 

@@ -295,6 +295,12 @@ void postgresql_session_backend::deallocate_prepared_statement(
         "Cannot deallocate prepared statement.");
 }
 
+void postgresql_session_backend::deallocate_all_prepared_statements()
+{
+    hard_exec(*this, conn_, "DEALLOCATE ALL",
+        "Cannot deallocate all prepared statements.");
+}
+
 bool postgresql_session_backend::get_next_sequence_value(
     session & s, std::string const & sequence, long long & value)
 {
