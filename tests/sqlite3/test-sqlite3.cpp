@@ -11,6 +11,9 @@
 
 #include <catch.hpp>
 
+#include <limits>
+#include <cstdint>
+
 using namespace soci;
 using namespace soci::tests;
 
@@ -867,6 +870,31 @@ TEST_CASE("SQLite std::tm bind", "[sqlite][std-tm-bind]")
     REQUIRE(result.size() == 1);
     result.front().tm_isdst = 0;
     CHECK(std::mktime(&result.front()) == std::mktime(&datetime));
+}
+
+struct integer_table_creator : table_creator_base
+{
+    integer_table_creator(soci::session &sql)
+        : table_creator_base(sql)
+    {
+        sql << "create table soci_test(id integer primary key, val integer)";
+    }
+};
+
+TEST_CASE("SQLite row int64", "[sqlite][row][int64]") {
+    soci::session sql(backEnd, connectString);
+    integer_table_creator creator(sql);
+
+    const int id = 1;
+    const std::int64_t val = static_cast<std::int64_t>(std::numeric_limits<std::int32_t>::max()) + 1;
+    sql << "insert into soci_test(id, val) values (:id, :val)", use(id), use(val);
+
+    row r;
+    sql << "SELECT val FROM soci_test WHERE id = 1", into(r);
+    CHECK(r.size() == 1);
+    CHECK(r.get<std::int64_t>("val") == val);
+    // Querying into a int32_t will overflow -> this will throw an exception
+    REQUIRE_THROWS(r.get<std::int32_t>("val"));
 }
 
 // DDL Creation objects for common tests

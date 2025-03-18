@@ -235,6 +235,8 @@ struct SOCI_SQLITE3_DECL sqlite3_statement_backend : details::statement_backend
     sqlite3_vector_into_type_backend * make_vector_into_type_backend() override;
     sqlite3_vector_use_type_backend * make_vector_use_type_backend() override;
 
+    db_type exchange_dbtype_for(db_type type) const override;
+
     sqlite3_session_backend &session_;
     sqlite_api::sqlite3_stmt *stmt_;
     sqlite3_recordset dataCache_;

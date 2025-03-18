@@ -610,3 +610,28 @@ sqlite3_statement_backend::make_vector_use_type_backend()
 {
     return new sqlite3_vector_use_type_backend(*this);
 }
+
+db_type sqlite3_statement_backend::exchange_dbtype_for(db_type type) const
+{
+    // Due to SQLite not really having a type system, any integer type may hold
+    // values that should be way outside of its range.
+    // Hence, we have to be prepared to get a huge number, even if the determined
+    // db_type is e.g. db_int8.
+    // In order to do that, we ensure that we'll always select into an (u)int64,
+    // in cases where we have to select the exchange type ourselves (e.g. in rows).
+    switch (type)
+    {
+        case db_int8:
+        case db_int16:
+        case db_int32:
+        case db_int64:
+            return db_int64;
+        case db_uint8:
+        case db_uint16:
+        case db_uint32:
+        case db_uint64:
+            return db_uint64;
+        default:
+            return type;
+    }
+}
