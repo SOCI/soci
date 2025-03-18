@@ -102,6 +102,12 @@ For the SQLite3 backend, this type mapping is complicated by the fact the SQLite
 | *text*, *char*, *character*, *clob*, *native character*, *nchar*, *nvarchar*, *varchar*, *varying character* | db_string                    | std::string                   |
 | *date*, *time*, *datetime*                                                                                   | db_date                      | std::tm                       |
 
+Another consequence of SQLite's lack of type checking is that it is possible to store arbitrarily large integers in a column, even if the type it has
+been created with wouldn't allow for that. Thus, it is possible that a column of type `integer` (which should correspond to the possible values of a
+32-bit signed integer type) contains a value that overflows a 32-bit integer. In such cases, trying to query the data via `row::get<T>`, with `T` being
+the type as given in the table above, will throw an exception as the selected value would overflow the provided type. You may instead use a `T` that
+can holder a wider range (e.g. a 64-bit integer) in order to avoid this exception.
+
 [INTEGER_PRIMARY_KEY] : There is one case where SQLite3 enforces type. If a column is declared as "integer primary key", then SQLite3 uses that as an alias to the internal ROWID column that exists for every table.  Only integers are allowed in this column.
 
 (See the [dynamic resultset binding](../types.md#dynamic-binding) documentation for general information on using the `row` class.)

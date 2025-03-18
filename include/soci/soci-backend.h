@@ -294,6 +294,16 @@ public:
     virtual vector_into_type_backend* make_vector_into_type_backend() = 0;
     virtual vector_use_type_backend* make_vector_use_type_backend() = 0;
 
+    // Converts the given (deduced) DB type and converts it into the data type
+    // that should be used for fetching the corresponding data.
+    // Normally, the deduced DB type should be exactly what should be used but
+    // we need to give backends the possibility to overwrite this to e.g. account
+    // for known shortcomings in the DB type deduction (e.g. for SQLite).
+    // This function is only relevant in cases where we are not dealing with a
+    // user-provided exchange type but instead have to set one up ourselves. Most
+    // notably this is the case for dynamic (i.e. row-based) binding.
+    virtual db_type exchange_dbtype_for(db_type type) const { return type; }
+
     // These are set when the corresponding make_xxx_backend() above is called
     // by statement_impl. This goes against encapsulation but allows to avoid
     // having to set them in all backends implementations of these functions.
