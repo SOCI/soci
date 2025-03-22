@@ -614,7 +614,7 @@ sqlite3_statement_backend::make_vector_use_type_backend()
 db_type sqlite3_statement_backend::exchange_dbtype_for(db_type type) const
 {
     // Due to SQLite not really having a type system, any integer type may hold
-    // values that should be way outside of its range.
+    // values that could be way outside of its range.
     // Hence, we have to be prepared to get a huge number, even if the determined
     // db_type is e.g. db_int8.
     // In order to do that, we ensure that we'll always select into an (u)int64,
