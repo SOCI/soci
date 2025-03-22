@@ -881,20 +881,31 @@ struct integer_table_creator : table_creator_base
     }
 };
 
-TEST_CASE("SQLite row int64", "[sqlite][row][int64]") {
+TEST_CASE("SQLite row int64", "[sqlite][row][int64]")
+{
     soci::session sql(backEnd, connectString);
     integer_table_creator creator(sql);
 
-    const int id = 1;
-    const std::int64_t val = static_cast<std::int64_t>(std::numeric_limits<std::int32_t>::max()) + 1;
+    int id = 1;
+    std::int64_t val = static_cast<std::int64_t>(std::numeric_limits<std::int32_t>::max());
     sql << "insert into soci_test(id, val) values (:id, :val)", use(id), use(val);
 
+    // As long as we don't overflow the 32bit integer, we can select with an int32_t
     row r;
-    sql << "SELECT val FROM soci_test WHERE id = 1", into(r);
+    sql << "SELECT val FROM soci_test WHERE id = :id", use(id), into(r);
     CHECK(r.size() == 1);
-    CHECK(r.get<std::int64_t>("val") == val);
-    // Querying into a int32_t will overflow -> this will throw an exception
+    CHECK(r.get<std::int32_t>("val") == val);
+
+    val += 1;
+    id += 1;
+    sql << "insert into soci_test(id, val) values (:id, :val)", use(id), use(val);
+
+    sql << "SELECT val FROM soci_test WHERE id = :id", use(id), into(r);
+    CHECK(r.size() == 1);
+    // This query would overflow the 32bit int -> an exception is thrown
     REQUIRE_THROWS(r.get<std::int32_t>("val"));
+    // Selecting as int64_t instead works
+    CHECK(r.get<std::int64_t>("val") == val);
 }
 
 // DDL Creation objects for common tests
