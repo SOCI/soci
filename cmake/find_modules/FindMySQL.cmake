@@ -28,8 +28,24 @@ if (DEFINED VCPKG_TARGET_TRIPLET)
   endif()
 
   if (${FOUND_VAR})
-    set(MySQL_FOUND TRUE)
     add_library(MySQL::MySQL ALIAS ${LIBRARY_TARGET})
+
+    get_target_property(INCLUDE_DIRS ${LIBRARY_TARGET} INTERFACE_INCLUDE_DIRECTORIES)
+    if (NOT INCLUDE_DIRS)
+      message(FATAL_ERROR "Expected include paths to be set")
+    endif()
+    foreach(current IN LISTS INCLUDE_DIRS)
+      # In SOCI we include the MySQL headers as mysql.h (no prefix) as this is how most MySQL
+      # packages seem to be set up and also this seems to be the way MySQL itself advocates.
+      # However, the unofficial vcpkg package configures the include path in such a way that
+      # we would have to explicitly include mysql/mysql.h (with prefix). Since this is
+      # incompatible with the way we include MySQL, we have to modify the include path such
+      # that we can omit the prefix as well. This is achieved by appending the mysql directory
+      # to the configured include path.
+      # In case vcpkg changes this at any point and we end up adding a non-existent directory
+      # to the include path, no harm is done (we still keep the original vcpkg paths as well).
+      target_include_directories(${LIBRARY_TARGET} SYSTEM INTERFACE "${current}/mysql")
+    endforeach()
   endif()
 endif()
 
