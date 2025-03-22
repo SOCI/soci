@@ -28,8 +28,17 @@ if (DEFINED VCPKG_TARGET_TRIPLET)
   endif()
 
   if (${FOUND_VAR})
-    set(MySQL_FOUND TRUE)
     add_library(MySQL::MySQL ALIAS ${LIBRARY_TARGET})
+
+    get_target_property(INCLUDE_DIRS ${LIBRARY_TARGET} INTERFACE_INCLUDE_DIRECTORIES)
+    if (NOT INCLUDE_DIRS)
+      message(FATAL_ERROR "Expected include paths to be set")
+    endif()
+    foreach(current IN LISTS INCLUDE_DIRS)
+      # vcpkg expects one to include mysql/mysql.h, which goes against how MySQL sets
+      # itself up, so we have to correct for that
+      target_include_directories(${LIBRARY_TARGET} SYSTEM INTERFACE "${current}/mysql")
+    endforeach()
   endif()
 endif()
 
