@@ -7,6 +7,7 @@
 
 #define SOCI_SOURCE
 #include "soci/soci-unicode.h"
+#include <cstdint>
 
 namespace soci
 {
