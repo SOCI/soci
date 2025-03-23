@@ -894,6 +894,9 @@ TEST_CASE("SQLite row int64", "[sqlite][row][int64]")
     // small for the queried value, leading to a silent integer overflow and hence unexpected
     // query results.
     // This test case effectively ensures that this no longer happens.
+    //
+    // Note that this test is SQLite-specific because with the other backends we'd
+    // fail to insert the value in the first place.
     soci::session sql(backEnd, connectString);
     integer_table_creator creator(sql);
 
