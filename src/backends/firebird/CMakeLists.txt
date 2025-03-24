@@ -17,7 +17,6 @@ soci_define_backend_target(
   ALIAS_NAME "Firebird"
   DEPENDENCIES
   "Firebird YIELDS Firebird::Firebird"
-  REQUIRED_COMPONENTS SOCI::Core
   SOURCE_FILES
     "blob.cpp"
     "common.cpp"

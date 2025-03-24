@@ -12,7 +12,6 @@ soci_define_backend_target(
   ALIAS_NAME "MySQL"
   DEPENDENCIES
     "MySQL YIELDS MySQL::MySQL"
-  REQUIRED_COMPONENTS SOCI::Core
   SOURCE_FILES
     "blob.cpp"
     "common.cpp"

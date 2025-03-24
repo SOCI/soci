@@ -12,7 +12,6 @@ soci_define_backend_target(
   ALIAS_NAME "PostgreSQL"
   DEPENDENCIES
     "PostgreSQL YIELDS PostgreSQL::PostgreSQL"
-  REQUIRED_COMPONENTS SOCI::Core
   SOURCE_FILES
     "blob.cpp"
     "error.cpp"

@@ -12,7 +12,6 @@ soci_define_backend_target(
   ALIAS_NAME "DB2"
   DEPENDENCIES
     "DB2 YIELDS DB2::DB2"
-  REQUIRED_COMPONENTS SOCI::Core
   SOURCE_FILES
     "blob.cpp"
     "factory.cpp"

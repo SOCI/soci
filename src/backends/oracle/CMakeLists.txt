@@ -12,7 +12,6 @@ soci_define_backend_target(
   ALIAS_NAME "Oracle"
   DEPENDENCIES
     "Oracle YIELDS Oracle::Oracle"
-  REQUIRED_COMPONENTS SOCI::Core
   SOURCE_FILES
     "blob.cpp"
     "error.cpp"

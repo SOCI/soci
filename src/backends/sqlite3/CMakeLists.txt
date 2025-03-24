@@ -12,7 +12,6 @@ soci_define_backend_target(
   ALIAS_NAME "SQLite3"
   DEPENDENCIES
     "SQLite3 YIELDS SQLite::SQLite3"
-  REQUIRED_COMPONENTS SOCI::Core
   SOURCE_FILES
     "blob.cpp"
     "error.cpp"

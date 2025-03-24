@@ -12,7 +12,6 @@ soci_define_backend_target(
   ALIAS_NAME "ODBC"
   DEPENDENCIES
     "ODBC YIELDS ODBC::ODBC"
-  REQUIRED_COMPONENTS SOCI::Core
   SOURCE_FILES
     "blob.cpp"
     "factory.cpp"
