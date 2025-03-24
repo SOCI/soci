@@ -26,8 +26,6 @@ soci_define_backend_target(
     "vector-use-type.cpp"
   HEADER_FILES
     "${PROJECT_SOURCE_DIR}/include/soci/sqlite3/soci-sqlite3.h"
-  PRIVATE_INCLUDE_DIRS
-    "${PROJECT_SOURCE_DIR}/include/private"
   MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
   ENABLED_VARIABLE "SOCI_SQLITE3"
 )

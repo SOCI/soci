@@ -26,8 +26,6 @@ soci_define_backend_target(
     "vector-use-type.cpp"
   HEADER_FILES
     "${PROJECT_SOURCE_DIR}/include/soci/mysql/soci-mysql.h"
-  PRIVATE_INCLUDE_DIRS
-    "${PROJECT_SOURCE_DIR}/include/private"
   FIND_PACKAGE_FILES
     "${PROJECT_SOURCE_DIR}/cmake/find_modules/FindMySQL.cmake"
   MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
