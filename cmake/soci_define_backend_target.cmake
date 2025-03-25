@@ -22,8 +22,6 @@ include(soci_utils)
 # FIND_PACKAGE_FILES <file1> [... <fileN>] List of files used by find_package to locate one of the dependencies. Specified
 #                                          files will be installed alongside SOCI in order to be usable from the install tree.
 # HEADER_FILES <file1> [... <fileN>]       List of public header files associated with this backend target.
-# PRIVATE_INCLUDE_DIRS <dir1> [... <dirN>] List of private include directories
-# REQUIRED_COMPONENTS <cmp1> [... <cmpN>]  List of SOCI components (full target names) to link this backend target to
 # SOURCE_FILES <file1> [... <fileN>]       List of source files that shall be part of this backend component
 function(soci_define_backend_target)
   set(FLAGS "")
@@ -38,8 +36,6 @@ function(soci_define_backend_target)
     "DEPENDENCIES"
     "FIND_PACKAGE_FILES"
     "HEADER_FILES"
-    "PRIVATE_INCLUDE_DIRS"
-    "REQUIRED_COMPONENTS"
     "SOURCE_FILES"
   )
   cmake_parse_arguments(DEFINE_BACKEND "${FLAGS}" "${ONE_VAL_OPTIONS}" "${MULTI_VAL_OPTIONS}" ${ARGV})
@@ -119,11 +115,10 @@ function(soci_define_backend_target)
     string(REPLACE " " ";" CURRENT_ARG_SET "${CURRENT_ARG_SET}")
     soci_public_dependency(${CURRENT_ARG_SET})
   endforeach()
-  foreach (CURRENT_DEP IN LISTS DEFINE_BACKEND_REQUIRED_COMPONENTS)
-    target_link_libraries(${DEFINE_BACKEND_TARGET_NAME} PUBLIC "${CURRENT_DEP}")
-  endforeach()
 
-  target_include_directories(${DEFINE_BACKEND_TARGET_NAME} PRIVATE ${DEFINE_BACKEND_PRIVATE_INCLUDE_DIRS})
+  # Set settings common to all backends.
+  target_link_libraries(${DEFINE_BACKEND_TARGET_NAME} PUBLIC SOCI::Core)
+  target_include_directories(${DEFINE_BACKEND_TARGET_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/include/private")
 
   set_target_properties(${DEFINE_BACKEND_TARGET_NAME}
     PROPERTIES

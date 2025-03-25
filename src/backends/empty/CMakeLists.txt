@@ -10,7 +10,6 @@ soci_define_backend_target(
   BACKEND_NAME "Empty"
   TARGET_NAME "soci_empty"
   ALIAS_NAME "Empty"
-  REQUIRED_COMPONENTS SOCI::Core
   SOURCE_FILES
     "blob.cpp"
     "factory.cpp"
@@ -21,6 +20,8 @@ soci_define_backend_target(
     "statement.cpp"
     "vector-into-type.cpp"
     "vector-use-type.cpp"
+  HEADER_FILES
+    "${PROJECT_SOURCE_DIR}/include/soci/empty/soci-empty.h"
   MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
   ENABLED_VARIABLE "SOCI_EMPTY"
 )

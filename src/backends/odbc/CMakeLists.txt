@@ -12,7 +12,6 @@ soci_define_backend_target(
   ALIAS_NAME "ODBC"
   DEPENDENCIES
     "ODBC YIELDS ODBC::ODBC"
-  REQUIRED_COMPONENTS SOCI::Core
   SOURCE_FILES
     "blob.cpp"
     "factory.cpp"
@@ -25,8 +24,6 @@ soci_define_backend_target(
     "vector-use-type.cpp"
   HEADER_FILES
     "${PROJECT_SOURCE_DIR}/include/soci/odbc/soci-odbc.h"
-  PRIVATE_INCLUDE_DIRS
-    "${PROJECT_SOURCE_DIR}/include/private"
   MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
   ENABLED_VARIABLE "SOCI_ODBC"
 )
