@@ -14,7 +14,9 @@
 #include "soci-dtocstr.h"
 #include "soci-exchange-cast.h"
 #include "soci-mktime.h"
-#include <libpq/libpq-fs.h> // libpq
+
+#include <libpq-fe.h>
+
 #include <cctype>
 #include <cstdint>
 #include <cstdio>

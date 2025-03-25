@@ -10,7 +10,9 @@
 #include "soci/soci-platform.h"
 #include "soci-cstrtoi.h"
 #include "soci-ssize.h"
-#include <libpq/libpq-fs.h> // libpq
+
+#include <libpq-fe.h>
+
 #include <cctype>
 #include <cstdio>
 #include <cstdlib>

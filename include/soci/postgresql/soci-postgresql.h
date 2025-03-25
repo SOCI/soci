@@ -19,9 +19,12 @@
 
 #include <soci/soci-backend.h>
 #include "soci/connection-parameters.h"
-#include <libpq-fe.h>
+
 #include <vector>
 #include <unordered_map>
+
+typedef struct pg_conn PGconn;
+typedef struct pg_result PGresult;
 
 namespace soci
 {
@@ -104,12 +107,8 @@ private:
         result_ = result;
     }
 
-    void clear()
-    {
-        // Notice that it is safe to call PQclear() with NULL pointer, it
-        // simply does nothing in this case.
-        PQclear(result_);
-    }
+    // This is implemented in src/backends/postgresql/session.cpp.
+    void clear();
 
     postgresql_session_backend & sessionBackend_;
     PGresult* result_;

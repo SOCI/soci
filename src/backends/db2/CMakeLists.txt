@@ -12,7 +12,6 @@ soci_define_backend_target(
   ALIAS_NAME "DB2"
   DEPENDENCIES
     "DB2 YIELDS DB2::DB2"
-  REQUIRED_COMPONENTS SOCI::Core
   SOURCE_FILES
     "blob.cpp"
     "factory.cpp"
@@ -25,8 +24,6 @@ soci_define_backend_target(
     "vector-use-type.cpp"
   HEADER_FILES
     "${PROJECT_SOURCE_DIR}/include/soci/db2/soci-db2.h"
-  PRIVATE_INCLUDE_DIRS
-    "${PROJECT_SOURCE_DIR}/include/private"
   FIND_PACKAGE_FILES
     "${PROJECT_SOURCE_DIR}/cmake/find_modules/FindDB2.cmake"
   MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"

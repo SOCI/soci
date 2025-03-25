@@ -12,7 +12,6 @@ soci_define_backend_target(
   ALIAS_NAME "MySQL"
   DEPENDENCIES
     "MySQL YIELDS MySQL::MySQL"
-  REQUIRED_COMPONENTS SOCI::Core
   SOURCE_FILES
     "blob.cpp"
     "common.cpp"
@@ -26,8 +25,6 @@ soci_define_backend_target(
     "vector-use-type.cpp"
   HEADER_FILES
     "${PROJECT_SOURCE_DIR}/include/soci/mysql/soci-mysql.h"
-  PRIVATE_INCLUDE_DIRS
-    "${PROJECT_SOURCE_DIR}/include/private"
   FIND_PACKAGE_FILES
     "${PROJECT_SOURCE_DIR}/cmake/find_modules/FindMySQL.cmake"
   MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"

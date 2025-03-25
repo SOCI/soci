@@ -15,7 +15,10 @@
 #include "soci/blob.h"
 #include "soci/type-wrappers.h"
 #include "soci-exchange-cast.h"
+
+#include <libpq-fe.h>
 #include <libpq/libpq-fs.h> // libpq
+
 #include <cctype>
 #include <cstdint>
 #include <cstdio>

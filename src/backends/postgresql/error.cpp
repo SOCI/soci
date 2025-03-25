@@ -9,6 +9,9 @@
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci/callbacks.h"
 #include "soci/connection-parameters.h"
+
+#include <libpq-fe.h>
+
 #include <cstring>
 
 using namespace soci;

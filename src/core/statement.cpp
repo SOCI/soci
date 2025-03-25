@@ -770,7 +770,7 @@ void statement_impl::describe()
         props.set_db_type(dbtype);
         props.set_data_type(backEnd_->to_data_type(dbtype));
 
-        switch (dbtype)
+        switch (backEnd_->exchange_dbtype_for(dbtype))
         {
         case db_string:
         case db_xml:

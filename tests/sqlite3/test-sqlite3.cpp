@@ -11,6 +11,9 @@
 
 #include <catch.hpp>
 
+#include <limits>
+#include <cstdint>
+
 using namespace soci;
 using namespace soci::tests;
 
@@ -867,6 +870,56 @@ TEST_CASE("SQLite std::tm bind", "[sqlite][std-tm-bind]")
     REQUIRE(result.size() == 1);
     result.front().tm_isdst = 0;
     CHECK(std::mktime(&result.front()) == std::mktime(&datetime));
+}
+
+// This is a regression test case for https://github.com/SOCI/soci/issues/1190
+// The core issue here is that SQLite lacks strict type checking, which allows to
+// store arbitrarily large integers in a column, regardless of whether the column's
+// type was declared as int, bigint, smallint, etc.
+// This naturally confuses SOCI as it expects type safety. The issue only appears with
+// dynamic (row-based) APIs as in this case, SOCI needs to supply an internal temporary
+// into which to select the queried data.
+// By trusting the column type, SOCI could end up choosing an integer type that is too
+// small for the queried value, leading to a silent integer overflow and hence unexpected
+// query results.
+// This test case effectively ensures that this no longer happens.
+//
+// Note that this test is SQLite-specific because with the other backends we'd
+// fail to insert the value in the first place.
+TEST_CASE("SQLite row int64", "[sqlite][row][int64]")
+{
+    soci::session sql(backEnd, connectString);
+    struct integer_table_creator : table_creator_base
+    {
+        integer_table_creator(soci::session &sql)
+            : table_creator_base(sql)
+        {
+            sql << "create table soci_test(id integer primary key, val integer)";
+        }
+    } creator(sql);
+
+    int id = 1;
+    std::int64_t val = static_cast<std::int64_t>(std::numeric_limits<std::int32_t>::max());
+    sql << "insert into soci_test(id, val) values (:id, :val)", use(id), use(val);
+
+    // As long as we don't overflow the 32bit integer, we can select with an int32_t
+    row r;
+    sql << "SELECT val FROM soci_test WHERE id = :id", use(id), into(r);
+    CHECK(r.get_properties("val").get_db_type() == db_int32);
+    CHECK(r.size() == 1);
+    CHECK(r.get<std::int32_t>("val") == val);
+
+    val += 1;
+    id += 1;
+    sql << "insert into soci_test(id, val) values (:id, :val)", use(id), use(val);
+
+    sql << "SELECT val FROM soci_test WHERE id = :id", use(id), into(r);
+    CHECK(r.size() == 1);
+    CHECK(r.get_properties("val").get_db_type() == db_int32);
+    // This query would overflow the 32bit int -> an exception is thrown
+    REQUIRE_THROWS(r.get<std::int32_t>("val"));
+    // Selecting as int64_t instead works
+    CHECK(r.get<std::int64_t>("val") == val);
 }
 
 // DDL Creation objects for common tests

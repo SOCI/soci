@@ -10,7 +10,9 @@
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci/session.h"
 #include "soci-compiler.h"
-#include <libpq/libpq-fs.h> // libpq
+
+#include <libpq-fe.h>
+
 #include <cctype>
 #include <cstdio>
 #include <cstring>
@@ -19,6 +21,15 @@
 
 using namespace soci;
 using namespace soci::details;
+
+// Implement this postgresql_result member function here to avoid adding a
+// separate source file just for it.
+void postgresql_result::clear()
+{
+    // Notice that it is safe to call PQclear() with NULL pointer, it
+    // simply does nothing in this case.
+    PQclear(result_);
+}
 
 namespace // unnamed
 {

@@ -9,11 +9,6 @@
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci/connection-parameters.h"
 #include "soci/backend-loader.h"
-#include <libpq/libpq-fs.h> // libpq
-
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
 
 using namespace soci;
 using namespace soci::details;
