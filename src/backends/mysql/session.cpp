@@ -212,10 +212,12 @@ void parse_connect_string(const string & connectString,
     *password_p = false;
     *db_p = false;
     *unix_socket_p = false;
+    *port = 0;
     *port_p = false;
     *ssl_ca_p = false;
     *ssl_cert_p = false;
     *ssl_key_p = false;
+    *local_infile = 0;
     *local_infile_p = false;
     *charset_p = false;
     *reconnect_p = false;
