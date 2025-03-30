@@ -25,3 +25,19 @@
 *.PDF	 diff=astextplain
 *.rtf	 diff=astextplain
 *.RTF	 diff=astextplain
+
+# Exclude these files from release archives.
+.circleci		export-ignore
+.cirrus.yml		export-ignore
+.gitattributes		export-ignore
+.github			export-ignore
+.gitignore		export-ignore
+.markdownlint.json	export-ignore
+RELEASING.md		export-ignore
+TODO			export-ignore
+appveyor.yml		export-ignore
+mkdocs.yml		export-ignore
+valgrind.suppress	export-ignore
+docs/			export-ignore
+scripts/		export-ignore
+www/			export-ignore
