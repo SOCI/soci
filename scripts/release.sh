@@ -191,13 +191,7 @@ echo "${MSG_TAG} INFO: Exiting Python virtual environment"
 deactivate
 
 echo "${MSG_TAG} INFO: Preparing release archive in '$SOCI_ARCHIVE'"
-mkdir $SOCI_ARCHIVE
-cp -a cmake $SOCI_ARCHIVE
-cp -a include $SOCI_ARCHIVE
-cp -a languages $SOCI_ARCHIVE
-cp -a src $SOCI_ARCHIVE
-cp -a tests $SOCI_ARCHIVE
-cp -a AUTHORS CMakeLists.txt LICENSE_1_0.txt README.md Vagrantfile $SOCI_ARCHIVE/
+git archive --format=tar --prefix=$SOCI_ARCHIVE/ HEAD | tar -xf -
 mv site $SOCI_ARCHIVE/docs
 
 # Add git SHA-1 to version in CHANGES file
