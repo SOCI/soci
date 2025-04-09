@@ -42,6 +42,7 @@ endif()
 
 option(SOCI_SHARED "Enable building SOCI as a shared library" ${SHARED_DEFAULT})
 option(SOCI_TESTS "Enable building SOCI test cases" ${PROJECT_IS_TOP_LEVEL})
+option(WITH_BOOST "Enable Boost support" ON)
 cmake_dependent_option(SOCI_LTO "Enable link time optimizations in release builds" ON "LTO_AVAILABLE" OFF)
 
 

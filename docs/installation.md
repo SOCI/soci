@@ -78,6 +78,7 @@ List of variables to control common SOCI features and dependencies:
 
 * `SOCI_SHARED` - boolean - Request to build shared libraries for SOCI. Default is `ON`.
 * `SOCI_TESTS` - boolean - Request to build unit tests for SOCI. Default is `ON`, if you build SOCI standalone. Otherwise, it defaults to `OFF`.
+* `WITH_BOOST` - string - Should CMake try to detect [Boost C++ Libraries](https://www.boost.org/). If `ON` (default), CMake will try to find Boost headers and binaries of [`Boost.Date_Time`](https://www.boost.org/doc/libs/release/doc/html/date_time.html) library and provide special support for Boost types if they are found. If `OFF`, no attempt to find Boost will be made. Finally, if this option has the value of `REQUIRED`, the behaviour is the same as with `ON` but an error is given if `Boost.Date_Time` is not found.
 
 Some other build options:
 
