@@ -1,5 +1,5 @@
 # Note: we need >= v3.23 in order to make use of file sets for header installation
-cmake_minimum_required(VERSION 3.23...3.31 FATAL_ERROR)
+cmake_minimum_required(VERSION 3.23...4.0 FATAL_ERROR)
 
 set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake")
 list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_SOURCE_DIR}/cmake/find_modules")
