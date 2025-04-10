@@ -1,0 +1,3 @@
+[submodule "3rdparty/sqlite3"]
+	path = 3rdparty/sqlite3
+	url = https://github.com/vadz/sqlite-amalgamation.git
