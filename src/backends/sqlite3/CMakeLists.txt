@@ -1,7 +1,9 @@
 include(soci_define_backend_target)
 
 if (SOCI_SQLITE3_AUTO)
-  set(DEPENDENCY_MODE "DISABLE")
+  # Unlike most other backends, we can fall back on using the built-in
+  # version of SQLite3 if the system version is not found.
+  set(DEPENDENCY_MODE "BUILTIN")
 else()
   set(DEPENDENCY_MODE "ERROR")
 endif()
@@ -31,4 +33,32 @@ soci_define_backend_target(
 
 if (NOT SOCI_SQLITE3)
   return()
+endif()
+
+# If SQLite3 was found, this target must have been created.
+if (NOT TARGET SQLite::SQLite3)
+  # But if it wasn't, use our built-in version, after checking that it is
+  # available.
+  if (NOT EXISTS "${PROJECT_SOURCE_DIR}/3rdparty/sqlite3/sqlite3.c")
+    message(WARNING "SQLite3 not found and built-in version not available, have you cloned SOCI repository with --recurse-submodules?")
+
+    get_property(DESCRIPTION CACHE SOCI_SQLITE3 PROPERTY HELPSTRING)
+    set(SOCI_SQLITE3 OFF CACHE STRING "${DESCRIPTION}" FORCE)
+    return()
+  endif()
+
+  add_library(soci_sqlite3_builtin)
+  target_sources(soci_sqlite3_builtin
+    PRIVATE
+      "${PROJECT_SOURCE_DIR}/3rdparty/sqlite3/sqlite3.c"
+  )
+  target_include_directories(soci_sqlite3_builtin
+    PUBLIC
+      "${PROJECT_SOURCE_DIR}/3rdparty/sqlite3"
+  )
+
+  target_link_libraries(soci_sqlite3
+    PRIVATE
+      soci_sqlite3_builtin
+  )
 endif()

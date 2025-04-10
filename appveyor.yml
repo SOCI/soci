@@ -75,6 +75,7 @@ install:
     # Ensure we have a recent cmake version available
   - choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
   - refreshenv
+  - git submodule update --init
 
 before_build:
   # dirty little hack - remove sh from Git to make generator happy

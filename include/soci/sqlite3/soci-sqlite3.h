@@ -31,7 +31,24 @@
 namespace sqlite_api
 {
 
-#include <sqlite3.h>
+// Don't include sqlite3.h from outside SOCI: this header might not be
+// available when using built-in SQLite3 as we don't install it in this case.
+#ifdef SOCI_SQLITE3_SOURCE
+    #include <sqlite3.h>
+#else // !SOCI_SQLITE3_SOURCE
+// We need just a couple of forward declarations to make this header itself
+// compile.
+struct sqlite3;
+struct sqlite3_stmt;
+
+#if defined(_MSC_VER)
+  typedef __int64 sqlite3_int64;
+  typedef unsigned __int64 sqlite3_uint64;
+#else
+  typedef long long int sqlite3_int64;
+  typedef unsigned long long int sqlite3_uint64;
+#endif
+#endif // SOCI_SQLITE3_SOURCE/!SOCI_SQLITE3_SOURCE
 
 } // namespace sqlite_api
 
