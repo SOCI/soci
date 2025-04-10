@@ -72,13 +72,11 @@ install:
         $env:SOCI_ODBC_SKIP_TESTS = $env:SOCI_ODBC_SKIP_TESTS + '|soci_odbc_test_postgresql'
       }
       Write-Output "To be skipped ODBC tests: $env:SOCI_ODBC_SKIP_TESTS"
-  - git clone https://github.com/snikulov/sqlite.cmake.build.git C:\projects\sqlite\src
     # Ensure we have a recent cmake version available
   - choco install cmake --installargs 'ADD_CMAKE_TO_PATH=System'
   - refreshenv
 
 before_build:
-  - set SQLITE_ROOT=C:\projects\sqlite\sqlite
   # dirty little hack - remove sh from Git to make generator happy
   - ps: |
       if ($env:G -eq "MinGW Makefiles")
@@ -91,12 +89,10 @@ before_build:
             Remove-Item $shellPath
           }
         }
-        $env:SQLITE3_LIBRARY = $env:SQLITE_ROOT + '/lib/libsqlite3-static.a'
         $env:BUILD_TOOL_OPTIONS = '-j3'
       }
       else
       {
-        $env:SQLITE3_LIBRARY = $env:SQLITE_ROOT + '/lib/sqlite3-static.lib'
         $env:BUILD_TOOL_OPTIONS = ''
         # Set up Visual Studio environment (MSVC compiler etc.)
         # Works by calling the respective bat script and then copying over the env vars
@@ -108,9 +104,6 @@ before_build:
                 }
             }
       }
-  - cd C:\projects\sqlite\src
-  - mkdir build
-  - cd build
   - set PATH=%MINGW_BIN%;%POSTGRESQL_ROOT%\bin;%MYSQL_DIR%\bin;%MYSQL_DIR%\lib;%PATH%
   - echo %PATH%
   - cmake --version
@@ -121,14 +114,12 @@ before_build:
   - set USER=root
   - mysql -e "create database soci_test;" --user=root
   - sqlcmd -U sa -P Password12! -S (local)\SQL%MSSQL_VER% -i C:\projects\soci\scripts\windows\mssql_db_create.sql
-  - cmake .. -G"%G%" -DSQLITE_BUILD_SHARED=OFF -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_INSTALL_PREFIX=%SQLITE_ROOT% -DCMAKE_UNITY_BUILD=ON
-  - cmake --build . --config %CONFIGURATION% --target install
 
 build_script:
   - cd C:\projects\soci
   - mkdir build
   - cd build
-  - cmake .. -G"%G%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_VERBOSE_MAKEFILE=ON -DSOCI_ENABLE_WERROR=ON -DCMAKE_PREFIX_PATH=%SQLITE_ROOT% -DSQLite3_LIBRARY=%SQLITE3_LIBRARY% -DCMAKE_UNITY_BUILD=ON
+  - cmake .. -G"%G%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_VERBOSE_MAKEFILE=ON -DSOCI_ENABLE_WERROR=ON -DCMAKE_UNITY_BUILD=ON
   - cmake --build . --config %CONFIGURATION% -- %BUILD_TOOL_OPTIONS%
 
 test_script:
