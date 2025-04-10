@@ -31,18 +31,9 @@
 namespace sqlite_api
 {
 
-#if SQLITE_VERSION_NUMBER < 3003010
-// The sqlite3_destructor_type typedef introduced in 3.3.10
-// https://www.sqlite.org/cvstrac/tktview?tn=2191
-typedef void (*sqlite3_destructor_type)(void*);
-#endif
-
 #include <sqlite3.h>
 
 } // namespace sqlite_api
-
-#undef SQLITE_STATIC
-#define SQLITE_STATIC ((sqlite_api::sqlite3_destructor_type)0)
 
 #ifdef _MSC_VER
 #pragma warning(pop)
