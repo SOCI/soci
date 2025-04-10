@@ -353,6 +353,10 @@ struct SOCI_SQLITE3_DECL sqlite3_session_backend : details::session_backend
         }
     }
 
+    // Get information about SQLite3 version used.
+    static const char* libversion();
+    static int libversion_number();
+
     sqlite_api::sqlite3 *conn_;
 
     // This flag is set to true if the internal sqlite_sequence table exists in
