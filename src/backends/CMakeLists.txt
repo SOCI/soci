@@ -55,11 +55,7 @@ foreach(CURRENT_BACKEND IN LISTS SOCI_EXISTING_BACKENDS)
 
   if (${CURRENT_ENABLED_VAR} STREQUAL "AUTO")
     set(${CURRENT_AUTO_VAR} ON)
-    # Convert include status to ON as the AUTO status is kept track of separately
-    set(${CURRENT_ENABLED_VAR} ON CACHE STRING "${CURRENT_DESCRIPTION}" FORCE)
-  elseif(${CURRENT_ENABLED_VAR} MATCHES "^(ON|OFF|TRUE|FALSE|YES|NO|[YN01])$")
-    set(INCLUDE_CURRENT_BACKEND ${${CURRENT_ENABLED_VAR}})
-  else()
+  elseif (NOT ${CURRENT_ENABLED_VAR} MATCHES "^(ON|OFF|TRUE|FALSE|YES|NO|[YN01])$")
     message(FATAL_ERROR "Invalid value '${${CURRENT_ENABLED_VAR}}' for option '${CURRENT_ENABLED_VAR}'")
   endif()
 
