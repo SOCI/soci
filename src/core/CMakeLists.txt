@@ -71,21 +71,32 @@ if (SOCI_SHARED)
   )
 endif()
 
-# First try and find Boost with the date_time component. If it succeeds, the second search doesn't have any
-# effect. If it failed, retry searching only for Boost without the date_time component and use that, if found.
-soci_public_dependency(
-  NAME Boost
-  DEP_TARGETS Boost::boost Boost::date_time Boost::disable_autolinking
-  COMPONENTS date_time
-  MACRO_NAMES SOCI_HAVE_BOOST SOCI_HAVE_BOOST_DATE_TIME
-  TARGET SOCI::Core
-)
-soci_public_dependency(
-  NAME Boost
-  DEP_TARGETS Boost::boost Boost::disable_autolinking
-  MACRO_NAMES SOCI_HAVE_BOOST
-  TARGET SOCI::Core
-)
+if (WITH_BOOST)
+  if (WITH_BOOST STREQUAL "REQUIRED")
+    set(SOCI_BOOST_REQUIRED REQUIRED)
+  endif()
+
+  # First try and find Boost with the date_time component. If it succeeds, the second search doesn't have any
+  # effect. If it failed, retry searching only for Boost without the date_time component and use that, if found.
+  soci_public_dependency(
+    NAME Boost
+    DEP_TARGETS Boost::boost Boost::date_time Boost::disable_autolinking
+    COMPONENTS date_time
+    MACRO_NAMES SOCI_HAVE_BOOST SOCI_HAVE_BOOST_DATE_TIME
+    ${SOCI_BOOST_REQUIRED}
+    TARGET SOCI::Core
+  )
+
+  # If the search above was required to succeed, we know that it did, so don't bother trying to find Boost again.
+  if (NOT SOCI_BOOST_REQUIRED)
+    soci_public_dependency(
+      NAME Boost
+      DEP_TARGETS Boost::boost Boost::disable_autolinking
+      MACRO_NAMES SOCI_HAVE_BOOST
+      TARGET SOCI::Core
+    )
+  endif()
+endif()
 
 target_link_libraries(soci_core
   PUBLIC
