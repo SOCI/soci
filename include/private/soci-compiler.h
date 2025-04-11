@@ -61,7 +61,7 @@
 
 // HAS_CLANG_FEATURE(feature) evaluates to 1 if clang is available and the
 // provided feature is available.
-#ifndef __has_feature
+#if !defined(__clang__) || !defined(__has_feature)
 #   define SOCI_HAS_CLANG_FEATURE(x) 0
 #else
 #   define SOCI_HAS_CLANG_FEATURE(x) __has_feature(x)
@@ -73,11 +73,9 @@
 #    define SOCI_FALLTHROUGH [[fallthrough]]
 #elif SOCI_HAS_CLANG_FEATURE(cxx_attributes)
 #    define SOCI_FALLTHROUGH [[clang::fallthrough]]
-#elif defined(__GNUC__)
-#    if defined(__has_cpp_attribute)
-#        if __has_cpp_attribute(fallthrough)
-#            define SOCI_FALLTHROUGH [[fallthrough]]
-#        endif
+#elif defined(__has_cpp_attribute)
+#    if __has_cpp_attribute(fallthrough)
+#        define SOCI_FALLTHROUGH [[fallthrough]]
 #    endif
 #endif
 
