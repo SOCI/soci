@@ -6,32 +6,11 @@ SOCI backend for accessing SQLite 3 database.
 
 ### Supported Versions
 
-The SOCI SQLite3 backend is supported for use with SQLite3 >= 3.1
-
-### Tested Platforms
-
-|SQLite3|OS|Compiler|
-|--- |--- |--- |
-|3.12.1|Windows Server 2016|MSVC++ 14.1|
-|3.12.1|Windows Server 2012 R2|MSVC++ 14.0|
-|3.12.1|Windows Server 2012 R2|MSVC++ 12.0|
-|3.12.1|Windows Server 2012 R2|MSVC++ 11.0|
-|3.12.1|Windows Server 2012 R2|Mingw-w64/GCC 4.8|
-|3.7.9|Ubuntu 12.04|g++ 4.6.3|
-|3.4.0|Windows XP|(cygwin) g++ 3.4.4|
-|3.4.0|Windows XP|Visual C++ 2005 Express Edition|
-|3.3.8|Windows XP|Visual C++ 2005 Professional|
-|3.5.2|Mac OS X 10.5|g++ 4.0.1|
-|3.3.4|Ubuntu 5.1|g++ 4.0.2|
-|3.3.4|Windows XP|(cygwin) g++ 3.3.4|
-|3.3.4|Windows XP|Visual C++ 2005 Express Edition|
-|3.2.1|Linux i686 2.6.10-gentoo-r6|g++ 3.4.5|
-|3.1.3|Mac OS X 10.4|g++ 4.0.1|
-|3.24.0|macOS High Sierra 10.13.5|AppleClang 9.1.0.9020039|
+The oldest tested SQLite3 version that SOCI was tested with was 3.1.3 and the latest tested version is 3.49.1. Due to high degree of SQLite3 backwards compatibility, it is likely that newer versions can work as well.
 
 ### Required Client Libraries
 
-The SOCI SQLite3 backend requires SQLite3's `libsqlite3` client library.
+The SOCI SQLite3 backend uses `libsqlite3` client library if available or the built-in version of SQLite3 included in the SOCI source code if this library cannot be found.
 
 ### Connecting to the Database
 
@@ -170,6 +149,10 @@ The SQLite3 backend provides the following concrete classes for navite API acces
 ### SQLite3 result code support
 
 SQLite3 result code is provided via the backend specific `sqlite3_soci_error` class. Catching the backend specific error yields the value of SQLite3 result code via the `result()` method.
+
+### SQLite3 version information
+
+`sqlie3_session_backend` class, declared in `<soci/sqlite3/soci-sqlite3.h>`, provides static `libversion_number()` and `libversion()` functions which can be used to retrieve the SQLite3 version as a number (e.g. `3049001`) and as a string (e.g. `3.49.1`) respectively.
 
 ## Configuration options
 

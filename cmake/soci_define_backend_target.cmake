@@ -9,7 +9,7 @@ include(soci_utils)
 # BACKEND_NAME <name>                      Name of the backend
 # ENABLED_VARIABLE <variable>              CMake variable that indicates whether this backend is enabled. Will be set
 #                                          to OFF if one of the dependencies are not satisfied.
-# MISSING_DEPENDENCY_BEHAVIOR <behavior>   What to do if a dependency is not found. Valid values are "ERROR" and "DISABLE"
+# MISSING_DEPENDENCY_BEHAVIOR <behavior>   What to do if a dependency is not found. Valid values are "ERROR", "DISABLE" and "BUILTIN".
 # TARGET_NAME <target>                     Name of the CMake target that shall be created for this backend
 # DEPENDENCIES <spec1> [... <specN>]       List of dependency specifications. Each specification has to be a single
 #                                          argument (single string) following the syntax
@@ -58,6 +58,9 @@ function(soci_define_backend_target)
     set(ERROR_ON_MISSING_DEPENDENCY ON)
   elseif(DEFINE_BACKEND_MISSING_DEPENDENCY_BEHAVIOR STREQUAL "DISABLE")
     set(DISABLE_ON_MISSING_DEPENDENCY ON)
+  elseif(DEFINE_BACKEND_MISSING_DEPENDENCY_BEHAVIOR STREQUAL "BUILTIN")
+    set(REQUIRE_FLAG "QUIET")
+    set(BUILTIN_ON_MISSING_DEPENDENCY ON)
   else()
     message(FATAL_ERROR "Invalid value '${DEFINE_BACKEND_MISSING_DEPENDENCY_BEHAVIOR}' for option 'MISSING_DEPENDENCY_BEHAVIOR'")
   endif()
@@ -88,22 +91,29 @@ function(soci_define_backend_target)
         get_property(DESCRIPTION CACHE "${DEFINE_BACKEND_ENABLED_VARIABLE}" PROPERTY HELPSTRING)
         set(${DEFINE_BACKEND_ENABLED_VARIABLE} OFF CACHE STRING "${DESCRIPTION}" FORCE)
         return()
+      elseif(BUILTIN_ON_MISSING_DEPENDENCY)
+        message(STATUS "Falling back on built-in version of '${CURRENT_DEP}' for SOCI backend '${DEFINE_BACKEND_BACKEND_NAME}'")
       else()
         message(FATAL_ERROR "Unspecified handling of unmet dependency")
       endif()
-    endif()
-
-    foreach (CURRENT IN LISTS CURRENT_DEP_TARGETS)
-      if (NOT TARGET "${CURRENT}")
-        message(FATAL_ERROR "Expected successful find_package call with '${CURRENT_DEP_SEARCH}' to define target '${CURRENT}'")
+    else()
+      # This is wasteful, but do it again without "QUIET" flag to show the result if it succeeded.
+      if (REQUIRE_FLAG STREQUAL "QUIET")
+        find_package(${CURRENT_DEP_SEARCH})
       endif()
-    endforeach()
-    if (CURRENT_DEP_DEFINES)
-      set(MACRO_NAMES_ARG "MACRO_NAMES ${CURRENT_DEP_DEFINES}")
+
+      foreach (CURRENT IN LISTS CURRENT_DEP_TARGETS)
+        if (NOT TARGET "${CURRENT}")
+          message(FATAL_ERROR "Expected successful find_package call with '${CURRENT_DEP_SEARCH}' to define target '${CURRENT}'")
+        endif()
+      endforeach()
+      if (CURRENT_DEP_DEFINES)
+        set(MACRO_NAMES_ARG "MACRO_NAMES ${CURRENT_DEP_DEFINES}")
+      endif()
+      list(APPEND PUBLIC_DEP_CALL_ARGS
+        "NAME ${CURRENT_DEP} DEP_TARGETS ${CURRENT_DEP_TARGETS} TARGET SOCI::${DEFINE_BACKEND_ALIAS_NAME} ${MACRO_NAMES_ARG} REQUIRED"
+      )
     endif()
-    list(APPEND PUBLIC_DEP_CALL_ARGS
-      "NAME ${CURRENT_DEP} DEP_TARGETS ${CURRENT_DEP_TARGETS} TARGET SOCI::${DEFINE_BACKEND_ALIAS_NAME} ${MACRO_NAMES_ARG} REQUIRED"
-    )
   endforeach()
 
 

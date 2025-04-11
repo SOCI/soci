@@ -27,7 +27,7 @@ where X.Y.Z is the version number. Unpack the archive.
 You can always clone SOCI from the Git repository:
 
 ```console
-git clone git://github.com/SOCI/soci.git
+git clone --recurse-submodules git://github.com/SOCI/soci.git
 ```
 
 ## Building with CMake
@@ -145,7 +145,7 @@ Furthermore, the `MYSQL_DIR` _environment variable_ can be set to the MySQL inst
 
 #### SQLite 3
 
-* `SOCI_SQLITE3` - Enabler - Enables the [SQLite3](backends/sqlite3.md) backend.
+* `SOCI_SQLITE3` - Enabler - Enables the [SQLite3](backends/sqlite3.md) backend. Note that, unlike with all the other backends, if SQLite3 library is not found, built-in version of SQLite3 is used instead of the backend being disabled.
 * `SOCI_SQLITE3_TEST_CONNSTR` - string - Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check [SQLite3 backend reference](backends/sqlite3.md) for details. Example: `-DSOCI_SQLITE3_TEST_CONNSTR="my.db"` or `-DSOCI_SQLITE3_TEST_CONNSTR=":memory:"`.
 * `SOCI_SQLITE3_SKIP_TESTS` - boolean - Skips testing this backend.
 

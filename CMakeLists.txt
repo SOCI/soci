@@ -14,7 +14,7 @@ project(SOCI
   VERSION ${SOCI_VERSION}
   DESCRIPTION "C++ database access library"
   HOMEPAGE_URL "https://soci.sourceforge.net/"
-  LANGUAGES CXX
+  LANGUAGES C CXX
 )
 
 include(soci_utils)

@@ -404,11 +404,11 @@ TEST_CASE("SQLite long long", "[sqlite][longlong]")
 // Test the DDL and metadata functionality
 TEST_CASE("SQLite DDL with metadata", "[sqlite][ddl]")
 {
-    if (sqlite_api::sqlite3_libversion_number() < 3036000) {
-        if (sqlite_api::sqlite3_libversion_number() < 3014000) {
-            WARN("SQLite requires at least version 3.14.0 for column description, detected " << sqlite_api::sqlite3_libversion());
+    if (sqlite3_session_backend::libversion_number() < 3036000) {
+        if (sqlite3_session_backend::libversion_number() < 3014000) {
+            WARN("SQLite requires at least version 3.14.0 for column description, detected " << sqlite3_session_backend::libversion());
         }
-        WARN("SQLite requires at least version 3.36.0 for drop column, detected " << sqlite_api::sqlite3_libversion());
+        WARN("SQLite requires at least version 3.36.0 for drop column, detected " << sqlite3_session_backend::libversion());
         return;
     }
     soci::session sql(backEnd, connectString);

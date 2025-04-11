@@ -313,3 +313,15 @@ sqlite3_blob_backend * sqlite3_session_backend::make_blob_backend()
 {
     return new sqlite3_blob_backend(*this);
 }
+
+// static
+const char* sqlite3_session_backend::libversion()
+{
+    return sqlite3_libversion();
+}
+
+// static
+int sqlite3_session_backend::libversion_number()
+{
+    return sqlite3_libversion_number();
+}

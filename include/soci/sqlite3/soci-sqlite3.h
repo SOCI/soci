@@ -31,18 +31,26 @@
 namespace sqlite_api
 {
 
-#if SQLITE_VERSION_NUMBER < 3003010
-// The sqlite3_destructor_type typedef introduced in 3.3.10
-// https://www.sqlite.org/cvstrac/tktview?tn=2191
-typedef void (*sqlite3_destructor_type)(void*);
-#endif
+// Don't include sqlite3.h from outside SOCI: this header might not be
+// available when using built-in SQLite3 as we don't install it in this case.
+#ifdef SOCI_SQLITE3_SOURCE
+    #include <sqlite3.h>
+#else // !SOCI_SQLITE3_SOURCE
+// We need just a couple of forward declarations to make this header itself
+// compile.
+struct sqlite3;
+struct sqlite3_stmt;
 
-#include <sqlite3.h>
+#if defined(_MSC_VER)
+  typedef __int64 sqlite3_int64;
+  typedef unsigned __int64 sqlite3_uint64;
+#else
+  typedef long long int sqlite3_int64;
+  typedef unsigned long long int sqlite3_uint64;
+#endif
+#endif // SOCI_SQLITE3_SOURCE/!SOCI_SQLITE3_SOURCE
 
 } // namespace sqlite_api
-
-#undef SQLITE_STATIC
-#define SQLITE_STATIC ((sqlite_api::sqlite3_destructor_type)0)
 
 #ifdef _MSC_VER
 #pragma warning(pop)
@@ -361,6 +369,10 @@ struct SOCI_SQLITE3_DECL sqlite3_session_backend : details::session_backend
                 throw soci_error("this db_type is not supported in create_column");
         }
     }
+
+    // Get information about SQLite3 version used.
+    static const char* libversion();
+    static int libversion_number();
 
     sqlite_api::sqlite3 *conn_;
 
