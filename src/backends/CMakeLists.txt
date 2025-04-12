@@ -18,7 +18,7 @@ foreach(CURRENT_BACKEND IN LISTS SOCI_EXISTING_BACKENDS)
   set(CURRENT_ENABLED_VAR "SOCI_${CURRENT_BACKEND_UPPER}")
   set(
     CURRENT_DESCRIPTION
-    "Whether to include the '${CURRENT_BACKEND}' backend. Can be a boolean value or 'AUTO' indicating that it shall be included unless its dependencies can't be satisfied."
+    "Whether to include the '${CURRENT_BACKEND}' backend. Can be a boolean value or 'AUTO' to include the backend if its dependencies can be satisfied and disable it otherwise."
   )
 
   # Add option to enable/disable the current backend. Note: if the cache variable already exists
