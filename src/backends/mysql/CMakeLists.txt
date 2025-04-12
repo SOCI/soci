@@ -9,7 +9,6 @@ endif()
 soci_define_backend_target(
   BACKEND_NAME "MySQL"
   TARGET_NAME "soci_mysql"
-  ALIAS_NAME "MySQL"
   DEPENDENCIES
     "MySQL YIELDS MySQL::MySQL"
   SOURCE_FILES

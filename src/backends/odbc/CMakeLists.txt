@@ -9,7 +9,6 @@ endif()
 soci_define_backend_target(
   BACKEND_NAME "ODBC"
   TARGET_NAME "soci_odbc"
-  ALIAS_NAME "ODBC"
   DEPENDENCIES
     "ODBC YIELDS ODBC::ODBC"
   SOURCE_FILES

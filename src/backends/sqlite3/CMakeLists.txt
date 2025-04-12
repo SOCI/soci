@@ -11,7 +11,6 @@ endif()
 soci_define_backend_target(
   BACKEND_NAME "SQLite3"
   TARGET_NAME "soci_sqlite3"
-  ALIAS_NAME "SQLite3"
   DEPENDENCIES
     "SQLite3 YIELDS SQLite::SQLite3"
   SOURCE_FILES

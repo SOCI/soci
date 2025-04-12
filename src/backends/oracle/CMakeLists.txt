@@ -9,7 +9,6 @@ endif()
 soci_define_backend_target(
   BACKEND_NAME "Oracle"
   TARGET_NAME "soci_oracle"
-  ALIAS_NAME "Oracle"
   DEPENDENCIES
     "Oracle YIELDS Oracle::Oracle"
   SOURCE_FILES

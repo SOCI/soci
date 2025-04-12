@@ -14,7 +14,6 @@ endif()
 soci_define_backend_target(
   BACKEND_NAME "Firebird"
   TARGET_NAME "soci_firebird"
-  ALIAS_NAME "Firebird"
   DEPENDENCIES
   "Firebird YIELDS Firebird::Firebird"
   SOURCE_FILES

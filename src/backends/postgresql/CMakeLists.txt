@@ -9,7 +9,6 @@ endif()
 soci_define_backend_target(
   BACKEND_NAME "PostgreSQL"
   TARGET_NAME "soci_postgresql"
-  ALIAS_NAME "PostgreSQL"
   DEPENDENCIES
     "PostgreSQL YIELDS PostgreSQL::PostgreSQL"
   SOURCE_FILES

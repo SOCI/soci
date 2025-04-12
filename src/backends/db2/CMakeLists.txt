@@ -9,7 +9,6 @@ endif()
 soci_define_backend_target(
   BACKEND_NAME "DB2"
   TARGET_NAME "soci_db2"
-  ALIAS_NAME "DB2"
   DEPENDENCIES
     "DB2 YIELDS DB2::DB2"
   SOURCE_FILES

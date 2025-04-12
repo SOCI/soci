@@ -5,8 +5,7 @@ include(soci_utils)
 # This function takes care of orchestrating the boilerplate that is needed in order to set up
 # a library target as used for different DB backends. Accepted arguments are
 #
-# ALIAS_NAME   <name>                      Alias to use for the library. The alias name will be prefixed with "SOCI::"
-# BACKEND_NAME <name>                      Name of the backend
+# BACKEND_NAME <name>                      Name of the backend. This function will create an alias target using this name with "SOCI::" prefix.
 # MISSING_DEPENDENCY_BEHAVIOR <behavior>   What to do if a dependency is not found. Valid values are "ERROR", "DISABLE" and "BUILTIN".
 # TARGET_NAME <target>                     Name of the CMake target that shall be created for this backend
 # DEPENDENCIES <spec1> [... <specN>]       List of dependency specifications. Each specification has to be a single
@@ -26,7 +25,6 @@ include(soci_utils)
 function(soci_define_backend_target)
   set(FLAGS "")
   set(ONE_VAL_OPTIONS
-    "ALIAS_NAME"
     "BACKEND_NAME"
     "MISSING_DEPENDENCY_BEHAVIOR"
     "TARGET_NAME"
@@ -42,7 +40,7 @@ function(soci_define_backend_target)
   soci_verify_parsed_arguments(
     PREFIX "DEFINE_BACKEND"
     FUNCTION_NAME "soci_define_backend_target"
-    REQUIRED "BACKEND_NAME" "SOURCE_FILES" "TARGET_NAME" "ALIAS_NAME"
+    REQUIRED "BACKEND_NAME" "SOURCE_FILES" "TARGET_NAME"
   )
 
   if (NOT DEFINE_BACKEND_MISSING_DEPENDENCY_BEHAVIOR)
@@ -115,14 +113,14 @@ function(soci_define_backend_target)
         set(MACRO_NAMES_ARG "MACRO_NAMES ${CURRENT_DEP_DEFINES}")
       endif()
       list(APPEND PUBLIC_DEP_CALL_ARGS
-        "NAME ${CURRENT_DEP} DEP_TARGETS ${CURRENT_DEP_TARGETS} TARGET SOCI::${DEFINE_BACKEND_ALIAS_NAME} ${MACRO_NAMES_ARG} REQUIRED"
+        "NAME ${CURRENT_DEP} DEP_TARGETS ${CURRENT_DEP_TARGETS} TARGET SOCI::${DEFINE_BACKEND_BACKEND_NAME} ${MACRO_NAMES_ARG} REQUIRED"
       )
     endif()
   endforeach()
 
 
   add_library(${DEFINE_BACKEND_TARGET_NAME} ${SOCI_LIB_TYPE} ${DEFINE_BACKEND_SOURCE_FILES})
-  add_library(SOCI::${DEFINE_BACKEND_ALIAS_NAME} ALIAS ${DEFINE_BACKEND_TARGET_NAME})
+  add_library(SOCI::${DEFINE_BACKEND_BACKEND_NAME} ALIAS ${DEFINE_BACKEND_TARGET_NAME})
 
   foreach(CURRENT_ARG_SET IN LISTS PUBLIC_DEP_CALL_ARGS)
     # Convert space-separated string to list
@@ -138,7 +136,7 @@ function(soci_define_backend_target)
     PROPERTIES
       SOVERSION ${PROJECT_VERSION_MAJOR}
       VERSION ${PROJECT_VERSION}
-      EXPORT_NAME ${DEFINE_BACKEND_ALIAS_NAME}
+      EXPORT_NAME ${DEFINE_BACKEND_BACKEND_NAME}
   )
 
   if (DEFINE_BACKEND_HEADER_FILES)
@@ -151,7 +149,7 @@ function(soci_define_backend_target)
   endif()
 
 
-  target_link_libraries(soci_interface INTERFACE SOCI::${DEFINE_BACKEND_ALIAS_NAME})
+  target_link_libraries(soci_interface INTERFACE SOCI::${DEFINE_BACKEND_BACKEND_NAME})
 
 
   # Setup installation rules for this backend
