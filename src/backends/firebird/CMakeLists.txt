@@ -12,7 +12,7 @@ else()
 endif()
 
 soci_define_backend_target(
-  BACKEND_NAME "Firebird"
+  NAME "Firebird"
   TARGET_NAME "soci_firebird"
   DEPENDENCIES
   "Firebird YIELDS Firebird::Firebird"

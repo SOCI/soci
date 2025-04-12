@@ -7,7 +7,7 @@ else()
 endif()
 
 soci_define_backend_target(
-  BACKEND_NAME "Oracle"
+  NAME "Oracle"
   TARGET_NAME "soci_oracle"
   DEPENDENCIES
     "Oracle YIELDS Oracle::Oracle"

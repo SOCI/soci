@@ -7,7 +7,7 @@ else()
 endif()
 
 soci_define_backend_target(
-  BACKEND_NAME "PostgreSQL"
+  NAME "PostgreSQL"
   TARGET_NAME "soci_postgresql"
   DEPENDENCIES
     "PostgreSQL YIELDS PostgreSQL::PostgreSQL"

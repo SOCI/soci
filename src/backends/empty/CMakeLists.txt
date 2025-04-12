@@ -7,7 +7,7 @@ else()
 endif()
 
 soci_define_backend_target(
-  BACKEND_NAME "Empty"
+  NAME "Empty"
   TARGET_NAME "soci_empty"
   SOURCE_FILES
     "blob.cpp"

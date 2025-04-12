@@ -7,7 +7,7 @@ else()
 endif()
 
 soci_define_backend_target(
-  BACKEND_NAME "DB2"
+  NAME "DB2"
   TARGET_NAME "soci_db2"
   DEPENDENCIES
     "DB2 YIELDS DB2::DB2"

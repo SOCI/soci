@@ -9,7 +9,7 @@ else()
 endif()
 
 soci_define_backend_target(
-  BACKEND_NAME "SQLite3"
+  NAME "SQLite3"
   TARGET_NAME "soci_sqlite3"
   DEPENDENCIES
     "SQLite3 YIELDS SQLite::SQLite3"

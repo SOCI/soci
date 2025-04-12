@@ -7,7 +7,7 @@ else()
 endif()
 
 soci_define_backend_target(
-  BACKEND_NAME "ODBC"
+  NAME "ODBC"
   TARGET_NAME "soci_odbc"
   DEPENDENCIES
     "ODBC YIELDS ODBC::ODBC"
