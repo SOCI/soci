@@ -28,7 +28,6 @@ soci_define_backend_target(
   FIND_PACKAGE_FILES
     "${PROJECT_SOURCE_DIR}/cmake/find_modules/FindOracle.cmake"
   MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
-  ENABLED_VARIABLE "SOCI_ORACLE"
 )
 
 if (NOT SOCI_ORACLE)

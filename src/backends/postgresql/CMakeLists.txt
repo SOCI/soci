@@ -26,7 +26,6 @@ soci_define_backend_target(
   HEADER_FILES
     "${PROJECT_SOURCE_DIR}/include/soci/postgresql/soci-postgresql.h"
   MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
-  ENABLED_VARIABLE "SOCI_POSTGRESQL"
 )
 
 if (NOT SOCI_POSTGRESQL)

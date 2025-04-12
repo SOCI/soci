@@ -7,8 +7,6 @@ include(soci_utils)
 #
 # ALIAS_NAME   <name>                      Alias to use for the library. The alias name will be prefixed with "SOCI::"
 # BACKEND_NAME <name>                      Name of the backend
-# ENABLED_VARIABLE <variable>              CMake variable that indicates whether this backend is enabled. Will be set
-#                                          to OFF if one of the dependencies are not satisfied.
 # MISSING_DEPENDENCY_BEHAVIOR <behavior>   What to do if a dependency is not found. Valid values are "ERROR", "DISABLE" and "BUILTIN".
 # TARGET_NAME <target>                     Name of the CMake target that shall be created for this backend
 # DEPENDENCIES <spec1> [... <specN>]       List of dependency specifications. Each specification has to be a single
@@ -23,12 +21,13 @@ include(soci_utils)
 #                                          files will be installed alongside SOCI in order to be usable from the install tree.
 # HEADER_FILES <file1> [... <fileN>]       List of public header files associated with this backend target.
 # SOURCE_FILES <file1> [... <fileN>]       List of source files that shall be part of this backend component
+#
+# It sets SOCI_<BACKEND_NAME> cache variable to ON if the backend dependencies are available and OFF otherwise.
 function(soci_define_backend_target)
   set(FLAGS "")
   set(ONE_VAL_OPTIONS
     "ALIAS_NAME"
     "BACKEND_NAME"
-    "ENABLED_VARIABLE"
     "MISSING_DEPENDENCY_BEHAVIOR"
     "TARGET_NAME"
   )
@@ -43,7 +42,7 @@ function(soci_define_backend_target)
   soci_verify_parsed_arguments(
     PREFIX "DEFINE_BACKEND"
     FUNCTION_NAME "soci_define_backend_target"
-    REQUIRED "BACKEND_NAME" "SOURCE_FILES" "ENABLED_VARIABLE" "TARGET_NAME" "ALIAS_NAME"
+    REQUIRED "BACKEND_NAME" "SOURCE_FILES" "TARGET_NAME" "ALIAS_NAME"
   )
 
   if (NOT DEFINE_BACKEND_MISSING_DEPENDENCY_BEHAVIOR)
@@ -67,6 +66,10 @@ function(soci_define_backend_target)
 
 
   set(PUBLIC_DEP_CALL_ARGS "")
+
+  # This variable indicates whether the backend is enabled or not.
+  string(TOUPPER "${DEFINE_BACKEND_BACKEND_NAME}" BACKEND_UPPER)
+  set(DEFINE_BACKEND_ENABLED_VARIABLE "SOCI_${BACKEND_UPPER}")
 
   foreach(CURRENT_DEP_SPEC IN LISTS DEFINE_BACKEND_DEPENDENCIES)
     if (NOT "${CURRENT_DEP_SPEC}" MATCHES "^([a-zA-Z0-9_:-;]+) YIELDS ([a-zA-Z0-9_:-;]+)( DEFINES [a-zA-Z0-9_;])?$")

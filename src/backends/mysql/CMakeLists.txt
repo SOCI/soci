@@ -28,7 +28,6 @@ soci_define_backend_target(
   FIND_PACKAGE_FILES
     "${PROJECT_SOURCE_DIR}/cmake/find_modules/FindMySQL.cmake"
   MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
-  ENABLED_VARIABLE "SOCI_MYSQL"
 )
 
 if (NOT SOCI_MYSQL)

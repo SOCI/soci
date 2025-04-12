@@ -28,7 +28,6 @@ soci_define_backend_target(
   HEADER_FILES
     "${PROJECT_SOURCE_DIR}/include/soci/sqlite3/soci-sqlite3.h"
   MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
-  ENABLED_VARIABLE "SOCI_SQLITE3"
 )
 
 if (NOT SOCI_SQLITE3)

@@ -25,7 +25,6 @@ soci_define_backend_target(
   HEADER_FILES
     "${PROJECT_SOURCE_DIR}/include/soci/odbc/soci-odbc.h"
   MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
-  ENABLED_VARIABLE "SOCI_ODBC"
 )
 
 if (NOT SOCI_ODBC)
