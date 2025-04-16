@@ -5,7 +5,6 @@
 set(__dep_soci_comps  "@SOCI_DEPENDENCY_SOCI_COMPONENTS@")
 set(__dep_names       "@SOCI_DEPENDENCY_NAMES@")
 set(__dep_dep_targets "@SOCI_DEPENDENCY_TARGETS@")
-set(__dep_required    "@SOCI_DEPENDENCY_REQUIRED@")
 
 
 set(__prev_module_path "${CMAKE_MODULE_PATH}")
@@ -25,7 +24,7 @@ list(INSERT SOCI_FIND_COMPONENTS 0 Core)
 
 
 list(LENGTH __dep_soci_comps __list_size)
-foreach (__item IN ITEMS __dep_names __dep_dep_targets __dep_required)
+foreach (__item IN ITEMS __dep_names __dep_dep_targets)
     list(LENGTH ${__item} __current_size)
     if (NOT (__list_size EQUAL __current_size))
         message(FATAL_ERROR "SociConfig is invalid -> dependency lists have different sizes")
@@ -51,7 +50,6 @@ foreach(__comp IN LISTS SOCI_FIND_COMPONENTS)
       # This entry matches the current component
       list(GET __dep_names ${__i} __dep)
       list(GET __dep_dep_targets ${__i} __targets)
-      list(GET __dep_required ${__i} __required)
 
       # Split list-valued entries to become actual lists
       string(REPLACE "|" ";" __targets "${__targets}")
@@ -82,12 +80,9 @@ foreach(__comp IN LISTS SOCI_FIND_COMPONENTS)
       )
 
       if (NOT ${__dep}_FOUND)
-        if (__required)
-          set(SOCI_FOUND FALSE)
-          set(SOCI_NOT_FOUND_MESSAGE "Unmet dependency '${__dep}' for SOCI component '${__comp}'")
-          set(__skip_dependency TRUE)
-        endif()
-        continue()
+        set(SOCI_FOUND FALSE)
+        set(SOCI_NOT_FOUND_MESSAGE "Unmet dependency '${__dep}' for SOCI component '${__comp}'")
+        set(__skip_dependency TRUE)
       endif()
 
       list(APPEND __link_targets  ${__targets})
@@ -114,7 +109,6 @@ unset(__comp)
 unset(__dep_soci_comps)
 unset(__dep_names)
 unset(__dep_dep_targets)
-unset(__dep_required)
 
 
 check_required_components(SOCI)

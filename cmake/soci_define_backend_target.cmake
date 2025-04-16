@@ -105,7 +105,7 @@ function(soci_define_backend_target)
         endif()
       endforeach()
       list(APPEND PUBLIC_DEP_CALL_ARGS
-        "NAME ${CURRENT_DEP} DEP_TARGETS ${CURRENT_DEP_TARGETS} TARGET SOCI::${DEFINE_BACKEND_ALIAS_NAME} REQUIRED"
+        "NAME ${CURRENT_DEP} DEP_TARGETS ${CURRENT_DEP_TARGETS} TARGET SOCI::${DEFINE_BACKEND_ALIAS_NAME}"
       )
     endif()
   endforeach()
