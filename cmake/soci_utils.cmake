@@ -72,7 +72,7 @@ endif()
 # Use as
 #   soci_public_dependency(
 #      NAME <name>
-#      DEP_TARGET <dep target>
+#      DEP_TARGETS <dep target> ...
 #      TARGET <target>
 #      [MACRO_NAMES <macro name> ...]
 #      [REQUIRED]
