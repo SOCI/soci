@@ -6,8 +6,6 @@ set(__dep_soci_comps  "@SOCI_DEPENDENCY_SOCI_COMPONENTS@")
 set(__dep_names       "@SOCI_DEPENDENCY_NAMES@")
 set(__dep_dep_targets "@SOCI_DEPENDENCY_TARGETS@")
 set(__dep_required    "@SOCI_DEPENDENCY_REQUIRED@")
-set(__dep_macro_names "@SOCI_DEPENDENCY_MACRO_NAMES@")
-set(__dep_components  "@SOCI_DEPENDENCY_COMPONENTS@")
 
 
 set(__prev_module_path "${CMAKE_MODULE_PATH}")
@@ -27,7 +25,7 @@ list(INSERT SOCI_FIND_COMPONENTS 0 Core)
 
 
 list(LENGTH __dep_soci_comps __list_size)
-foreach (__item IN ITEMS __dep_names __dep_dep_targets __dep_required __dep_macro_names __dep_components)
+foreach (__item IN ITEMS __dep_names __dep_dep_targets __dep_required)
     list(LENGTH ${__item} __current_size)
     if (NOT (__list_size EQUAL __current_size))
         message(FATAL_ERROR "SociConfig is invalid -> dependency lists have different sizes")
@@ -46,7 +44,6 @@ foreach(__comp IN LISTS SOCI_FIND_COMPONENTS)
 
   # Handle component-specific dependencies
   set(__link_targets)
-  set(__define_macros)
   set(__skip_dependency FALSE)
   foreach (__i RANGE ${__list_size})
     list(GET __dep_soci_comps ${__i} __dep_comp)
@@ -55,13 +52,9 @@ foreach(__comp IN LISTS SOCI_FIND_COMPONENTS)
       list(GET __dep_names ${__i} __dep)
       list(GET __dep_dep_targets ${__i} __targets)
       list(GET __dep_required ${__i} __required)
-      list(GET __dep_macro_names ${__i} __macros)
-      list(GET __dep_components ${__i} __components)
 
       # Split list-valued entries to become actual lists
       string(REPLACE "|" ";" __targets "${__targets}")
-      string(REPLACE "|" ";" __macros "${__macros}")
-      string(REPLACE "|" ";" __components "${__components}")
 
       set(__already_found)
       foreach (__tgt IN LISTS __targets)
@@ -77,10 +70,6 @@ foreach(__comp IN LISTS SOCI_FIND_COMPONENTS)
         continue()
       endif()
 
-      if (__components)
-        set(__components COMPONENTS ${__components})
-      endif()
-
       if (${CMAKE_FIND_PACKAGE_NAME}_FIND_QUIETLY)
         set(__quiet "QUIET")
       else()
@@ -89,7 +78,6 @@ foreach(__comp IN LISTS SOCI_FIND_COMPONENTS)
 
       find_package(
         ${__dep}
-        ${__components}
         ${__quiet}
       )
 
@@ -103,7 +91,6 @@ foreach(__comp IN LISTS SOCI_FIND_COMPONENTS)
       endif()
 
       list(APPEND __link_targets  ${__targets})
-      list(APPEND __define_macros ${__macros})
     endif()
   endforeach()
   unset(__i)
@@ -119,14 +106,6 @@ foreach(__comp IN LISTS SOCI_FIND_COMPONENTS)
     APPEND
     PROPERTY INTERFACE_LINK_LIBRARIES "${__link_targets}"
   )
-  if (__define_macros)
-    set_property(
-      TARGET SOCI::${__comp}
-      APPEND
-      PROPERTY INTERFACE_COMPILE_DEFINITIONS "${__define_macros}"
-    )
-  endif()
-
   set(${CMAKE_FIND_PACKAGE_NAME}_${__comp}_FOUND ON)
 endforeach()
 unset(__comp)
@@ -136,8 +115,6 @@ unset(__dep_soci_comps)
 unset(__dep_names)
 unset(__dep_dep_targets)
 unset(__dep_required)
-unset(__dep_macro_names)
-unset(__dep_components)
 
 
 check_required_components(SOCI)
