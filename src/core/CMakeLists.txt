@@ -79,6 +79,7 @@ if (WITH_BOOST)
   # we found only Boost headers, but not the date_time library.
   if (TARGET Boost::date_time)
     set(SOCI_BOOST_DATE_TIME_MESSAGE " (with date_time component)")
+    set(SOCI_DEPENDENCY_BOOST_COMPONENTS "date_time" CACHE INTERNAL "Boost components used by SOCI")
 
     target_link_libraries(soci_core PUBLIC Boost::date_time)
     target_compile_definitions(soci_core PUBLIC SOCI_HAVE_BOOST_DATE_TIME)
@@ -96,6 +97,7 @@ if (WITH_BOOST)
   # find_package() call or just Boost headers in the second one.
   if (Boost_FOUND)
     message(STATUS "Found Boost: v${Boost_VERSION_STRING} in ${Boost_INCLUDE_DIRS}${SOCI_BOOST_DATE_TIME_MESSAGE}")
+    set(SOCI_DEPENDENCY_BOOST TRUE CACHE INTERNAL "Whether SOCI depends on Boost")
 
     target_link_libraries(soci_core PUBLIC Boost::boost Boost::disable_autolinking)
     target_compile_definitions(soci_core PUBLIC SOCI_HAVE_BOOST)
