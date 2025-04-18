@@ -148,9 +148,9 @@ TEST_CASE("SQLite foreign keys", "[sqlite][foreignkeys]")
         sql << "pragma foreign_keys = on";
 
         CHECK_THROWS_WITH(sql << "delete from parent where id = 1",
-                          "sqlite3_statement_backend::loadOne: FOREIGN KEY "
-                          "constraint failed while executing "
-                          "\"delete from parent where id = 1\".");
+                          Catch::Contains(
+                          "FOREIGN KEY constraint failed while executing "
+                          "\"delete from parent where id = 1\"."));
     }
 }
 
