@@ -43,6 +43,7 @@ Backend-specific changes:
 - SQLite3
  - Add "nocreate" option to avoid creating a new database file (#1021).
  - Improve column names to SOCI database types mapping (#1120).
+ - Allow retrieving extended SQLite error code from sqlite3_soci_error.
 
 - ODBC
  - Add support for using wide strings (#1179).

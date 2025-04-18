@@ -76,8 +76,12 @@ public:
     // This is the primary SQLite error code.
     int result() const;
 
+    // Return the extended SQLite error code, providing more details.
+    int extended_result() const;
+
 private:
-    int result_;
+    // We store the extended result only, primary result is obtained from it.
+    int extended_result_;
 };
 
 struct sqlite3_statement_backend;

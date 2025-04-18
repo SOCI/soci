@@ -34,11 +34,18 @@ sqlite3_soci_error::sqlite3_soci_error(
     std::string const & prefix,
     char const* errmsg)
     : soci_error(combine(prefix, errmsg ? errmsg : sqlite3_errmsg(conn))),
-      result_(sqlite3_errcode(conn))
+      extended_result_(sqlite3_extended_errcode(conn))
 {
 }
 
 int sqlite3_soci_error::result() const
 {
-    return result_;
+    // Primary result is contained in the least significant 8 bits of the
+    // SQLite extended result.
+    return extended_result_ & 0xff;
+}
+
+int sqlite3_soci_error::extended_result() const
+{
+    return extended_result_;
 }

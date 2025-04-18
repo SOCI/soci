@@ -153,11 +153,14 @@ TEST_CASE("SQLite foreign keys", "[sqlite][foreignkeys]")
 
             FAIL("Expected exception not thrown");
         }
-        catch (soci_error const& e)
+        catch (sqlite3_soci_error const& e)
         {
             CHECK_THAT(e.what(), Catch::Contains(
                           "FOREIGN KEY constraint failed while executing "
                           "\"delete from parent where id = 1\"."));
+
+            CHECK( e.result() == 19 /* SQLITE_CONSTRAINT */ );
+            CHECK( e.extended_result() == 787 /* SQLITE_CONSTRAINT_FOREIGNKEY */ );
         }
     }
 }
