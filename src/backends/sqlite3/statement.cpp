@@ -73,8 +73,7 @@ void sqlite3_statement_backend::prepare(std::string const & query,
         char const* zErrMsg = sqlite3_errmsg(session_.conn_);
 
         std::ostringstream ss;
-        ss << "sqlite3_statement_backend::prepare: "
-           << zErrMsg;
+        ss << "error preparing statement: " << zErrMsg;
         throw sqlite3_soci_error(ss.str(), res);
     }
     databaseReady_ = true;
@@ -219,8 +218,7 @@ sqlite3_statement_backend::load_rowset(int totalRows)
             {
                 char const* zErrMsg = sqlite3_errmsg(session_.conn_);
                 std::ostringstream ss;
-                ss << "sqlite3_statement_backend::loadRS: "
-                   << zErrMsg;
+                ss << "error loading row set: " << zErrMsg;
                 throw sqlite3_soci_error(ss.str(), res);
             }
         }
@@ -253,10 +251,8 @@ sqlite3_statement_backend::load_one()
     {
         char const* zErrMsg = sqlite3_errmsg(session_.conn_);
 
-        std::ostringstream ss;
-        ss << "sqlite3_statement_backend::loadOne: "
-            << zErrMsg;
-        throw sqlite3_soci_error(ss.str(), res);
+        // There is no useful context we can add to the error message here.
+        throw sqlite3_soci_error(zErrMsg, res);
     }
     return retVal;
 }
@@ -341,7 +337,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
 
             if (SQLITE_OK != bindRes)
             {
-                throw sqlite3_soci_error("Failure to bind on bulk operations", bindRes);
+                throw sqlite3_soci_error("failure to bind a parameter", bindRes);
             }
         }
 
@@ -365,7 +361,7 @@ sqlite3_statement_backend::execute(int number)
 {
     if (stmt_ == NULL)
     {
-        throw soci_error("No sqlite statement created");
+        throw soci_error("SQLite statement wasn't created");
     }
 
     sqlite3_reset(stmt_);
