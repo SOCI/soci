@@ -13,6 +13,7 @@
 #include "soci-cstrtoi.h"
 
 #include <functional>
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -27,7 +28,7 @@ using namespace sqlite_api;
 namespace // anonymous
 {
 
-// Callback function use to construct the error message in the provided stream.
+// Callback function used to construct the error message in the provided stream.
 //
 // SQLite3 own error message will be appended to it.
 using error_callback = std::function<void (std::ostream& ostr)>;
@@ -41,12 +42,13 @@ void execute_hardcoded(sqlite_api::sqlite3* conn, char const* const query,
 {
     char *zErrMsg = 0;
     int const res = sqlite3_exec(conn, query, callback, callback_arg, &zErrMsg);
+
+    std::unique_ptr<char, void(*)(void*)> zErrMsgPtr(zErrMsg, sqlite3_free);
     if (res != SQLITE_OK)
     {
         std::ostringstream ss;
         errCallback(ss);
         ss << ": " << zErrMsg;
-        sqlite3_free(zErrMsg);
         throw sqlite3_soci_error(ss.str(), res);
     }
 }
