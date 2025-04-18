@@ -48,8 +48,8 @@ void execute_hardcoded(sqlite_api::sqlite3* conn, char const* const query,
     {
         std::ostringstream ss;
         errCallback(ss);
-        ss << ": " << zErrMsg;
-        throw sqlite3_soci_error(ss.str(), res);
+
+        throw sqlite3_soci_error(conn, ss.str(), zErrMsg);
     }
 }
 
@@ -69,12 +69,12 @@ void check_sqlite_err(sqlite_api::sqlite3* conn, int res,
 {
     if (SQLITE_OK != res)
     {
-        const char *zErrMsg = sqlite3_errmsg(conn);
         std::ostringstream ss;
         errCallback(ss);
-        ss << ": " << zErrMsg;
+
+        sqlite3_soci_error const error(conn, ss.str());
         sqlite3_close(conn); // connection must be closed here
-        throw sqlite3_soci_error(ss.str(), res);
+        throw error;
     }
 }
 
@@ -161,7 +161,7 @@ sqlite3_session_backend::sqlite3_session_backend(
 
     if (dbname.empty())
     {
-        throw sqlite3_soci_error("Database name must be specified", 0);
+        throw soci_error("Database name must be specified");
     }
 
     int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, (vfs.empty()?NULL:vfs.c_str()));
@@ -248,7 +248,7 @@ static std::string sanitize_table_name(std::string const& table)
     for (std::string::size_type pos = 0; pos < table.size(); ++pos)
     {
         if (isspace(table[pos]))
-            throw sqlite3_soci_error("Table name must not contain whitespace", 0);
+            throw soci_error("Table name must not contain whitespace");
         const char c = table[pos];
         ret += c;
         if (c == '\'')

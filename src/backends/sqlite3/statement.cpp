@@ -14,7 +14,6 @@
 #include <cstdint>
 #include <cstring>
 #include <functional>
-#include <sstream>
 #include <string>
 
 #include "soci-case.h"
@@ -69,13 +68,8 @@ void sqlite3_statement_backend::prepare(std::string const & query,
                               &stmt_,
                               &tail);
     if (res != SQLITE_OK)
-    {
-        char const* zErrMsg = sqlite3_errmsg(session_.conn_);
+        throw sqlite3_soci_error(session_.conn_, "error preparing statement");
 
-        std::ostringstream ss;
-        ss << "error preparing statement: " << zErrMsg;
-        throw sqlite3_soci_error(ss.str(), res);
-    }
     databaseReady_ = true;
 }
 
@@ -216,10 +210,7 @@ sqlite3_statement_backend::load_rowset(int totalRows)
             }
             else
             {
-                char const* zErrMsg = sqlite3_errmsg(session_.conn_);
-                std::ostringstream ss;
-                ss << "error loading row set: " << zErrMsg;
-                throw sqlite3_soci_error(ss.str(), res);
+                throw sqlite3_soci_error(session_.conn_, "error loading row set");
             }
         }
     }
@@ -249,10 +240,8 @@ sqlite3_statement_backend::load_one()
     }
     else
     {
-        char const* zErrMsg = sqlite3_errmsg(session_.conn_);
-
         // There is no useful context we can add to the error message here.
-        throw sqlite3_soci_error(zErrMsg, res);
+        throw sqlite3_soci_error(session_.conn_, {});
     }
     return retVal;
 }
@@ -336,9 +325,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
             }
 
             if (SQLITE_OK != bindRes)
-            {
-                throw sqlite3_soci_error("failure to bind a parameter", bindRes);
-            }
+                throw sqlite3_soci_error(session_.conn_, "failed to bind a parameter");
         }
 
         // Handle the case where there are both into and use elements

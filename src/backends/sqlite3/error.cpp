@@ -11,9 +11,30 @@
 
 using namespace soci;
 
+namespace
+{
+
+// Combine the possibly empty prefix and the message.
+std::string combine(std::string const& prefix, char const* message)
+{
+    std::string full{prefix};
+
+    if (!full.empty())
+      full += ": ";
+
+    full += message;
+
+    return full;
+}
+
+} // anonymous namespace
+
 sqlite3_soci_error::sqlite3_soci_error(
-    std::string const & msg, int result)
-    : soci_error(msg), result_(result)
+    sqlite_api::sqlite3* conn,
+    std::string const & prefix,
+    char const* errmsg)
+    : soci_error(combine(prefix, errmsg ? errmsg : sqlite3_errmsg(conn))),
+      result_(sqlite3_errcode(conn))
 {
 }
 

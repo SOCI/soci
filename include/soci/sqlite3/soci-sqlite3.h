@@ -62,8 +62,18 @@ namespace soci
 class SOCI_SQLITE3_DECL sqlite3_soci_error : public soci_error
 {
 public:
-    sqlite3_soci_error(std::string const & msg, int result);
+    // Create an error object corresponding to the last SQLite error on this
+    // connection.
+    //
+    // If prefix is not empty, it is prepended to the SQLite error message.
+    //
+    // If the error message is non-null, it is used, otherwise sqlite3_errmsg()
+    // is called to get it.
+    sqlite3_soci_error(sqlite_api::sqlite3* conn,
+      std::string const& prefix,
+      char const* errmsg = nullptr);
 
+    // This is the primary SQLite error code.
     int result() const;
 
 private:

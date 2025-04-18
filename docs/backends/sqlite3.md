@@ -148,7 +148,17 @@ The SQLite3 backend provides the following concrete classes for navite API acces
 
 ### SQLite3 result code support
 
-SQLite3 result code is provided via the backend specific `sqlite3_soci_error` class. Catching the backend specific error yields the value of SQLite3 result code via the `result()` method.
+SQLite3 result code is provided via the backend specific `sqlite3_soci_error` class. Catching the backend specific error allows to retrieve the primary SQL error code using its `result()` member function, e.g.
+
+```cpp
+try {
+    sql << "select * from t";
+} catch (sqlite3_soci_error const& e) {
+    std::cout << "SQLite3 error " << e.what() << ", error code: " << e.result() << std::endl;
+} catch (soci_error const& e) {
+    std::cout << "SOCI error: " << e.what() << std::endl;
+}
+```
 
 ### SQLite3 version information
 
