@@ -159,6 +159,7 @@ TEST_CASE("SQLite foreign keys", "[sqlite][foreignkeys]")
                           "FOREIGN KEY constraint failed while executing "
                           "\"delete from parent where id = 1\"."));
 
+            CHECK( e.get_error_category() == soci_error::constraint_violation );
             CHECK( e.result() == 19 /* SQLITE_CONSTRAINT */ );
             CHECK( e.extended_result() == 787 /* SQLITE_CONSTRAINT_FOREIGNKEY */ );
         }

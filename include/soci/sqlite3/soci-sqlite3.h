@@ -73,6 +73,10 @@ public:
       std::string const& prefix,
       char const* errmsg = nullptr);
 
+    // Broad category of the error, SQLite-specific functions below can be used
+    // for more precise classification.
+    error_category get_error_category() const override;
+
     // This is the primary SQLite error code.
     int result() const;
 
