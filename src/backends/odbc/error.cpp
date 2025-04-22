@@ -18,10 +18,23 @@ soci_error::error_category odbc_soci_error::get_error_category() const
         strcmp(s, "HYT01") == 0)
         return connection_error;
 
-    if (strcmp(s, "23000") == 0 ||
+    if (strncmp(s, "07", 2) == 0)
+        return invalid_statement;
+
+    if (strcmp(s, "42000") == 0 ||
+        strcmp(s, "42501") == 0)        // Given by PostgreSQL ODBC driver.
+        return no_privilege;
+
+    if (strncmp(s, "02", 2) == 0)
+        return no_data;
+
+    if (strncmp(s, "23", 2) == 0 ||
         strcmp(s, "40002") == 0 ||
         strcmp(s, "44000") == 0)
         return constraint_violation;
+
+    if (strncmp(s, "25", 2) == 0)
+        return unknown_transaction_state;
 
     if (strcmp(s, "HY014") == 0)
         return system_error;
