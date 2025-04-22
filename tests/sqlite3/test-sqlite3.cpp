@@ -147,10 +147,18 @@ TEST_CASE("SQLite foreign keys", "[sqlite][foreignkeys]")
     {
         sql << "pragma foreign_keys = on";
 
-        CHECK_THROWS_WITH(sql << "delete from parent where id = 1",
-                          Catch::Contains(
+        try
+        {
+            sql << "delete from parent where id = 1";
+
+            FAIL("Expected exception not thrown");
+        }
+        catch (soci_error const& e)
+        {
+            CHECK_THAT(e.what(), Catch::Contains(
                           "FOREIGN KEY constraint failed while executing "
                           "\"delete from parent where id = 1\"."));
+        }
     }
 }
 
