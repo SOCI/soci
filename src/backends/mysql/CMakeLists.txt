@@ -14,6 +14,7 @@ soci_define_backend_target(
   SOURCE_FILES
     "blob.cpp"
     "common.cpp"
+    "error.cpp"
     "factory.cpp"
     "row-id.cpp"
     "session.cpp"
