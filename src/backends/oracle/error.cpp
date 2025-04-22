@@ -34,11 +34,13 @@ soci_error::error_category oracle_soci_error::get_error_category() const
     {
         return connection_error;
     }
-    else if (err_num_ == 1400)
+
+    if (err_num_ == 1400)
     {
         return constraint_violation;
     }
-    else if (err_num_ == 1466 ||
+
+    if (err_num_ == 1466 ||
         err_num_ == 2055 ||
         err_num_ == 2067 ||
         err_num_ == 2091 ||
