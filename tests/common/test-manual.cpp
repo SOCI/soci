@@ -185,7 +185,16 @@ TEST_CASE_METHOD(common_tests, "Execute", "[.]")
         REQUIRE(cat < sizeof(categories) / sizeof(categories[0]));
 
         WARN("Statement execution failed: " << e.what() << "\n"
-             "Error category: " << categories[cat]);
+             "Error category: " << categories[cat] << "\n");
+
+        auto const& backend = e.get_backend_name();
+        if ( !backend.empty() )
+        {
+            if ( e.get_backend_error_code() )
+                WARN(backend << " error " << e.get_backend_error_code() << "\n");
+            if ( !e.get_sqlstate().empty() )
+                WARN(backend << " SQL state " << e.get_sqlstate() << "\n");
+        }
     }
 }
 

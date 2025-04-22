@@ -83,6 +83,10 @@ public:
     // Return the extended SQLite error code, providing more details.
     int extended_result() const;
 
+    // Implement generic functions from the base class.
+    std::string get_backend_name() const override { return "sqlite3"; }
+    int get_backend_error_code() const override { return extended_result(); }
+
 private:
     // We store the extended result only, primary result is obtained from it.
     int extended_result_;

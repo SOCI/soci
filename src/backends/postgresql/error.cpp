@@ -57,7 +57,7 @@ soci_error::error_category postgresql_soci_error::get_error_category() const
     return unknown;
 }
 
-std::string postgresql_soci_error::sqlstate() const
+std::string postgresql_soci_error::get_sqlstate() const
 {
     return std::string(sqlstate_, 5);
 }

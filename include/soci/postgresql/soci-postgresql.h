@@ -34,9 +34,14 @@ class SOCI_POSTGRESQL_DECL postgresql_soci_error : public soci_error
 public:
     postgresql_soci_error(std::string const & msg, char const * sqlst);
 
-    std::string sqlstate() const;
-
     error_category get_error_category() const override;
+
+    std::string get_backend_name() const override { return "postgresql"; }
+    std::string get_sqlstate() const override;
+
+    // This function is only public for compatibility, prefer to use
+    // get_sqlstate() instead.
+    std::string sqlstate() const { return get_sqlstate(); }
 
 private:
     char sqlstate_[ 5 ];   // not std::string to keep copy-constructor no-throw

@@ -56,6 +56,19 @@ public:
     // Basic error classification support
     virtual error_category get_error_category() const { return unknown; }
 
+
+    // The base class allows to access backend-specific error information,
+    // which can be useful to avoid linking with the backend libraries.
+
+    // Return the backend name or empty string if this is a core SOCI error.
+    virtual std::string get_backend_name() const { return {}; }
+
+    // Return the backend-specific error code as integer or 0 if inapplicable.
+    virtual int get_backend_error_code() const { return 0; }
+
+    // Return the 5 character SQL state or empty if inapplicable.
+    virtual std::string get_sqlstate() const { return {}; }
+
 private:
     // Optional extra information (currently just the context data).
     class soci_error_extra_info* info_;

@@ -168,6 +168,8 @@ try {
 }
 ```
 
+Note that the extended result can also be retrieved using `soci::soci_error::get_backend_error_code()` function.
+
 ### SQLite3 version information
 
 `sqlie3_session_backend` class, declared in `<soci/sqlite3/soci-sqlite3.h>`, provides static `libversion_number()` and `libversion()` functions which can be used to retrieve the SQLite3 version as a number (e.g. `3049001`) and as a string (e.g. `3.49.1`) respectively.

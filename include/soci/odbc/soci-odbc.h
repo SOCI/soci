@@ -397,6 +397,10 @@ public:
 
     error_category get_error_category() const override;
 
+    std::string get_backend_name() const override { return "odbc"; }
+    int get_backend_error_code() const override { return sqlcode_; }
+    std::string get_sqlstate() const override { return (char const*)sqlstate_; }
+
     SQLCHAR const * odbc_error_code() const
     {
         return sqlstate_;

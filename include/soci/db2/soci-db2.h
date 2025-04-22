@@ -62,6 +62,11 @@ public:
     //We have to extract error information before exception throwing, cause CLI handles could be broken at the construction time
     static const std::string sqlState(std::string const & msg,const SQLSMALLINT htype,const SQLHANDLE hndl);
 
+    std::string get_backend_name() const override { return "db2"; }
+    int get_backend_error_code() const override { return errorCode; }
+
+    // This member variable is only public for compatibility, don't use it
+    // directly, call get_backend_error_code() instead.
     SQLRETURN errorCode;
 };
 

@@ -37,6 +37,11 @@ public:
 
     error_category get_error_category() const override;
 
+    std::string get_backend_name() const override { return "mysql"; }
+    int get_backend_error_code() const override { return err_num_; }
+
+    // This member variable is only public for compatibility, don't use it
+    // directly, call get_backend_error_code() instead.
     unsigned int err_num_;
 };
 
