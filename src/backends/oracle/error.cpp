@@ -35,6 +35,11 @@ soci_error::error_category oracle_soci_error::get_error_category() const
         return connection_error;
     }
 
+    if (err_num_ == 1031)
+    {
+        return no_privilege;
+    }
+
     if (err_num_ == 1400)
     {
         return constraint_violation;
