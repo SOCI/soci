@@ -692,8 +692,10 @@ TEST_CASE("PostgreSQL statement prepare failure", "[postgresql][prepare]")
                 << "select * from soci_test where name=9999");
         FAIL("expected exception not thrown");
     }
-    catch(soci_error const& e)
+    catch (postgresql_soci_error const& e)
     {
+        CHECK( e.get_error_category() == soci_error::invalid_statement );
+
         CHECK_THAT( e.what(), Catch::Contains("operator does not exist") );
     }
 }
