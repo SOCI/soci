@@ -13,11 +13,9 @@ include(soci_utils)
 # TARGET_NAME <target>                     Name of the CMake target that shall be created for this backend
 # DEPENDENCIES <spec1> [... <specN>]       List of dependency specifications. Each specification has to be a single
 #                                          argument (single string) following the syntax
-#                                          <find_spec> YIELDS <targets> [DEFINES <macros>]
+#                                          <find_spec> YIELDS <targets>
 #                                          where <find_spec> will be passed to find_package to find the dependency. Upon
-#                                          success, all targets defined in <targets> are expected to exist. If provided,
-#                                          all defines specified in <macros> will be added as public compile definitions
-#                                          to the backend library if the dependency has been found.
+#                                          success, all targets defined in <targets> are expected to exist.
 #                                          For now, all dependencies are expected to be public and required.
 # FIND_PACKAGE_FILES <file1> [... <fileN>] List of files used by find_package to locate one of the dependencies. Specified
 #                                          files will be installed alongside SOCI in order to be usable from the install tree.
@@ -69,12 +67,11 @@ function(soci_define_backend_target)
   set(PUBLIC_DEP_CALL_ARGS "")
 
   foreach(CURRENT_DEP_SPEC IN LISTS DEFINE_BACKEND_DEPENDENCIES)
-    if (NOT "${CURRENT_DEP_SPEC}" MATCHES "^([a-zA-Z0-9_:-;]+) YIELDS ([a-zA-Z0-9_:-;]+)( DEFINES [a-zA-Z0-9_;])?$")
+    if (NOT "${CURRENT_DEP_SPEC}" MATCHES "^([a-zA-Z0-9_:-;]+) YIELDS ([a-zA-Z0-9_:-;]+)$")
       message(FATAL_ERROR "Invalid format for dependency specification in '${CURRENT_DEP_SPEC}'")
     endif()
     set(CURRENT_DEP_SEARCH ${CMAKE_MATCH_1})
     set(CURRENT_DEP_TARGETS ${CMAKE_MATCH_2})
-    set(CURRENT_DEP_DEFINES ${CMAKE_MATCH_3})
 
     list(GET CURRENT_DEP_SEARCH 0 CURRENT_DEP)
 
@@ -107,11 +104,8 @@ function(soci_define_backend_target)
           message(FATAL_ERROR "Expected successful find_package call with '${CURRENT_DEP_SEARCH}' to define target '${CURRENT}'")
         endif()
       endforeach()
-      if (CURRENT_DEP_DEFINES)
-        set(MACRO_NAMES_ARG "MACRO_NAMES ${CURRENT_DEP_DEFINES}")
-      endif()
       list(APPEND PUBLIC_DEP_CALL_ARGS
-        "NAME ${CURRENT_DEP} DEP_TARGETS ${CURRENT_DEP_TARGETS} TARGET SOCI::${DEFINE_BACKEND_ALIAS_NAME} ${MACRO_NAMES_ARG} REQUIRED"
+        "NAME ${CURRENT_DEP} DEP_TARGETS ${CURRENT_DEP_TARGETS} TARGET SOCI::${DEFINE_BACKEND_ALIAS_NAME}"
       )
     endif()
   endforeach()

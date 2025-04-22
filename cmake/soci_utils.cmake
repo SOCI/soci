@@ -56,9 +56,6 @@ set(SOCI_DEPENDENCY_VARIABLES
   "SOCI_DEPENDENCY_SOCI_COMPONENTS"
   "SOCI_DEPENDENCY_NAMES"
   "SOCI_DEPENDENCY_TARGETS"
-  "SOCI_DEPENDENCY_REQUIRED"
-  "SOCI_DEPENDENCY_MACRO_NAMES"
-  "SOCI_DEPENDENCY_COMPONENTS"
 )
 if (NOT DEFINED SOCI_UTILS_ALREADY_INCLUDED)
   foreach(VAR_NAME IN LISTS SOCI_DEPENDENCY_VARIABLES)
@@ -72,22 +69,17 @@ endif()
 # Use as
 #   soci_public_dependency(
 #      NAME <name>
-#      DEP_TARGET <dep target>
+#      DEP_TARGETS <dep target> ...
 #      TARGET <target>
-#      [MACRO_NAMES <macro name> ...]
-#      [REQUIRED]
-#      [COMPONENTS <component> ...]
 #   )
 # where
 # - <name> is the name of the dependency (used for lookup via find_package)
 # - <dep target> is the name of the target that will be imported upon a
 #                successful find_package call
 # - <target> is the name of the ALIAS target to link the found dependency to
-# - <component> are the names of specific components of the dependency
 function(soci_public_dependency)
-  set(FLAGS "REQUIRED")
   set(ONE_VAL_OPTIONS "TARGET" "NAME")
-  set(MULTI_VAL_OPTIONS "COMPONENTS" "MACRO_NAMES" "DEP_TARGETS")
+  set(MULTI_VAL_OPTIONS "DEP_TARGETS")
 
   cmake_parse_arguments(PUBLIC_DEP "${FLAGS}" "${ONE_VAL_OPTIONS}" "${MULTI_VAL_OPTIONS}" ${ARGV})
   soci_verify_parsed_arguments(
@@ -112,20 +104,6 @@ function(soci_public_dependency)
   list(APPEND SOCI_DEPENDENCY_NAMES "${PUBLIC_DEP_NAME}")
   list(JOIN PUBLIC_DEP_DEP_TARGETS "|" STORED_TARGETS)
   list(APPEND SOCI_DEPENDENCY_TARGETS "${STORED_TARGETS}")
-  list(APPEND SOCI_DEPENDENCY_REQUIRED "${PUBLIC_DEP_REQUIRED}")
-  if (PUBLIC_DEP_MACRO_NAMES)
-    list(JOIN PUBLIC_DEP_MACRO_NAMES "|" STORED_MACROS)
-  else()
-    set(STORED_MACROS "")
-  endif()
-  list(APPEND SOCI_DEPENDENCY_MACRO_NAMES "${STORED_MACROS}")
-  if (PUBLIC_DEP_COMPONENTS)
-    list(JOIN PUBLIC_DEP_COMPONENTS "|" STORED_COMPONENTS)
-  else()
-    set(STORED_COMPONENTS "")
-  endif()
-  list(APPEND SOCI_DEPENDENCY_COMPONENTS "${STORED_COMPONENTS}")
-
 
   foreach(VAR_NAME IN LISTS SOCI_DEPENDENCY_VARIABLES)
     set("${VAR_NAME}" "${${VAR_NAME}}" CACHE INTERNAL "")
@@ -133,18 +111,6 @@ function(soci_public_dependency)
 
 
   # Search for the package now
-  if (PUBLIC_DEP_REQUIRED)
-    set(REQUIRED "REQUIRED")
-  else()
-    set(REQUIRED "")
-  endif()
-
-  if (PUBLIC_DEP_COMPONENTS)
-    set(COMPONENTS COMPONENTS ${PUBLIC_DEP_COMPONENTS})
-  else()
-    set(COMPONENTS "")
-  endif()
-
   set(SKIP_SEARCH ON)
   foreach (TGT IN LISTS PUBLIC_DEP_DEP_TARGETS)
     if (NOT TARGET "${TGT}")
@@ -153,7 +119,7 @@ function(soci_public_dependency)
   endforeach()
 
   if (NOT SKIP_SEARCH)
-    find_package("${PUBLIC_DEP_NAME}" ${COMPONENTS} ${REQUIRED})
+    find_package("${PUBLIC_DEP_NAME}" REQUIRED)
   endif()
 
   set(FOUND_ONE OFF)
@@ -168,12 +134,6 @@ function(soci_public_dependency)
     set(FOUND_ONE ON)
 
     target_link_libraries("${UNDERLYING_TARGET}" PUBLIC "$<BUILD_INTERFACE:${TGT}>")
-  endforeach()
-
-  foreach (MACRO_NAME IN LISTS PUBLIC_DEP_MACRO_NAMES)
-    # Note: We don't want these compile definitions to be exported to the install tree
-    # -> We put the logic of when they should be defined into the cmake config files
-    target_compile_definitions("${UNDERLYING_TARGET}" PUBLIC "$<BUILD_INTERFACE:${MACRO_NAME}>")
   endforeach()
 endfunction()
 

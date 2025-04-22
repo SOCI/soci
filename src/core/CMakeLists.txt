@@ -72,29 +72,35 @@ if (SOCI_SHARED)
 endif()
 
 if (WITH_BOOST)
-  if (WITH_BOOST STREQUAL "REQUIRED")
-    set(SOCI_BOOST_REQUIRED REQUIRED)
+  # Try and find Boost with the date_time component.
+  find_package(Boost COMPONENTS date_time QUIET)
+
+  # Note that we shouldn't check Boost_FOUND here as it will be true even if
+  # we found only Boost headers, but not the date_time library.
+  if (TARGET Boost::date_time)
+    set(SOCI_BOOST_DATE_TIME_MESSAGE " (with date_time component)")
+    set(SOCI_DEPENDENCY_BOOST_COMPONENTS "date_time" CACHE INTERNAL "Boost components used by SOCI")
+
+    target_link_libraries(soci_core PUBLIC Boost::date_time)
+    target_compile_definitions(soci_core PUBLIC SOCI_HAVE_BOOST_DATE_TIME)
+  else()
+    # If we couldn't find Boost::date_time, retry searching for Boost headers
+    # only and use only them, if found.
+    if (WITH_BOOST STREQUAL "REQUIRED")
+      find_package(Boost REQUIRED)
+    else()
+      find_package(Boost)
+    endif()
   endif()
 
-  # First try and find Boost with the date_time component. If it succeeds, the second search doesn't have any
-  # effect. If it failed, retry searching only for Boost without the date_time component and use that, if found.
-  soci_public_dependency(
-    NAME Boost
-    DEP_TARGETS Boost::boost Boost::date_time Boost::disable_autolinking
-    COMPONENTS date_time
-    MACRO_NAMES SOCI_HAVE_BOOST SOCI_HAVE_BOOST_DATE_TIME
-    ${SOCI_BOOST_REQUIRED}
-    TARGET SOCI::Core
-  )
+  # Here Boost_FOUND is true either if we had found date_time in the first
+  # find_package() call or just Boost headers in the second one.
+  if (Boost_FOUND)
+    message(STATUS "Found Boost: v${Boost_VERSION_STRING} in ${Boost_INCLUDE_DIRS}${SOCI_BOOST_DATE_TIME_MESSAGE}")
+    set(SOCI_DEPENDENCY_BOOST TRUE CACHE INTERNAL "Whether SOCI depends on Boost")
 
-  # If the search above was required to succeed, we know that it did, so don't bother trying to find Boost again.
-  if (NOT SOCI_BOOST_REQUIRED)
-    soci_public_dependency(
-      NAME Boost
-      DEP_TARGETS Boost::boost Boost::disable_autolinking
-      MACRO_NAMES SOCI_HAVE_BOOST
-      TARGET SOCI::Core
-    )
+    target_link_libraries(soci_core PUBLIC Boost::boost Boost::disable_autolinking)
+    target_compile_definitions(soci_core PUBLIC SOCI_HAVE_BOOST)
   endif()
 endif()
 
