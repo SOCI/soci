@@ -7,9 +7,8 @@ else()
 endif()
 
 soci_define_backend_target(
-  BACKEND_NAME "DB2"
+  NAME "DB2"
   TARGET_NAME "soci_db2"
-  ALIAS_NAME "DB2"
   DEPENDENCIES
     "DB2 YIELDS DB2::DB2"
   SOURCE_FILES
@@ -27,7 +26,6 @@ soci_define_backend_target(
   FIND_PACKAGE_FILES
     "${PROJECT_SOURCE_DIR}/cmake/find_modules/FindDB2.cmake"
   MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
-  ENABLED_VARIABLE "SOCI_DB2"
 )
 
 if (NOT SOCI_DB2)

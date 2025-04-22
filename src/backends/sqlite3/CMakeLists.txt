@@ -9,9 +9,8 @@ else()
 endif()
 
 soci_define_backend_target(
-  BACKEND_NAME "SQLite3"
+  NAME "SQLite3"
   TARGET_NAME "soci_sqlite3"
-  ALIAS_NAME "SQLite3"
   DEPENDENCIES
     "SQLite3 YIELDS SQLite::SQLite3"
   SOURCE_FILES
@@ -28,7 +27,6 @@ soci_define_backend_target(
   HEADER_FILES
     "${PROJECT_SOURCE_DIR}/include/soci/sqlite3/soci-sqlite3.h"
   MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
-  ENABLED_VARIABLE "SOCI_SQLITE3"
 )
 
 if (NOT SOCI_SQLITE3)

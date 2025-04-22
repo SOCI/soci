@@ -7,9 +7,8 @@ else()
 endif()
 
 soci_define_backend_target(
-  BACKEND_NAME "Oracle"
+  NAME "Oracle"
   TARGET_NAME "soci_oracle"
-  ALIAS_NAME "Oracle"
   DEPENDENCIES
     "Oracle YIELDS Oracle::Oracle"
   SOURCE_FILES
@@ -28,7 +27,6 @@ soci_define_backend_target(
   FIND_PACKAGE_FILES
     "${PROJECT_SOURCE_DIR}/cmake/find_modules/FindOracle.cmake"
   MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
-  ENABLED_VARIABLE "SOCI_ORACLE"
 )
 
 if (NOT SOCI_ORACLE)
