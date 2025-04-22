@@ -150,6 +150,45 @@ TEST_CASE_METHOD(common_tests, "Failover", "[keep-alive][.]")
     CHECK( myCallback.did_reconnect() );
 }
 
+// This pseudo-test allows to execute an arbitrary SQL query by defining
+// SOCI_TEST_SQL environment variable and examine the resulting error.
+TEST_CASE_METHOD(common_tests, "Execute", "[.]")
+{
+    auto const text = std::getenv("SOCI_TEST_SQL");
+    if (!text)
+    {
+        FAIL( "SOCI_TEST_SQL environment variable must be set." );
+    }
+
+    soci::session sql(backEndFactory_, connectString_);
+    try
+    {
+        sql << text;
+
+        WARN("Statement executed successfully.");
+    }
+    catch (soci_error const& e)
+    {
+        char const* const categories[] =
+        {
+            "connection_error",
+            "invalid_statement",
+            "no_privilege",
+            "no_data",
+            "constraint_violation",
+            "unknown_transaction_state",
+            "system_error",
+            "unknown"
+        };
+
+        unsigned const cat = e.get_error_category();
+        REQUIRE(cat < sizeof(categories) / sizeof(categories[0]));
+
+        WARN("Statement execution failed: " << e.what() << "\n"
+             "Error category: " << categories[cat]);
+    }
+}
+
 } // namespace tests
 
 } // namespace soci

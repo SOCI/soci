@@ -36,11 +36,10 @@ public:
 
     std::string sqlstate() const;
 
-    error_category get_error_category() const override { return cat_; }
+    error_category get_error_category() const override;
 
 private:
     char sqlstate_[ 5 ];   // not std::string to keep copy-constructor no-throw
-    error_category cat_;
 };
 
 struct postgresql_session_backend;

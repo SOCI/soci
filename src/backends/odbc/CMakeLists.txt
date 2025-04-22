@@ -13,6 +13,7 @@ soci_define_backend_target(
     "ODBC YIELDS ODBC::ODBC"
   SOURCE_FILES
     "blob.cpp"
+    "error.cpp"
     "factory.cpp"
     "row-id.cpp"
     "session.cpp"
