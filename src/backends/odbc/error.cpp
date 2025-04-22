@@ -14,7 +14,7 @@ soci_error::error_category odbc_soci_error::get_error_category() const
 {
     const char* const s = reinterpret_cast<const char*>(sqlstate_);
 
-    if ((s[0] == '0' && s[1] == '8') ||
+    if (strncmp(s, "08", 2) == 0 ||
         strcmp(s, "HYT01") == 0)
         return connection_error;
 
