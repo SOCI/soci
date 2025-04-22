@@ -20,33 +20,39 @@ using namespace soci::details;
 using namespace soci::details::oracle;
 
 oracle_soci_error::oracle_soci_error(std::string const & msg, int errNum)
-    : soci_error(msg), err_num_(errNum), cat_(unknown)
+    : soci_error(msg), err_num_(errNum)
 {
-    if (errNum ==  3113 ||
-        errNum ==  3114 ||
-        errNum == 12162 ||
-        errNum == 12541 ||
-        errNum == 25403)
+}
+
+soci_error::error_category oracle_soci_error::get_error_category() const
+{
+    if (err_num_ ==  3113 ||
+        err_num_ ==  3114 ||
+        err_num_ == 12162 ||
+        err_num_ == 12541 ||
+        err_num_ == 25403)
     {
-        cat_ = connection_error;
+        return connection_error;
     }
-    else if (errNum == 1400)
+    else if (err_num_ == 1400)
     {
-        cat_ = constraint_violation;
+        return constraint_violation;
     }
-    else if (errNum == 1466 ||
-        errNum == 2055 ||
-        errNum == 2067 ||
-        errNum == 2091 ||
-        errNum == 2092 ||
-        errNum == 25401 ||
-        errNum == 25402 ||
-        errNum == 25405 ||
-        errNum == 25408 ||
-        errNum == 25409)
+    else if (err_num_ == 1466 ||
+        err_num_ == 2055 ||
+        err_num_ == 2067 ||
+        err_num_ == 2091 ||
+        err_num_ == 2092 ||
+        err_num_ == 25401 ||
+        err_num_ == 25402 ||
+        err_num_ == 25405 ||
+        err_num_ == 25408 ||
+        err_num_ == 25409)
     {
-        cat_ = unknown_transaction_state;
+        return unknown_transaction_state;
     }
+
+    return unknown;
 }
 
 void soci::details::oracle::get_error_details(sword res, OCIError *errhp,
