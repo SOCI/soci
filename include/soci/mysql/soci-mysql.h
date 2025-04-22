@@ -35,10 +35,9 @@ class SOCI_MYSQL_DECL mysql_soci_error : public soci_error
 public:
     mysql_soci_error(std::string const & msg, int errNum);
 
-    error_category get_error_category() const override { return cat_; }
+    error_category get_error_category() const override;
 
     unsigned int err_num_;
-    error_category cat_;
 };
 
 struct mysql_statement_backend;

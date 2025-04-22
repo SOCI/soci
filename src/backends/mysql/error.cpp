@@ -11,13 +11,20 @@
 using namespace soci;
 
 mysql_soci_error::mysql_soci_error(std::string const & msg, int errNum)
-    : soci_error(msg), err_num_(errNum), cat_(unknown)
+    : soci_error(msg), err_num_(errNum)
 {
-    if(errNum == CR_CONNECTION_ERROR ||
-        errNum == CR_CONN_HOST_ERROR ||
-        errNum == CR_SERVER_GONE_ERROR ||
-        errNum == CR_SERVER_LOST ||
-        errNum == 1927) { // Lost connection to backend server
-        cat_ = connection_error;
+}
+
+soci_error::error_category mysql_soci_error::get_error_category() const
+{
+    if (err_num_ == CR_CONNECTION_ERROR ||
+        err_num_ == CR_CONN_HOST_ERROR ||
+        err_num_ == CR_SERVER_GONE_ERROR ||
+        err_num_ == CR_SERVER_LOST ||
+        err_num_ == 1927) // Lost connection to backend server
+    {
+        return connection_error;
     }
+
+    return unknown;
 }
