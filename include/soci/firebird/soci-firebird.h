@@ -42,8 +42,6 @@ public:
     firebird_soci_error(std::string const & msg,
         ISC_STATUS const * status = 0);
 
-    ~firebird_soci_error() noexcept override {};
-
     std::string get_backend_name() const override { return "firebird"; }
     int get_backend_error_code() const override
     {
