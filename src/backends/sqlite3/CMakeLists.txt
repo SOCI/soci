@@ -8,6 +8,10 @@ else()
   set(DEPENDENCY_MODE "ERROR")
 endif()
 
+# This variable is specific to this backend and allows to either force or
+# disable using the built-in copy of SQLite3.
+set(SOCI_SQLITE3_BUILTIN "" CACHE STRING "Prefer, or forbid, using the built-in SQLite3 library")
+
 soci_define_backend_target(
   NAME "SQLite3"
   TARGET_NAME "soci_sqlite3"
@@ -36,13 +40,25 @@ endif()
 # If SQLite3 was found, this target must have been created.
 if (NOT TARGET SQLite::SQLite3)
   # But if it wasn't, use our built-in version, after checking that it is
-  # available.
-  if (NOT EXISTS "${PROJECT_SOURCE_DIR}/3rdparty/sqlite3/sqlite3.c")
-    message(WARNING "SQLite3 not found and built-in version not available, have you cloned SOCI repository with --recurse-submodules?")
+  # available, and if we're allowed to use it.
+  if (NOT "${SOCI_SQLITE3_BUILTIN}" STREQUAL "OFF")
+    if (NOT EXISTS "${PROJECT_SOURCE_DIR}/3rdparty/sqlite3/sqlite3.c")
+      message(WARNING "SQLite3 not found and built-in version not available, have you cloned SOCI repository with --recurse-submodules?")
+    else()
+      set(SOCI_SQLITE3_USE_BUILTIN ON)
+    endif()
+  endif()
 
+  if (NOT SOCI_SQLITE3_USE_BUILTIN)
     get_property(DESCRIPTION CACHE SOCI_SQLITE3 PROPERTY HELPSTRING)
     set(SOCI_SQLITE3 OFF CACHE STRING "${DESCRIPTION}" FORCE)
     return()
+  endif()
+
+  if ("${SOCI_SQLITE3_BUILTIN}" STREQUAL "ON")
+    message(STATUS "Using built-in version of SQLite3")
+  else()
+    message(STATUS "Falling back on built-in version of SQLite3")
   endif()
 
   add_library(soci_sqlite3_builtin)
