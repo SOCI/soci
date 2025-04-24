@@ -64,18 +64,12 @@ if (NOT TARGET SQLite::SQLite3)
     message(STATUS "Falling back on built-in version of SQLite3")
   endif()
 
-  add_library(soci_sqlite3_builtin)
-  target_sources(soci_sqlite3_builtin
+  target_sources(soci_sqlite3
     PRIVATE
       ${SQLITE3_SOURCE_FILE}
   )
-  target_include_directories(soci_sqlite3_builtin
-    PUBLIC
-      "${SQLITE3_DIRECTORY}
-  )
-
-  target_link_libraries(soci_sqlite3
+  target_include_directories(soci_sqlite3
     PRIVATE
-      soci_sqlite3_builtin
+      ${SQLITE3_DIRECTORY}
   )
 endif()
