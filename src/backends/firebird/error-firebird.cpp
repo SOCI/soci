@@ -21,7 +21,7 @@ firebird_soci_error::firebird_soci_error(std::string const & msg, ISC_STATUS con
     if (status != 0)
     {
         std::size_t i = 0;
-        while (i < stat_size && status[i] != 0)
+        while (i < ISC_STATUS_LENGTH && status[i] != 0)
         {
             status_.push_back(status[i++]);
         }

@@ -40,7 +40,7 @@ void firebird_statement_backend::prepareSQLDA(XSQLDA ** sqldap, short size)
 
 void firebird_statement_backend::alloc()
 {
-    ISC_STATUS stat[stat_size];
+    ISC_STATUS stat[ISC_STATUS_LENGTH];
 
     if (isc_dsql_allocate_statement(stat, &session_.dbhp_, &stmtp_))
     {
@@ -52,7 +52,7 @@ void firebird_statement_backend::clean_up()
 {
     rowsAffectedBulk_ = -1LL;
 
-    ISC_STATUS stat[stat_size];
+    ISC_STATUS stat[ISC_STATUS_LENGTH];
 
     if (stmtp_ != 0)
     {
@@ -155,7 +155,7 @@ namespace
         char type_item[] = {isc_info_sql_stmt_type};
         char res_buffer[8];
 
-        ISC_STATUS stat[stat_size];
+        ISC_STATUS stat[ISC_STATUS_LENGTH];
 
         if (isc_dsql_sql_info(stat, &stmt, sizeof(type_item),
             type_item, sizeof(res_buffer), res_buffer))
@@ -217,7 +217,7 @@ void firebird_statement_backend::rewriteQuery(
         prepareSQLDA(&sqldap_);
     }
 
-    ISC_STATUS stat[stat_size];
+    ISC_STATUS stat[ISC_STATUS_LENGTH];
     isc_stmt_handle tmpStmtp = 0;
 
     // allocate temporary statement to determine its type
@@ -300,7 +300,7 @@ void firebird_statement_backend::prepare(std::string const & query,
     // firebird's api
     rewriteQuery(query, queryBuffer);
 
-    ISC_STATUS stat[stat_size];
+    ISC_STATUS stat[ISC_STATUS_LENGTH];
 
     // prepare real statement
     if (isc_dsql_prepare(stat, session_.current_transaction(), &stmtp_, 0,
@@ -374,7 +374,7 @@ namespace
 statement_backend::exec_fetch_result
 firebird_statement_backend::execute(int number)
 {
-    ISC_STATUS stat[stat_size];
+    ISC_STATUS stat[ISC_STATUS_LENGTH];
     XSQLDA *t = NULL;
 
     std::size_t usize = uses_.size();
@@ -481,7 +481,7 @@ firebird_statement_backend::fetch(int number)
     if (endOfRowSet_)
         return ef_no_data;
 
-    ISC_STATUS stat[stat_size];
+    ISC_STATUS stat[ISC_STATUS_LENGTH];
 
     for (size_t i = 0; i<static_cast<unsigned int>(sqldap_->sqld); ++i)
     {

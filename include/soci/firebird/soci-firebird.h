@@ -30,8 +30,6 @@
 namespace soci
 {
 
-std::size_t const stat_size = 20;
-
 // size of buffer for error messages. All examples use this value.
 // Anyone knows, where it is stated that 512 bytes is enough ?
 std::size_t const SOCI_FIREBIRD_ERRMSG = 512;
