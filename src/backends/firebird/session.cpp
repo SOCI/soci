@@ -42,7 +42,7 @@ firebird_session_backend::firebird_session_backend(
     auto params = parameters;
     params.extract_options_from_space_separated_string();
 
-    ISC_STATUS stat[stat_size];
+    ISC_STATUS stat[ISC_STATUS_LENGTH];
     std::string param;
 
     // preparing connection options
@@ -91,7 +91,7 @@ void firebird_session_backend::begin()
 {
     if (trhp_ == 0)
     {
-        ISC_STATUS stat[stat_size];
+        ISC_STATUS stat[ISC_STATUS_LENGTH];
         if (isc_start_transaction(stat, &trhp_, 1, &dbhp_, 0, NULL))
         {
             throw_iscerror(stat);
@@ -106,7 +106,7 @@ firebird_session_backend::~firebird_session_backend()
 
 bool firebird_session_backend::is_connected()
 {
-    ISC_STATUS stat[stat_size];
+    ISC_STATUS stat[ISC_STATUS_LENGTH];
     ISC_SCHAR req[] = { isc_info_ods_version, isc_info_end };
     ISC_SCHAR res[256];
 
@@ -115,7 +115,7 @@ bool firebird_session_backend::is_connected()
 
 void firebird_session_backend::commit()
 {
-    ISC_STATUS stat[stat_size];
+    ISC_STATUS stat[ISC_STATUS_LENGTH];
 
     if (trhp_ != 0)
     {
@@ -130,7 +130,7 @@ void firebird_session_backend::commit()
 
 void firebird_session_backend::rollback()
 {
-    ISC_STATUS stat[stat_size];
+    ISC_STATUS stat[ISC_STATUS_LENGTH];
 
     if (trhp_ != 0)
     {
@@ -153,7 +153,7 @@ isc_tr_handle* firebird_session_backend::current_transaction()
 
 void firebird_session_backend::cleanUp()
 {
-    ISC_STATUS stat[stat_size];
+    ISC_STATUS stat[ISC_STATUS_LENGTH];
 
     // at the end of session our transaction is finally commited.
     if (trhp_ != 0)
