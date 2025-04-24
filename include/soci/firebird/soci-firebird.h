@@ -30,10 +30,6 @@
 namespace soci
 {
 
-// size of buffer for error messages. All examples use this value.
-// Anyone knows, where it is stated that 512 bytes is enough ?
-std::size_t const SOCI_FIREBIRD_ERRMSG = 512;
-
 class SOCI_FIREBIRD_DECL firebird_soci_error : public soci_error
 {
 public:
