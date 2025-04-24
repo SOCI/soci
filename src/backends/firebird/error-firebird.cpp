@@ -21,11 +21,44 @@ firebird_soci_error::firebird_soci_error(std::string const & msg, ISC_STATUS con
     if (status != 0)
     {
         std::size_t i = 0;
-        while (i < ISC_STATUS_LENGTH && status[i] != 0)
+        while (i < ISC_STATUS_LENGTH && status[i] != isc_arg_end)
         {
             status_.push_back(status[i++]);
         }
     }
+}
+
+int firebird_soci_error::get_backend_error_code() const
+{
+    // Search for the InterBase error code in the status vector, which consists
+    // of clusters of 2 (mostly) or 3 (exceptionally, see below) elements.
+    for (std::size_t i = 0; i < status_.size(); i += 2)
+    {
+        switch (status_[i])
+        {
+            case isc_arg_end:
+                // This is never supposed to happen due to the way status_ is
+                // filled in the ctor above.
+                return 0;
+
+            case isc_arg_gds:
+                // Cluster starting with this value contains the error code
+                // we're looking for in the next element.
+                if (i + 1 < status_.size())
+                {
+                    return static_cast<int>(status_[i + 1]);
+                }
+                break;
+
+            case isc_arg_cstring:
+                // This is the only cluster consisting of 3 elements, so skip
+                // an extra one.
+                ++i;
+                break;
+        }
+    }
+
+    return 0;
 }
 
 namespace details

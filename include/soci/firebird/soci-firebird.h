@@ -37,12 +37,7 @@ public:
         ISC_STATUS const * status = 0);
 
     std::string get_backend_name() const override { return "firebird"; }
-    int get_backend_error_code() const override
-    {
-        // We can't return the full vector using this generic interface, so
-        // return just the first status.
-        return status_.empty() ? 0 : status_[0];
-    }
+    int get_backend_error_code() const override;
 
     std::vector<ISC_STATUS> status_;
 };
