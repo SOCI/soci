@@ -36,9 +36,8 @@ namespace firebird
 
 void get_iscerror_details(ISC_STATUS * status_vector, std::string &msg)
 {
-    // size of buffer for error messages. All examples use this value.
-    // Anyone knows, where it is stated that 512 bytes is enough ?
-    constexpr std::size_t const SOCI_FIREBIRD_ERRMSG = 512;
+    // Size of buffer for error messages: 4K should be enough for everybody.
+    constexpr std::size_t const SOCI_FIREBIRD_ERRMSG = 4096;
 
     char msg_buffer[SOCI_FIREBIRD_ERRMSG];
     const ISC_STATUS *pvector = status_vector;
