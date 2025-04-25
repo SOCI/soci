@@ -2,8 +2,7 @@
 
 The SOCI user code can be easily integrated with the [Boost library](https://www.boost.org/) thanks to the very flexible type conversion facility.
 
-The integration with Boost types is optional and is *not* enabled by default, which means that SOCI can also be compiled and used without any dependency on Boost.
-
+The integration with Boost types is optional and will be enabled only if Boost headers and libraries are found, which means that SOCI can also be compiled and used without any dependency on Boost. Use `WITH_BOOST` CMake option to control this.
 In order to enable the support for any of the above types, the user needs to either include one of these headers:
 
 ```cpp

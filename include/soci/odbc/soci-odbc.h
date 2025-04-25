@@ -393,31 +393,13 @@ class SOCI_ODBC_DECL odbc_soci_error : public soci_error
     SQLINTEGER sqlcode_;
 
 public:
-    odbc_soci_error(SQLSMALLINT htype,
-                  SQLHANDLE hndl,
-                  std::string const & msg)
-        : soci_error(interpret_odbc_error(htype, hndl, msg))
-    {
-    }
+    odbc_soci_error(SQLSMALLINT htype, SQLHANDLE hndl, std::string const & msg);
 
-    error_category get_error_category() const override
-    {
-        const char* const s = reinterpret_cast<const char*>(sqlstate_);
+    error_category get_error_category() const override;
 
-        if ((s[0] == '0' && s[1] == '8') ||
-            strcmp(s, "HYT01") == 0)
-            return connection_error;
-
-        if (strcmp(s, "23000") == 0 ||
-            strcmp(s, "40002") == 0 ||
-            strcmp(s, "44000") == 0)
-            return constraint_violation;
-
-        if (strcmp(s, "HY014") == 0)
-            return system_error;
-
-        return unknown;
-    }
+    std::string get_backend_name() const override { return "odbc"; }
+    int get_backend_error_code() const override { return sqlcode_; }
+    std::string get_sqlstate() const override { return (char const*)sqlstate_; }
 
     SQLCHAR const * odbc_error_code() const
     {
@@ -431,57 +413,13 @@ public:
     {
         return message_;
     }
+
 private:
-    std::string interpret_odbc_error(SQLSMALLINT htype, SQLHANDLE hndl, std::string const& msg)
-    {
-        const char* socierror = NULL;
-
-        SQLSMALLINT length, i = 1;
-        switch ( SQLGetDiagRecA(htype, hndl, i, sqlstate_, &sqlcode_,
-                               message_, SQL_MAX_MESSAGE_LENGTH + 1,
-                               &length) )
-        {
-          case SQL_SUCCESS:
-            // The error message was successfully retrieved.
-            break;
-
-          case SQL_INVALID_HANDLE:
-            socierror = "[SOCI]: Invalid handle.";
-            break;
-
-          case SQL_ERROR:
-            socierror = "[SOCI]: SQLGetDiagRec() error.";
-            break;
-
-          case SQL_SUCCESS_WITH_INFO:
-            socierror = "[SOCI]: Error message too long.";
-            break;
-
-          case SQL_NO_DATA:
-            socierror = "[SOCI]: No error.";
-            break;
-
-          default:
-            socierror = "[SOCI]: Unexpected SQLGetDiagRec() return value.";
-            break;
-        }
-
-        if (socierror)
-        {
-            // Use our own error message if we failed to retrieve the ODBC one.
-            strcpy(reinterpret_cast<char*>(message_), socierror);
-
-            // Use "General warning" SQLSTATE code.
-            strcpy(reinterpret_cast<char*>(sqlstate_), "01000");
-
-            sqlcode_ = 0;
-        }
-
-        std::ostringstream ss;
-        ss << "Error " << msg << ": " << message_ << " (SQL state " << sqlstate_ << ")";
-
-        return ss.str();
-    }
+    // Initialize the member variables and return the full error message
+    // corresponding to the last error on the given ODBC object (connection or
+    // statement handle depending on htype value).
+    std::string
+    interpret_odbc_error(SQLSMALLINT htype, SQLHANDLE hndl, std::string const& msg);
 };
 
 inline bool is_odbc_error(SQLRETURN rc)

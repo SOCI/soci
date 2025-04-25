@@ -47,12 +47,64 @@ set_target_properties(
 # directory for the target wrapped in a BUILD_INTERFACE generator expression.
 # Note that we only add the general, public SOCI headers here. Backend-specific
 # headers are added by the respective backend target.
-file(GLOB SOCI_HEADER_FILES LIST_DIRECTORIES false CONFIGURE_DEPENDS "${PROJECT_SOURCE_DIR}/include/soci/*.h*")
 target_sources(soci_core
   PUBLIC
     FILE_SET headers TYPE HEADERS
     BASE_DIRS "${PROJECT_SOURCE_DIR}/include/"
-    FILES "${SOCI_HEADER_FILES}"
+    FILES
+      "${PROJECT_SOURCE_DIR}/include/soci/backend-loader.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/bind-values.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/blob-exchange.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/blob.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/boost-fusion.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/boost-gregorian-date.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/boost-optional.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/boost-tuple.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/callbacks.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/column-info.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/connection-parameters.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/connection-pool.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/error.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/exchange-traits.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/fixed-size-ints.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/into-type.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/into.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/is-detected.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/log-context.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/logger.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/noreturn.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/once-temp-type.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/prepare-temp-type.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/procedure.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/query_transformation.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/ref-counted-prepare-info.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/ref-counted-statement.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/row-exchange.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/row.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/rowid-exchange.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/rowid.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/rowset.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/session.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/soci-backend.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/soci-platform.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/soci-simple.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/soci-types.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/soci-unicode.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/soci.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/statement.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/std-optional.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/transaction.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/trivial-blob-backend.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/type-conversion-traits.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/type-conversion.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/type-holder.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/type-ptr.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/type-wrappers.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/use-type.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/use.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/values-exchange.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/values.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/version.h"
 )
 
 target_include_directories(soci_core
@@ -71,21 +123,38 @@ if (SOCI_SHARED)
   )
 endif()
 
-# First try and find Boost with the date_time component. If it succeeds, the second search doesn't have any
-# effect. If it failed, retry searching only for Boost without the date_time component and use that, if found.
-soci_public_dependency(
-  NAME Boost
-  DEP_TARGETS Boost::boost Boost::date_time Boost::disable_autolinking
-  COMPONENTS date_time
-  MACRO_NAMES SOCI_HAVE_BOOST SOCI_HAVE_BOOST_DATE_TIME
-  TARGET SOCI::Core
-)
-soci_public_dependency(
-  NAME Boost
-  DEP_TARGETS Boost::boost Boost::disable_autolinking
-  MACRO_NAMES SOCI_HAVE_BOOST
-  TARGET SOCI::Core
-)
+if (WITH_BOOST)
+  # Try and find Boost with the date_time component.
+  find_package(Boost COMPONENTS date_time QUIET)
+
+  # Note that we shouldn't check Boost_FOUND here as it will be true even if
+  # we found only Boost headers, but not the date_time library.
+  if (TARGET Boost::date_time)
+    set(SOCI_BOOST_DATE_TIME_MESSAGE " (with date_time component)")
+    set(SOCI_DEPENDENCY_BOOST_COMPONENTS "date_time" CACHE INTERNAL "Boost components used by SOCI")
+
+    target_link_libraries(soci_core PUBLIC Boost::date_time)
+    target_compile_definitions(soci_core PUBLIC SOCI_HAVE_BOOST_DATE_TIME)
+  else()
+    # If we couldn't find Boost::date_time, retry searching for Boost headers
+    # only and use only them, if found.
+    if (WITH_BOOST STREQUAL "REQUIRED")
+      find_package(Boost REQUIRED)
+    else()
+      find_package(Boost)
+    endif()
+  endif()
+
+  # Here Boost_FOUND is true either if we had found date_time in the first
+  # find_package() call or just Boost headers in the second one.
+  if (Boost_FOUND)
+    message(STATUS "Found Boost: v${Boost_VERSION_STRING} in ${Boost_INCLUDE_DIRS}${SOCI_BOOST_DATE_TIME_MESSAGE}")
+    set(SOCI_DEPENDENCY_BOOST TRUE CACHE INTERNAL "Whether SOCI depends on Boost")
+
+    target_link_libraries(soci_core PUBLIC Boost::boost Boost::disable_autolinking)
+    target_compile_definitions(soci_core PUBLIC SOCI_HAVE_BOOST)
+  endif()
+endif()
 
 target_link_libraries(soci_core
   PUBLIC

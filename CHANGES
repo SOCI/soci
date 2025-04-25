@@ -3,8 +3,8 @@ This file contains the history of changes in the SOCI library.
 Please read at least the following section when upgrading from
 a previous version of the library.
 
-INCOMPATIBLE CHANGES IN SOCI 4.1.0
-==================================
+INCOMPATIBLE CHANGES IN SOCI 4.1
+================================
 
 - SOCI 4.1 requires a compiler with C++14 support (MSVS 2015 included).
 
@@ -14,7 +14,7 @@ INCOMPATIBLE CHANGES IN SOCI 4.1.0
   create a temporary variable holding the value if necessary (#1070).
 
 
-Other changes in v4.1.0:
+Other changes in v4.1.1:
 
  - Support for integer types has been completely revamped and the new db_type
    with db_xxx constants should be used instead of the old data_type enum and
@@ -23,6 +23,8 @@ Other changes in v4.1.0:
 
 Changes affecting all or multiple backends:
  - Make rowset more convenient and safer (#198, #1057, #1081, #1082, #1086).
+ - Improve retrieving backend-specific error information and get_error_category
+   (#1235, #1236, #1237, #1238, #1239, #1241, #1242).
  - Fix problems with dynamic cast and libc++ (#913, #975).
  - Improve BLOB support consistency across backends (#992).
  - Dynamic backends loading improvements (#1169).
@@ -43,6 +45,8 @@ Backend-specific changes:
 - SQLite3
  - Add "nocreate" option to avoid creating a new database file (#1021).
  - Improve column names to SOCI database types mapping (#1120).
+ - Allow retrieving extended SQLite error code from sqlite3_soci_error.
+ - Include SQLite3 sources in SOCI to make it always available (#1229, #1243).
 
 - ODBC
  - Add support for using wide strings (#1179).

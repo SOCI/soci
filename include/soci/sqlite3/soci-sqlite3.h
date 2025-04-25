@@ -31,18 +31,26 @@
 namespace sqlite_api
 {
 
-#if SQLITE_VERSION_NUMBER < 3003010
-// The sqlite3_destructor_type typedef introduced in 3.3.10
-// https://www.sqlite.org/cvstrac/tktview?tn=2191
-typedef void (*sqlite3_destructor_type)(void*);
-#endif
+// Don't include sqlite3.h from outside SOCI: this header might not be
+// available when using built-in SQLite3 as we don't install it in this case.
+#ifdef SOCI_SQLITE3_SOURCE
+    #include <sqlite3.h>
+#else // !SOCI_SQLITE3_SOURCE
+// We need just a couple of forward declarations to make this header itself
+// compile.
+struct sqlite3;
+struct sqlite3_stmt;
 
-#include <sqlite3.h>
+#if defined(_MSC_VER)
+  typedef __int64 sqlite3_int64;
+  typedef unsigned __int64 sqlite3_uint64;
+#else
+  typedef long long int sqlite3_int64;
+  typedef unsigned long long int sqlite3_uint64;
+#endif
+#endif // SOCI_SQLITE3_SOURCE/!SOCI_SQLITE3_SOURCE
 
 } // namespace sqlite_api
-
-#undef SQLITE_STATIC
-#define SQLITE_STATIC ((sqlite_api::sqlite3_destructor_type)0)
 
 #ifdef _MSC_VER
 #pragma warning(pop)
@@ -54,12 +62,34 @@ namespace soci
 class SOCI_SQLITE3_DECL sqlite3_soci_error : public soci_error
 {
 public:
-    sqlite3_soci_error(std::string const & msg, int result);
+    // Create an error object corresponding to the last SQLite error on this
+    // connection.
+    //
+    // If prefix is not empty, it is prepended to the SQLite error message.
+    //
+    // If the error message is non-null, it is used, otherwise sqlite3_errmsg()
+    // is called to get it.
+    sqlite3_soci_error(sqlite_api::sqlite3* conn,
+      std::string const& prefix,
+      char const* errmsg = nullptr);
 
+    // Broad category of the error, SQLite-specific functions below can be used
+    // for more precise classification.
+    error_category get_error_category() const override;
+
+    // This is the primary SQLite error code.
     int result() const;
 
+    // Return the extended SQLite error code, providing more details.
+    int extended_result() const;
+
+    // Implement generic functions from the base class.
+    std::string get_backend_name() const override { return "sqlite3"; }
+    int get_backend_error_code() const override { return extended_result(); }
+
 private:
-    int result_;
+    // We store the extended result only, primary result is obtained from it.
+    int extended_result_;
 };
 
 struct sqlite3_statement_backend;
@@ -361,6 +391,10 @@ struct SOCI_SQLITE3_DECL sqlite3_session_backend : details::session_backend
                 throw soci_error("this db_type is not supported in create_column");
         }
     }
+
+    // Get information about SQLite3 version used.
+    static const char* libversion();
+    static int libversion_number();
 
     sqlite_api::sqlite3 *conn_;
 

@@ -7,9 +7,8 @@ else()
 endif()
 
 soci_define_backend_target(
-  BACKEND_NAME "Empty"
+  NAME "Empty"
   TARGET_NAME "soci_empty"
-  ALIAS_NAME "Empty"
   SOURCE_FILES
     "blob.cpp"
     "factory.cpp"
@@ -23,7 +22,6 @@ soci_define_backend_target(
   HEADER_FILES
     "${PROJECT_SOURCE_DIR}/include/soci/empty/soci-empty.h"
   MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
-  ENABLED_VARIABLE "SOCI_EMPTY"
 )
 
 if (NOT SOCI_EMPTY)

@@ -34,10 +34,14 @@ class SOCI_ORACLE_DECL oracle_soci_error : public soci_error
 public:
     oracle_soci_error(std::string const & msg, int errNum = 0);
 
-    error_category get_error_category() const override { return cat_; }
+    error_category get_error_category() const override;
 
+    std::string get_backend_name() const override { return "oracle"; }
+    int get_backend_error_code() const override { return err_num_; }
+
+    // This member variable is only public for compatibility, don't use it
+    // directly, call get_backend_error_code() instead.
     int err_num_;
-    error_category cat_;
 };
 
 

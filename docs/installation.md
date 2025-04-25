@@ -27,7 +27,7 @@ where X.Y.Z is the version number. Unpack the archive.
 You can always clone SOCI from the Git repository:
 
 ```console
-git clone git://github.com/SOCI/soci.git
+git clone --recurse-submodules git://github.com/SOCI/soci.git
 ```
 
 ## Building with CMake
@@ -78,6 +78,7 @@ List of variables to control common SOCI features and dependencies:
 
 * `SOCI_SHARED` - boolean - Request to build shared libraries for SOCI. Default is `ON`.
 * `SOCI_TESTS` - boolean - Request to build unit tests for SOCI. Default is `ON`, if you build SOCI standalone. Otherwise, it defaults to `OFF`.
+* `WITH_BOOST` - string - Should CMake try to detect [Boost C++ Libraries](https://www.boost.org/). If `ON` (default), CMake will try to find Boost headers and binaries of [`Boost.Date_Time`](https://www.boost.org/doc/libs/release/doc/html/date_time.html) library and provide special support for Boost types if they are found. If `OFF`, no attempt to find Boost will be made. Finally, if this option has the value of `REQUIRED`, the behaviour is the same as with `ON` but an error is given if `Boost.Date_Time` is not found.
 
 Some other build options:
 
@@ -90,6 +91,8 @@ When it comes to enabling specific backends, SOCI supports three distinct option
 * `AUTO`: Try to locate the backend's dependencies. If all dependencies are met, enable the backend, otherwise disable it and continue without it.
 * `OFF`: Disable the backend.
 * `ON`: Enables the backend. If one or more of its dependencies are unmet, error and abort configuration.
+
+SQLite backend is special, as it may use the built-in SQLite library if the system version is not found, see its documentation below for more details.
 
 #### Empty (sample backend)
 
@@ -145,7 +148,7 @@ Furthermore, the `MYSQL_DIR` _environment variable_ can be set to the MySQL inst
 
 #### SQLite 3
 
-* `SOCI_SQLITE3` - Enabler - Enables the [SQLite3](backends/sqlite3.md) backend.
+* `SOCI_SQLITE3` - Enabler - Enables the [SQLite3](backends/sqlite3.md) backend. Note that, unlike with all the other backends, if SQLite3 library is not found, built-in version of SQLite3 is used instead of the backend being disabled. `SOCI_SQLITE3_BUILTIN` can be set to `OFF` to prevent this from happening, i.e. force using system version only, or, on the contrary, set to `ON` to always use the built-in version, even if SQLite3 library is available on the system.
 * `SOCI_SQLITE3_TEST_CONNSTR` - string - Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check [SQLite3 backend reference](backends/sqlite3.md) for details. Example: `-DSOCI_SQLITE3_TEST_CONNSTR="my.db"` or `-DSOCI_SQLITE3_TEST_CONNSTR=":memory:"`.
 * `SOCI_SQLITE3_SKIP_TESTS` - boolean - Skips testing this backend.
 

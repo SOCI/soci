@@ -13,6 +13,7 @@
 #include "soci-cstrtoi.h"
 
 #include <functional>
+#include <memory>
 #include <sstream>
 #include <string>
 
@@ -27,7 +28,7 @@ using namespace sqlite_api;
 namespace // anonymous
 {
 
-// Callback function use to construct the error message in the provided stream.
+// Callback function used to construct the error message in the provided stream.
 //
 // SQLite3 own error message will be appended to it.
 using error_callback = std::function<void (std::ostream& ostr)>;
@@ -41,13 +42,14 @@ void execute_hardcoded(sqlite_api::sqlite3* conn, char const* const query,
 {
     char *zErrMsg = 0;
     int const res = sqlite3_exec(conn, query, callback, callback_arg, &zErrMsg);
+
+    std::unique_ptr<char, void(*)(void*)> zErrMsgPtr(zErrMsg, sqlite3_free);
     if (res != SQLITE_OK)
     {
         std::ostringstream ss;
         errCallback(ss);
-        ss << ": " << zErrMsg;
-        sqlite3_free(zErrMsg);
-        throw sqlite3_soci_error(ss.str(), res);
+
+        throw sqlite3_soci_error(conn, ss.str(), zErrMsg);
     }
 }
 
@@ -67,12 +69,12 @@ void check_sqlite_err(sqlite_api::sqlite3* conn, int res,
 {
     if (SQLITE_OK != res)
     {
-        const char *zErrMsg = sqlite3_errmsg(conn);
         std::ostringstream ss;
         errCallback(ss);
-        ss << ": " << zErrMsg;
+
+        sqlite3_soci_error const error(conn, ss.str());
         sqlite3_close(conn); // connection must be closed here
-        throw sqlite3_soci_error(ss.str(), res);
+        throw error;
     }
 }
 
@@ -159,7 +161,7 @@ sqlite3_session_backend::sqlite3_session_backend(
 
     if (dbname.empty())
     {
-        throw sqlite3_soci_error("Database name must be specified", 0);
+        throw soci_error("Database name must be specified");
     }
 
     int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, (vfs.empty()?NULL:vfs.c_str()));
@@ -246,7 +248,7 @@ static std::string sanitize_table_name(std::string const& table)
     for (std::string::size_type pos = 0; pos < table.size(); ++pos)
     {
         if (isspace(table[pos]))
-            throw sqlite3_soci_error("Table name must not contain whitespace", 0);
+            throw soci_error("Table name must not contain whitespace");
         const char c = table[pos];
         ret += c;
         if (c == '\'')
@@ -312,4 +314,16 @@ sqlite3_rowid_backend * sqlite3_session_backend::make_rowid_backend()
 sqlite3_blob_backend * sqlite3_session_backend::make_blob_backend()
 {
     return new sqlite3_blob_backend(*this);
+}
+
+// static
+const char* sqlite3_session_backend::libversion()
+{
+    return sqlite3_libversion();
+}
+
+// static
+int sqlite3_session_backend::libversion_number()
+{
+    return sqlite3_libversion_number();
 }

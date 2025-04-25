@@ -19,40 +19,45 @@ using namespace soci::details;
 
 postgresql_soci_error::postgresql_soci_error(
     std::string const & msg, char const *sqlst)
-    : soci_error(msg), cat_(unknown)
+    : soci_error(msg)
 {
     std::memcpy(sqlstate_, sqlst, 5);
-
-    if (std::memcmp(sqlst, "08", 2) == 0)
-    {
-        cat_ = connection_error;
-    }
-    else if (std::memcmp(sqlst, "42501", 5) == 0)
-    {
-        cat_ = no_privilege;
-    }
-    else if (std::memcmp(sqlst, "42", 2) == 0)
-    {
-        cat_ = invalid_statement;
-    }
-    else if (std::memcmp(sqlst, "02", 2) == 0)
-    {
-        cat_ = no_data;
-    }
-    else if (std::memcmp(sqlst, "23", 2) == 0)
-    {
-        cat_ = constraint_violation;
-    }
-    else if ((std::memcmp(sqlst, "53", 2) == 0) ||
-        (std::memcmp(sqlst, "54", 2) == 0) ||
-        (std::memcmp(sqlst, "58", 2) == 0) ||
-        (std::memcmp(sqlst, "XX", 2) == 0))
-    {
-        cat_ = system_error;
-    }
 }
 
-std::string postgresql_soci_error::sqlstate() const
+soci_error::error_category postgresql_soci_error::get_error_category() const
+{
+    if (std::memcmp(sqlstate_, "08", 2) == 0)
+    {
+        return connection_error;
+    }
+    else if (std::memcmp(sqlstate_, "42501", 5) == 0)
+    {
+        return no_privilege;
+    }
+    else if (std::memcmp(sqlstate_, "42", 2) == 0)
+    {
+        return invalid_statement;
+    }
+    else if (std::memcmp(sqlstate_, "02", 2) == 0)
+    {
+        return no_data;
+    }
+    else if (std::memcmp(sqlstate_, "23", 2) == 0)
+    {
+        return constraint_violation;
+    }
+    else if ((std::memcmp(sqlstate_, "53", 2) == 0) ||
+        (std::memcmp(sqlstate_, "54", 2) == 0) ||
+        (std::memcmp(sqlstate_, "58", 2) == 0) ||
+        (std::memcmp(sqlstate_, "XX", 2) == 0))
+    {
+        return system_error;
+    }
+
+    return unknown;
+}
+
+std::string postgresql_soci_error::get_sqlstate() const
 {
     return std::string(sqlstate_, 5);
 }

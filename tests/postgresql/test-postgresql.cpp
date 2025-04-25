@@ -431,9 +431,7 @@ TEST_CASE("PostgreSQL literals", "[postgresql][into]")
     }
     catch (soci_error const & e)
     {
-        char const * expectedPrefix = "Cannot convert data";
-        CAPTURE(e.what());
-        CHECK(strncmp(e.what(), expectedPrefix, strlen(expectedPrefix)) == 0);
+        CHECK_THAT( e.what(), Catch::StartsWith("Cannot convert data") );
     }
 }
 
@@ -694,14 +692,11 @@ TEST_CASE("PostgreSQL statement prepare failure", "[postgresql][prepare]")
                 << "select * from soci_test where name=9999");
         FAIL("expected exception not thrown");
     }
-    catch(soci_error const& e)
+    catch (postgresql_soci_error const& e)
     {
-        std::string const msg(e.what());
-        CAPTURE(msg);
+        CHECK( e.get_error_category() == soci_error::invalid_statement );
 
-        // poor-man heuristics
-        CHECK(msg.find("prepared statement") == std::string::npos);
-        CHECK(msg.find("operator does not exist") != std::string::npos);
+        CHECK_THAT( e.what(), Catch::Contains("operator does not exist") );
     }
 }
 

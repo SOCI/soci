@@ -33,21 +33,16 @@ namespace soci
 class SOCI_MYSQL_DECL mysql_soci_error : public soci_error
 {
 public:
-    mysql_soci_error(std::string const & msg, int errNum)
-        : soci_error(msg), err_num_(errNum), cat_(unknown) {
-            if(errNum == CR_CONNECTION_ERROR ||
-               errNum == CR_CONN_HOST_ERROR ||
-               errNum == CR_SERVER_GONE_ERROR ||
-               errNum == CR_SERVER_LOST ||
-               errNum == 1927) { // Lost connection to backend server
-                cat_ = connection_error;
-            }
-        }
+    mysql_soci_error(std::string const & msg, int errNum);
 
-    error_category get_error_category() const override { return cat_; }
+    error_category get_error_category() const override;
 
+    std::string get_backend_name() const override { return "mysql"; }
+    int get_backend_error_code() const override { return err_num_; }
+
+    // This member variable is only public for compatibility, don't use it
+    // directly, call get_backend_error_code() instead.
     unsigned int err_num_;
-    error_category cat_;
 };
 
 struct mysql_statement_backend;

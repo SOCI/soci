@@ -47,7 +47,7 @@ SOCI offers also extensive [integration with Boost](boost.md) datatypes (optiona
 SOCI uses the plug-in architecture for backends, allowing it to target various
 database servers.
 
-Currently (SOCI 4.1.0), backends for following database systems are supported:
+Currently (SOCI 4.1.1), backends for following database systems are supported:
 
 * [DB2](backends/db2.md)
 * [Firebird](backends/firebird.md)
