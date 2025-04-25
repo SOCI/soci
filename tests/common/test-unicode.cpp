@@ -17,9 +17,9 @@ TEST_CASE("UTF-8 validation tests", "[unicode]")
     // Valid UTF-8 strings - Should not throw exceptions
     CHECK_NOTHROW(ensure_valid_utf8("Hello, world!"));      // valid ASCII
     CHECK_NOTHROW(ensure_valid_utf8(""));                   // Empty string
-    CHECK_NOTHROW(ensure_valid_utf8(u8"Здравствуй, мир!")); // valid UTF-8
-    CHECK_NOTHROW(ensure_valid_utf8(u8"こんにちは世界"));   // valid UTF-8
-    CHECK_NOTHROW(ensure_valid_utf8(u8"😀😁😂🤣😃😄😅😆")); // valid UTF-8 with emojis
+    CHECK_NOTHROW(ensure_valid_utf8("Здравствуй, мир!")); // valid UTF-8
+    CHECK_NOTHROW(ensure_valid_utf8("こんにちは世界"));   // valid UTF-8
+    CHECK_NOTHROW(ensure_valid_utf8("😀😁😂🤣😃😄😅😆")); // valid UTF-8 with emojis
 
     // Invalid UTF-8 strings - Should throw soci_error exceptions
     CHECK_THROWS_AS(ensure_valid_utf8("\x80"), soci_error);                 // Invalid single byte
@@ -114,9 +114,9 @@ TEST_CASE("UTF-32 to UTF-16 conversion tests", "[unicode]")
 TEST_CASE("UTF-8 to UTF-16 conversion tests", "[unicode]")
 {
     // Valid conversion tests
-    REQUIRE(utf8_to_utf16(u8"Hello, world!") == u"Hello, world!");
-    REQUIRE(utf8_to_utf16(u8"こんにちは世界") == u"こんにちは世界");
-    REQUIRE(utf8_to_utf16(u8"😀😁😂🤣😃😄😅😆") == u"😀😁😂🤣😃😄😅😆");
+    REQUIRE(utf8_to_utf16("Hello, world!") == u"Hello, world!");
+    REQUIRE(utf8_to_utf16("こんにちは世界") == u"こんにちは世界");
+    REQUIRE(utf8_to_utf16("😀😁😂🤣😃😄😅😆") == u"😀😁😂🤣😃😄😅😆");
 
     // Edge cases
     std::string utf8 = "\xF0\x9F\x98\x80"; // 😀
@@ -131,9 +131,9 @@ TEST_CASE("UTF-8 to UTF-16 conversion tests", "[unicode]")
 TEST_CASE("UTF-16 to UTF-8 conversion tests", "[unicode]")
 {
     // Valid conversion tests
-    REQUIRE(utf16_to_utf8(u"Hello, world!") == u8"Hello, world!");
-    REQUIRE(utf16_to_utf8(u"こんにちは世界") == u8"こんにちは世界");
-    REQUIRE(utf16_to_utf8(u"😀😁😂🤣😃😄😅😆") == u8"😀😁😂🤣😃😄😅😆");
+    REQUIRE(utf16_to_utf8(u"Hello, world!") == "Hello, world!");
+    REQUIRE(utf16_to_utf8(u"こんにちは世界") == "こんにちは世界");
+    REQUIRE(utf16_to_utf8(u"😀😁😂🤣😃😄😅😆") == "😀😁😂🤣😃😄😅😆");
 
     // Edge cases
     std::u16string utf16;
@@ -150,9 +150,9 @@ TEST_CASE("UTF-16 to UTF-8 conversion tests", "[unicode]")
 TEST_CASE("UTF-8 to UTF-32 conversion tests", "[unicode]")
 {
     // Valid conversion tests
-    REQUIRE(utf8_to_utf32(u8"Hello, world!") == U"Hello, world!");
-    REQUIRE(utf8_to_utf32(u8"こんにちは世界") == U"こんにちは世界");
-    REQUIRE(utf8_to_utf32(u8"😀😁😂🤣😃😄😅😆") == U"😀😁😂🤣😃😄😅😆");
+    REQUIRE(utf8_to_utf32("Hello, world!") == U"Hello, world!");
+    REQUIRE(utf8_to_utf32("こんにちは世界") == U"こんにちは世界");
+    REQUIRE(utf8_to_utf32("😀😁😂🤣😃😄😅😆") == U"😀😁😂🤣😃😄😅😆");
 
     // Edge cases
     std::string utf8 = "\xF0\x9F\x98\x80"; // 😀
@@ -166,9 +166,9 @@ TEST_CASE("UTF-8 to UTF-32 conversion tests", "[unicode]")
 TEST_CASE("UTF-32 to UTF-8 conversion tests", "[unicode]")
 {
     // Valid conversion tests
-    REQUIRE(utf32_to_utf8(U"Hello, world!") == u8"Hello, world!");
-    REQUIRE(utf32_to_utf8(U"こんにちは世界") == u8"こんにちは世界");
-    REQUIRE(utf32_to_utf8(U"😀😁😂🤣😃😄😅😆") == u8"😀😁😂🤣😃😄😅😆");
+    REQUIRE(utf32_to_utf8(U"Hello, world!") == "Hello, world!");
+    REQUIRE(utf32_to_utf8(U"こんにちは世界") == "こんにちは世界");
+    REQUIRE(utf32_to_utf8(U"😀😁😂🤣😃😄😅😆") == "😀😁😂🤣😃😄😅😆");
 
     // Edge cases
     std::u32string utf32 = U"\U0001F600"; // 😀
@@ -186,10 +186,10 @@ TEST_CASE("UTF-32 to UTF-8 conversion tests", "[unicode]")
 
 TEST_CASE("Empty string tests", "[unicode]")
 {
-    REQUIRE(utf16_to_utf8(u"") == u8"");
-    REQUIRE(utf32_to_utf8(U"") == u8"");
-    REQUIRE(utf8_to_utf16(u8"") == u"");
-    REQUIRE(utf8_to_utf32(u8"") == U"");
+    REQUIRE(utf16_to_utf8(u"") == "");
+    REQUIRE(utf32_to_utf8(U"") == "");
+    REQUIRE(utf8_to_utf16("") == u"");
+    REQUIRE(utf8_to_utf32("") == U"");
 }
 
 TEST_CASE("Strings with Byte Order Marks (BOMs)", "[unicode]")
@@ -281,15 +281,15 @@ TEST_CASE("Strings with non-characters", "[unicode]")
 
 TEST_CASE("Strings with right-to-left characters", "[unicode]")
 {
-    REQUIRE_NOTHROW(ensure_valid_utf8(u8"مرحبا بالعالم"));
+    REQUIRE_NOTHROW(ensure_valid_utf8("مرحبا بالعالم"));
 }
 
 TEST_CASE("UTF-8 to wide string conversion tests", "[unicode]")
 {
     // Valid conversion tests
-    REQUIRE(utf8_to_wide(u8"Hello, world!") == L"Hello, world!");
-    REQUIRE(utf8_to_wide(u8"こんにちは世界") == L"こんにちは世界");
-    REQUIRE(utf8_to_wide(u8"😀😁😂🤣😃😄😅😆") == L"😀😁😂🤣😃😄😅😆");
+    REQUIRE(utf8_to_wide("Hello, world!") == L"Hello, world!");
+    REQUIRE(utf8_to_wide("こんにちは世界") == L"こんにちは世界");
+    REQUIRE(utf8_to_wide("😀😁😂🤣😃😄😅😆") == L"😀😁😂🤣😃😄😅😆");
 
     // Edge cases
     std::string utf8 = "\xF0\x9F\x98\x80"; // 😀
@@ -304,9 +304,9 @@ TEST_CASE("UTF-8 to wide string conversion tests", "[unicode]")
 TEST_CASE("Wide string to UTF-8 conversion tests", "[unicode]")
 {
     // Valid conversion tests
-    REQUIRE(wide_to_utf8(L"Hello, world!") == u8"Hello, world!");
-    REQUIRE(wide_to_utf8(L"こんにちは世界") == u8"こんにちは世界");
-    REQUIRE(wide_to_utf8(L"😀😁😂🤣😃😄😅😆") == u8"😀😁😂🤣😃😄😅😆");
+    REQUIRE(wide_to_utf8(L"Hello, world!") == "Hello, world!");
+    REQUIRE(wide_to_utf8(L"こんにちは世界") == "こんにちは世界");
+    REQUIRE(wide_to_utf8(L"😀😁😂🤣😃😄😅😆") == "😀😁😂🤣😃😄😅😆");
 
     // Edge cases
     std::wstring wide = L"\U0001F600"; // 😀
