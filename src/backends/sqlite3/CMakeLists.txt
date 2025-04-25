@@ -39,10 +39,13 @@ endif()
 
 # If SQLite3 was found, this target must have been created.
 if (NOT TARGET SQLite::SQLite3)
+  set(SQLITE3_DIRECTORY "${PROJECT_SOURCE_DIR}/3rdparty/sqlite3")
+  set(SQLITE3_SOURCE_FILE "${SQLITE3_DIRECTORY}/sqlite3.c")
+
   # But if it wasn't, use our built-in version, after checking that it is
   # available, and if we're allowed to use it.
   if (NOT "${SOCI_SQLITE3_BUILTIN}" STREQUAL "OFF")
-    if (NOT EXISTS "${PROJECT_SOURCE_DIR}/3rdparty/sqlite3/sqlite3.c")
+    if (NOT EXISTS ${SQLITE3_SOURCE_FILE})
       message(WARNING "SQLite3 not found and built-in version not available, have you cloned SOCI repository with --recurse-submodules?")
     else()
       set(SOCI_SQLITE3_USE_BUILTIN ON)
@@ -64,11 +67,11 @@ if (NOT TARGET SQLite::SQLite3)
   add_library(soci_sqlite3_builtin)
   target_sources(soci_sqlite3_builtin
     PRIVATE
-      "${PROJECT_SOURCE_DIR}/3rdparty/sqlite3/sqlite3.c"
+      ${SQLITE3_SOURCE_FILE}
   )
   target_include_directories(soci_sqlite3_builtin
     PUBLIC
-      "${PROJECT_SOURCE_DIR}/3rdparty/sqlite3"
+      "${SQLITE3_DIRECTORY}
   )
 
   target_link_libraries(soci_sqlite3
