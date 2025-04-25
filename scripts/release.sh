@@ -198,7 +198,7 @@ git archive --format=tar --prefix=$SOCI_ARCHIVE/ HEAD | tar -xf -
 # each git-archive separately.
 (git archive --prefix=$SOCI_ARCHIVE/ HEAD;
  git submodule foreach --quiet "cd $SOCI_ROOT/\$path && git archive --prefix=$SOCI_ARCHIVE/\$path/ HEAD") |
-tar -i xf -
+tar -xf- -i
 
 mv site $SOCI_ARCHIVE/docs
 
