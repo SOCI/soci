@@ -31,16 +31,24 @@ if (WIN32)
   )
 endif()
 
+# We want to use warning-related options only for C++ source files (this
+# excludes 3rdparty/sqlite3/sqlite3.c) and only when compiling SOCI itself and
+# not an application using it.
+set(soci_cxx_source "$<AND:$<BOOL:${PROJECT_IS_TOP_LEVEL}>,$<COMPILE_LANGUAGE:CXX>>")
+
 if (MSVC)
   # Configure warnings
   target_compile_options(soci_compiler_interface
     INTERFACE
-      "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:/W4>"
-      "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:/we4266>"
+      "$<${soci_cxx_source}:/W4>"
+      "$<${soci_cxx_source}:/we4266>"
   )
 
   if (SOCI_ENABLE_WERROR)
-    target_compile_options(soci_compiler_interface INTERFACE "/WX")
+    target_compile_options(soci_compiler_interface
+      INTERFACE
+        "$<${soci_cxx_source}:/WX>"
+    )
   endif()
 
   if (SOCI_LD)
@@ -51,7 +59,10 @@ if (MSVC)
 else()
 
   if (SOCI_ENABLE_WERROR)
-    target_compile_options(soci_compiler_interface INTERFACE "-Werror")
+    target_compile_options(soci_compiler_interface
+      INTERFACE
+        "$<${soci_cxx_source}:-Werror>"
+    )
   endif()
 
   if (SOCI_UBSAN)
@@ -87,29 +98,29 @@ else()
 
     if (CMAKE_COMPILER_IS_GNUCXX)
       if (NOT (CMAKE_SYSTEM_NAME MATCHES "FreeBSD"))
-        target_compile_options(soci_compiler_interface INTERFACE "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:-Wno-variadic-macros>")
+        target_compile_options(soci_compiler_interface INTERFACE "$<${soci_cxx_source}:-Wno-variadic-macros>")
       endif()
     endif()
 
     set(SOCI_USE_STD_FLAGS ON)
   else()
-	  message(WARNING "Unknown toolset - using default flags to build SOCI")
+    message(WARNING "Unknown toolset - using default flags to build SOCI")
   endif()
 
   if (SOCI_USE_STD_FLAGS)
     target_compile_options(soci_compiler_interface
       INTERFACE
-        "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:-pedantic>"
-        "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:-Wno-error=parentheses>"
-        "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:-Wall>"
-        "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:-Wextra>"
-        "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:-Wpointer-arith>"
-        "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:-Wcast-align>"
-        "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:-Wcast-qual>"
-        "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:-Wfloat-equal>"
-        "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:-Woverloaded-virtual>"
-        "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:-Wredundant-decls>"
-        "$<$<BOOL:${PROJECT_IS_TOP_LEVEL}>:-Wno-long-long>"
+        "$<${soci_cxx_source}:-pedantic>"
+        "$<${soci_cxx_source}:-Wno-error=parentheses>"
+        "$<${soci_cxx_source}:-Wall>"
+        "$<${soci_cxx_source}:-Wextra>"
+        "$<${soci_cxx_source}:-Wpointer-arith>"
+        "$<${soci_cxx_source}:-Wcast-align>"
+        "$<${soci_cxx_source}:-Wcast-qual>"
+        "$<${soci_cxx_source}:-Wfloat-equal>"
+        "$<${soci_cxx_source}:-Woverloaded-virtual>"
+        "$<${soci_cxx_source}:-Wredundant-decls>"
+        "$<${soci_cxx_source}:-Wno-long-long>"
     )
   endif()
 endif()
