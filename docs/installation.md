@@ -94,7 +94,6 @@ When it comes to enabling specific backends, SOCI supports three distinct option
 
 SQLite backend is special, as it may use the built-in SQLite library if the system version is not found, see its documentation below for more details.
 
-
 #### Empty (sample backend)
 
 * `SOCI_EMPTY` - Enabler - Enables the [sample backend](backends/index.md) called Empty. Always ON by default.
