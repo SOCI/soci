@@ -31,6 +31,7 @@ usage()
     exit 1
 }
 ME=`basename "$0"`
+SOCI_ROOT="$(readlink -f $(dirname $(readlink -f $0))/..)"
 MSG_TAG="| $ME"
 
 UNAME_S="$(uname -s)"
@@ -192,6 +193,13 @@ deactivate
 
 echo "${MSG_TAG} INFO: Preparing release archive in '$SOCI_ARCHIVE'"
 git archive --format=tar --prefix=$SOCI_ARCHIVE/ HEAD | tar -xf -
+# We use GNU tar -i option to allow successfully extracting files from several
+# tar archives concatenated together, without it we'd have to pipe output of
+# each git-archive separately.
+(git archive --prefix=$SOCI_ARCHIVE/ HEAD;
+ git submodule foreach --quiet "cd $SOCI_ROOT/\$path && git archive --prefix=$SOCI_ARCHIVE/\$path/ HEAD") |
+tar -i xf -
+
 mv site $SOCI_ARCHIVE/docs
 
 # Add git SHA-1 to version in CHANGES file
