@@ -164,9 +164,7 @@ target_link_libraries(soci_core
     ${CMAKE_DL_LIBS}
 )
 
-if (WIN32)
-  set(ABI_VERSION "${PROJECT_VERSION_MAJOR}_${PROJECT_VERSION_MINOR}")
-elseif(UNIX)
+if(UNIX)
   # Use SOVERSION, which is only the major version
   set(ABI_VERSION "${PROJECT_VERSION_MAJOR}")
 endif()
