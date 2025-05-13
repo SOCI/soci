@@ -48,7 +48,7 @@ Backend specific client libraries for:
 
 * DB2
 * Firebird
-* MySQL
+* MySQL / MariaDB
 * ODBC with specific database driver
 * Oracle
 * PostgreSQL
