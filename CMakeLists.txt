@@ -83,6 +83,22 @@ else()
   set(SOCI_LIB_TYPE "STATIC")
 endif()
 
+# When using shared libraries, use version-dependent suffix in their names.
+if (SOCI_SHARED)
+  if (WIN32)
+    # Use the full version number as ABI version on Windows and define
+    # ABI_SUFFIX which is used to add it to the DLL name manually because this
+    # is just a convention and so is not done automatically by CMake.
+    set(ABI_VERSION "${PROJECT_VERSION_MAJOR}_${PROJECT_VERSION_MINOR}")
+    set(ABI_SUFFIX "_${ABI_VERSION}")
+  elseif(UNIX)
+    # Use same value as for SOVERSION, which is only the major version (and is
+    # used automatically to construct the shared libraries names, so there is
+    # no need for ABI_SUFFIX).
+    set(ABI_VERSION "${PROJECT_VERSION_MAJOR}")
+  endif()
+endif()
+
 
 include(soci_compiler_options)
 include(soci_install_dirs)
