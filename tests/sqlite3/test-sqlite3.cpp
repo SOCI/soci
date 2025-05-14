@@ -44,6 +44,7 @@ TEST_CASE("SQLite connection string", "[sqlite][connstring]")
     params.set_option("nocreate", "1");
     CHECK_THROWS_WITH(soci::session(params),
                       Catch::Contains("Cannot establish connection"));
+    CHECK_NOTHROW(soci::session("sqlite3", "dbname=:memory: nocreate"));
 
     // Finally allow testing arbitrary connection strings by specifying them in
     // the environment variables.
