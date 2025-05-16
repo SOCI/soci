@@ -5,8 +5,11 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
+#include <cstdio>
+#include <forward_list>
 #include <soci/soci.h>
 #include <soci/sqlite3/soci-sqlite3.h>
+#include <thread>
 #include "test-context.h"
 
 #include <catch.hpp>
@@ -932,6 +935,37 @@ TEST_CASE("SQLite row int64", "[sqlite][row][int64]")
     REQUIRE_THROWS(r.get<std::int32_t>("val"));
     // Selecting as int64_t instead works
     CHECK(r.get<std::int64_t>("val") == val);
+}
+
+// The setting "synchronous" cannot be set when the database is locked in
+// environments with parallelisms for example. A timeout solves this issue.
+// This test checks whether the timeout was applied before setting "synchronous".
+TEST_CASE("SQLite settings work in environment with parallelisms", "[sqlite][pragma]")
+{
+    {
+        soci::session sql(backEnd, "db=test.db");
+        sql << R"(PRAGMA journal_mode="WAL")";
+    }
+
+    std::forward_list<std::thread> threads;
+
+    for(std::uint16_t i = 0; i < 512; ++i)
+    {
+        threads.emplace_front([]() -> void
+        {
+            // Not allowed to throw.
+            CHECK_NOTHROW(soci::session(backEnd, "db=test.db synchronous=extra timeout=2"));
+        });
+    }
+
+    for(std::forward_list<std::thread>::iterator iterator = threads.begin(); iterator != threads.end(); ++iterator)
+    {
+        iterator->join();
+    }
+
+    std::remove("test.db");
+    std::remove("test.db-shm");
+    std::remove("test.db-wal");
 }
 
 // DDL Creation objects for common tests
