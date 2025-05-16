@@ -73,6 +73,11 @@ public:
         return "dbname=test user=root password=\'Ala ma kota\'";
     }
 
+    std::string get_backend_name() const override
+    {
+        return "mysql";
+    }
+
     table_creator_base* table_creator_1(soci::session& s) const override
     {
         return new table_creator_one(s);

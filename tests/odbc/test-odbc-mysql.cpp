@@ -29,6 +29,11 @@ public:
         return "FILEDSN=./test-mysql.dsn";
     }
 
+    std::string get_backend_name() const override
+    {
+        return "odbc";
+    }
+
     bool truncates_uint64_to_int64() const override
     {
         // The ODBC driver of MySQL truncates values bigger then INT64_MAX.

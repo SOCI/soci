@@ -40,3 +40,9 @@ target_include_directories(soci_tests_common
     "${PROJECT_SOURCE_DIR}/include/private"
     "${PROJECT_SOURCE_DIR}/tests"
 )
+
+if (SOCI_SHARED)
+  # We have a test checking for loading backend dynamically which can only be
+  # done when using shared libraries, so define a symbol to guard it.
+  target_compile_definitions(soci_tests_common PRIVATE SOCI_DYNAMIC_BACKEND)
+endif()
