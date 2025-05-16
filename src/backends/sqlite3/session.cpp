@@ -173,7 +173,7 @@ sqlite3_session_backend::sqlite3_session_backend(
         }
     );
 
-    //Set the timeout first to have effect on the following queries.
+    // Set the timeout first to have effect on the following queries.
     res = sqlite3_busy_timeout(conn_, timeout * 1000);
     check_sqlite_err(conn_, res, "Failed to set busy timeout for connection. ");
 
