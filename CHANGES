@@ -3,8 +3,8 @@ This file contains the history of changes in the SOCI library.
 Please read at least the following section when upgrading from
 a previous version of the library.
 
-INCOMPATIBLE CHANGES IN SOCI 4.1
-================================
+INCOMPATIBLE CHANGES IN SOCI 4.1 SINCE 4.0
+==========================================
 
 - SOCI 4.1 requires a compiler with C++14 support (MSVS 2015 included).
 
@@ -13,8 +13,14 @@ INCOMPATIBLE CHANGES IN SOCI 4.1
   during run-time, but now this doesn't compile any longer. Please
   create a temporary variable holding the value if necessary (#1070).
 
+Version 4.1.2 (released on 2025-05-17) differs from 4.1.1 in the following ways:
 
-Other changes in v4.1.1:
+- Fix loading SOCI backends by name under Windows broken in 4.1.1 (#1248).
+- SQLite3: Fix using "synchronous" parameter concurrently (#1253).
+
+History of the changes in the previous versions:
+
+Version 4.1.1 (released on 2025-05-13) differs from 4.0.3 in the following ways:
 
  - Support for integer types has been completely revamped and the new db_type
    with db_xxx constants should be used instead of the old data_type enum and
@@ -51,8 +57,6 @@ Backend-specific changes:
 - ODBC
  - Add support for using wide strings (#1179).
 
-
-History of the changes in the previous versions:
 
 ---
 Version 4.0.3 (released on 2022-02-14) differs from 4.0.2 in the following ways:
