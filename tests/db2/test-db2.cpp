@@ -74,6 +74,11 @@ public:
         return "DSN=SAMPLE;Uid=db2inst1;Pwd=db2inst1;autocommit=off";
     }
 
+    std::string get_backend_name() const override
+    {
+        return "db2";
+    }
+
     table_creator_base* table_creator_1(soci::session & pr_s) const override
     {
         pr_s << "SET CURRENT SCHEMA = 'DB2INST1'";

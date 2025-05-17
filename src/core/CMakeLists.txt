@@ -164,11 +164,11 @@ target_link_libraries(soci_core
     ${CMAKE_DL_LIBS}
 )
 
-if (WIN32)
-  set(ABI_VERSION "${PROJECT_VERSION_MAJOR}_${PROJECT_VERSION_MINOR}")
-elseif(UNIX)
-  # Use SOVERSION, which is only the major version
-  set(ABI_VERSION "${PROJECT_VERSION_MAJOR}")
+if (DEFINED ABI_SUFFIX)
+  set_target_properties(soci_core
+    PROPERTIES
+      OUTPUT_NAME "soci_core${ABI_SUFFIX}"
+  )
 endif()
 
 cmake_path(

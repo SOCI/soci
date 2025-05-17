@@ -11,8 +11,11 @@
 
 #include <catch.hpp>
 
-#include <limits>
 #include <cstdint>
+#include <cstdio>
+#include <forward_list>
+#include <limits>
+#include <thread>
 
 using namespace soci;
 using namespace soci::tests;
@@ -934,6 +937,47 @@ TEST_CASE("SQLite row int64", "[sqlite][row][int64]")
     CHECK(r.get<std::int64_t>("val") == val);
 }
 
+// The setting "synchronous" cannot be set when the database is locked in
+// environments with parallelisms for example. A timeout solves this issue.
+// This test checks whether the timeout was applied before setting "synchronous".
+TEST_CASE("SQLite synchronous option works from multiple threads",
+          "[sqlite][pragma]")
+{
+    {
+        soci::session sql(backEnd, "db=test.db");
+        sql << R"(PRAGMA journal_mode="WAL")";
+    }
+
+    struct FileRemover
+    {
+        // Argument must be a literal string as we just keep the pointer.
+        explicit FileRemover(char const* fileName) : fileName_(fileName) {}
+        ~FileRemover() { std::remove(fileName_); }
+
+        char const* const fileName_;
+    };
+
+    FileRemover fileRemoverDB("test.db");
+    FileRemover fileRemoverSHM("test.db-shm");
+    FileRemover fileRemoverWAL("test.db-wal");
+
+    std::forward_list<std::thread> threads;
+    for (int i = 0; i < 32; ++i)
+    {
+        threads.emplace_front([]() -> void
+        {
+            REQUIRE_NOTHROW(
+                soci::session(backEnd, "db=test.db synchronous=extra timeout=2")
+            );
+        });
+    }
+
+    for (auto& thr : threads)
+    {
+        thr.join();
+    }
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {
@@ -1028,6 +1072,11 @@ public:
         }
 
         return test_context_base::initialize_connect_string(argFromCommandLine);
+    }
+
+    std::string get_backend_name() const override
+    {
+        return "sqlite3";
     }
 
     table_creator_base* table_creator_1(soci::session& s) const override

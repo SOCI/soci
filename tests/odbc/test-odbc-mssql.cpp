@@ -275,6 +275,11 @@ public:
         return "FILEDSN=./test-mssql.dsn";
     }
 
+    std::string get_backend_name() const override
+    {
+        return "odbc";
+    }
+
     table_creator_base* table_creator_1(soci::session& s) const override
     {
         return new table_creator_one(s);

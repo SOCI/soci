@@ -153,6 +153,11 @@ public:
         return "connect_string_for_empty_backend";
     }
 
+    std::string get_backend_name() const override
+    {
+        return "empty";
+    }
+
     // As we don't use common tests with this pseudo-backend, we don't actually
     // need to implement these functions -- but they still must be defined.
     std::string to_date_time(std::string const&) const override

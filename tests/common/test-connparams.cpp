@@ -149,6 +149,15 @@ TEST_CASE("connection_parameters::build_string_from_options", "[core][connstring
     CHECK(params.build_string_from_options('\'') == "bar=baz foo='' quux='1 2'");
 }
 
+// Test loading backend dynamically if possible (this symbol is defined by
+// the build system if shared libraries are used).
+#ifdef SOCI_DYNAMIC_BACKEND
+TEST_CASE_METHOD(common_tests, "backend::load_by_name", "[backend][dynamic]")
+{
+    CHECK_NOTHROW(soci::session(tc_.get_backend_name(), tc_.get_connect_string()));
+}
+#endif // SOCI_DYNAMIC_BACKEND
+
 } // namespace tests
 
 } // namespace soci

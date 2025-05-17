@@ -137,6 +137,13 @@ function(soci_define_backend_target)
       EXPORT_NAME ${DEFINE_BACKEND_NAME}
   )
 
+  if (DEFINED ABI_SUFFIX)
+    set_target_properties(${DEFINE_BACKEND_TARGET_NAME}
+      PROPERTIES
+        OUTPUT_NAME "${DEFINE_BACKEND_TARGET_NAME}${ABI_SUFFIX}"
+    )
+  endif()
+
   if (DEFINE_BACKEND_HEADER_FILES)
     target_sources(${DEFINE_BACKEND_TARGET_NAME}
       PUBLIC
