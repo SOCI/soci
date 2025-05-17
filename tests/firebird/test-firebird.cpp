@@ -1196,6 +1196,11 @@ class test_context : public tests::test_context_common
             return "service=/usr/local/firebird/db/test.fdb user=SYSDBA password=masterkey";
         }
 
+        std::string get_backend_name() const override
+        {
+            return "firebird";
+        }
+
         tests::table_creator_base* table_creator_1(soci::session& s) const override
         {
             return new TableCreator1(s);

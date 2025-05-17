@@ -1498,6 +1498,11 @@ public:
         return "host=localhost port=5432 dbname=test user=postgres password=postgres";
     }
 
+    std::string get_backend_name() const override
+    {
+        return "postgresql";
+    }
+
     table_creator_base* table_creator_1(soci::session& s) const override
     {
         return new table_creator_one(s);

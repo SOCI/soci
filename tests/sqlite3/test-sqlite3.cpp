@@ -1074,6 +1074,11 @@ public:
         return test_context_base::initialize_connect_string(argFromCommandLine);
     }
 
+    std::string get_backend_name() const override
+    {
+        return "sqlite3";
+    }
+
     table_creator_base* table_creator_1(soci::session& s) const override
     {
         return new table_creator_one(s);

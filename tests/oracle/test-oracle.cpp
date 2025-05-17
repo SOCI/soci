@@ -1553,6 +1553,11 @@ public:
         return test_context_base::start_testing();
     }
 
+    std::string get_backend_name() const override
+    {
+        return "oracle";
+    }
+
     table_creator_base* table_creator_1(soci::session& s) const override
     {
         return new table_creator_one(s);

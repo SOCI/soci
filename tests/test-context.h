@@ -143,6 +143,9 @@ public:
         return connectString_;
     }
 
+    // Return the name of the backend as used in the dynamic library name.
+    virtual std::string get_backend_name() const = 0;
+
     virtual std::string to_date_time(std::string const &dateTime) const = 0;
 
     virtual table_creator_base* table_creator_1(session&) const = 0;
