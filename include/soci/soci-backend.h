@@ -267,6 +267,7 @@ public:
     {
         switch (dbt)
         {
+            case db_wstring:
             case db_string: return dt_string;
             case db_date:   return dt_date;
             case db_double: return dt_double;
@@ -280,9 +281,6 @@ public:
             case db_uint64: return dt_unsigned_long_long;
             case db_blob:   return dt_blob;
             case db_xml:    return dt_xml;
-
-            case db_wstring:
-                throw soci_error("unable to convert value to data_type");
         }
 
         // unreachable
