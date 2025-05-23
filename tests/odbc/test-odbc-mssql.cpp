@@ -102,6 +102,15 @@ TEST_CASE("MS SQL wide string", "[odbc][mssql][wstring]")
   sql << "select wide_text from soci_test", into(str_out);
 
   CHECK(str_out == str_in);
+
+  soci::rowset<soci::row> rs = (sql.prepare << "select wide_text from soci_test");
+  auto it = rs.begin();
+  REQUIRE( it != rs.end() );
+
+  CHECK( it->get<std::wstring>(0) == str_in );
+
+  ++it;
+  CHECK( it == rs.end() );
 }
 
 TEST_CASE("MS SQL wide string vector", "[odbc][mssql][vector][wstring]")
