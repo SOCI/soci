@@ -507,9 +507,9 @@ SOCI_DECL std::vector<std::string> dynamic_backends::list_all()
     std::vector<std::string> ret;
     ret.reserve(factories_.size());
 
-    for (factory_map::iterator i = factories_.begin(); i != factories_.end(); ++i)
+    for (auto const& kv : factories_)
     {
-        std::string const& name = i->first;
+        std::string const& name = kv.first;
         ret.push_back(name);
     }
 

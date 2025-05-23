@@ -257,10 +257,9 @@ void sqlite3_vector_use_type_backend::clean_up()
 
     int const pos = position_ - 1;
 
-    for (sqlite3_recordset::iterator iter = statement_.useData_.begin(), last = statement_.useData_.end();
-        iter != last; ++iter)
+    for (sqlite3_row& row : statement_.useData_)
     {
-        sqlite3_column &col = (*iter)[pos];
+        sqlite3_column &col = row[pos];
 
         if (col.isNull_)
             continue;

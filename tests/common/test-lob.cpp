@@ -599,10 +599,9 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
 
         soci::rowset< soci::row > rowSet = sql.prepare << "select id, b from soci_test";
         bool containedData = false;
-        for (auto it = rowSet.begin(); it != rowSet.end(); ++it)
+        for (soci::row const& currentRow : rowSet)
         {
             containedData = true;
-            const soci::row &currentRow = *it;
 
             CHECK(currentRow.get_properties(1).get_data_type() == soci::dt_blob);
         }
@@ -639,10 +638,9 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
         {
             soci::rowset< soci::row > rowSet = (sql.prepare << "select b from soci_test where id=:id", soci::use(id1));
             bool containedData = false;
-            for (auto it = rowSet.begin(); it != rowSet.end(); ++it)
+            for (soci::row const& currentRow : rowSet)
             {
                 containedData = true;
-                const soci::row &currentRow = *it;
 
                 soci::blob intoBlob = currentRow.move_as<soci::blob>(0);
 
@@ -661,10 +659,9 @@ TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
         {
             soci::rowset< soci::row > rowSet = (sql.prepare << "select b from soci_test where id=:id", soci::use(id1));
             bool containedData = false;
-            for (auto it = rowSet.begin(); it != rowSet.end(); ++it)
+            for (soci::row const& currentRow : rowSet)
             {
                 containedData = true;
-                const soci::row &currentRow = *it;
 
                 std::string strData = currentRow.get<std::string>(0);
                 std::vector<unsigned char> vecData = currentRow.get<std::vector<unsigned char>>(0);

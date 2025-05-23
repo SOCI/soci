@@ -522,13 +522,7 @@ TEST_CASE("MySQL unsigned int", "[mysql][int]")
     unsigned int mask = 0xffffff00;
     sql << "insert into soci_test set val = " << mask;
     soci::rowset<> rows(sql.prepare << "select val from soci_test");
-    int cnt = 0;
-    for (soci::rowset<>::iterator it = rows.begin(), end = rows.end();
-         it != end; ++it)
-    {
-        cnt++;
-    }
-    CHECK(cnt == 1);
+    CHECK(std::distance(rows.begin(), rows.end()) == 1);
 }
 
 TEST_CASE("MySQL function call", "[mysql][function]")

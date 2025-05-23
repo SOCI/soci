@@ -322,12 +322,9 @@ postgresql_statement_backend::execute(int number)
                     // the map of use buffers can be traversed
                     // in its natural order
 
-                    for (UseByPosBuffersMap::iterator
-                             it = useByPosBuffers_.begin(),
-                             end = useByPosBuffers_.end();
-                         it != end; ++it)
+                    for (auto const& kv : useByPosBuffers_)
                     {
-                        char ** buffers = it->second;
+                        char ** buffers = kv.second;
                         paramValues.push_back(buffers[current_row_]);
                     }
                 }
@@ -335,17 +332,15 @@ postgresql_statement_backend::execute(int number)
                 {
                     // use elements bind by name
 
-                    for (std::vector<std::string>::iterator
-                             it = names_.begin(), end = names_.end();
-                         it != end; ++it)
+                    for (auto const& s : names_)
                     {
                         UseByNameBuffersMap::iterator b
-                            = useByNameBuffers_.find(*it);
+                            = useByNameBuffers_.find(s);
                         if (b == useByNameBuffers_.end())
                         {
                             std::string msg(
                                 "Missing use element for bind by name (");
-                            msg += *it;
+                            msg += s;
                             msg += ").";
                             throw soci_error(msg);
                         }

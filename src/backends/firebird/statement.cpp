@@ -641,12 +641,10 @@ int firebird_statement_backend::get_number_of_rows()
 
 std::string firebird_statement_backend::get_parameter_name(int index) const
 {
-    for (std::map<std::string, int>::const_iterator i = names_.begin();
-         i != names_.end();
-         ++i)
+    for (auto const& kv : names_)
     {
-        if (i->second == index)
-            return i->first;
+        if (kv.second == index)
+            return kv.first;
     }
 
     return std::string();

@@ -261,10 +261,9 @@ void db2_vector_use_type_backend::bind_by_name(
     }
     statement_.use_binding_method_ = details::db2::BOUND_BY_NAME;
 
-    for (std::vector<std::string>::iterator it = statement_.names_.begin();
-         it != statement_.names_.end(); ++it)
+    for (auto const& s : statement_.names_)
     {
-        if (*it == name)
+        if (s == name)
         {
             position = count;
             break;
