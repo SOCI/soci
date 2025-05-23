@@ -40,11 +40,10 @@ public:
                     full_message_.erase(full_message_.size() - 1);
 
                 // Now do append all the extra context we have.
-                typedef std::vector<std::string>::const_iterator iter_type;
-                for (iter_type i = contexts_.begin(); i != contexts_.end(); ++i)
+                for (auto const& context : contexts_)
                 {
                     full_message_ += " ";
-                    full_message_ += *i;
+                    full_message_ += context;
                 }
 
                 // It seems better to always terminate the full message with a

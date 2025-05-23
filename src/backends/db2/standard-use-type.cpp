@@ -159,10 +159,9 @@ void db2_standard_use_type_backend::bind_by_name(
     int position = -1;
     int count = 1;
 
-    for (std::vector<std::string>::iterator it = statement_.names_.begin();
-         it != statement_.names_.end(); ++it)
+    for (auto const& s : statement_.names_)
     {
-        if (*it == name)
+        if (s == name)
         {
             position = count;
             break;

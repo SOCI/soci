@@ -124,10 +124,9 @@ sqlite3_statement_backend::load_rowset(int totalRows)
     {
         // make the vector big enough to hold the data we need
         dataCache_.resize(totalRows);
-        for (sqlite3_recordset::iterator it = dataCache_.begin(),
-            end = dataCache_.end(); it != end; ++it)
+        for (sqlite3_row& row : dataCache_)
         {
-            (*it).resize(numCols);
+            row.resize(numCols);
         }
 
         for (i = 0; i < totalRows && databaseReady_; ++i)

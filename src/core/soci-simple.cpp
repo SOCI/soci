@@ -428,17 +428,15 @@ private:
 
 statement_wrapper::~statement_wrapper()
 {
-    for (std::map<int, blob_wrapper *>::iterator iter = into_blob.begin(), last = into_blob.end();
-         iter != last; ++iter)
+    for (auto& kv : into_blob)
     {
-        soci_destroy_blob(iter->second);
+        soci_destroy_blob(kv.second);
     }
 
-    for (std::map<std::string, blob_wrapper *>::iterator iter = use_blob.begin(), last = use_blob.end();
-         iter != last; ++iter)
+    for (auto& kv : use_blob)
     {
-        soci::indicator &ind = use_indicators[iter->first];
-        blob_wrapper *&blob = iter->second;
+        soci::indicator &ind = use_indicators[kv.first];
+        blob_wrapper *&blob = kv.second;
         if (ind == i_null && blob != NULL)
             soci_destroy_blob(blob);
     }
@@ -875,12 +873,9 @@ bool name_exists_check_failed(statement_wrapper & wrapper,
 template <typename T>
 void resize_in_map(std::map<std::string, std::vector<T> > & m, int new_size)
 {
-    typedef typename std::map<std::string, std::vector<T> >::iterator iterator;
-    iterator it = m.begin();
-    iterator const end = m.end();
-    for ( ; it != end; ++it)
+    for (auto& kv : m)
     {
-        std::vector<T> & v = it->second;
+        std::vector<T> & v = kv.second;
         v.resize(new_size);
     }
 }
@@ -3192,156 +3187,120 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         // bind all use elements
         {
             // strings
-            typedef std::map<std::string, std::string>::iterator iterator;
-            iterator uit = wrapper->use_strings.begin();
-            iterator const uend = wrapper->use_strings.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv : wrapper->use_strings)
             {
-                std::string const & use_name = uit->first;
-                std::string & use_string = uit->second;
+                std::string const & use_name = kv.first;
+                std::string & use_string = kv.second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_string, use_ind, use_name));
             }
         }
         {
             // int8
-            typedef std::map<std::string, int8_t>::iterator iterator;
-            iterator uit = wrapper->use_int8.begin();
-            iterator const uend = wrapper->use_int8.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv : wrapper->use_int8)
             {
-                std::string const & use_name = uit->first;
-                int8_t & use_int = uit->second;
+                std::string const & use_name = kv.first;
+                int8_t & use_int = kv.second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_int, use_ind, use_name));
             }
         }
         {
             // uint8
-            typedef std::map<std::string, uint8_t>::iterator iterator;
-            iterator uit = wrapper->use_uint8.begin();
-            iterator const uend = wrapper->use_uint8.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv : wrapper->use_uint8)
             {
-                std::string const & use_name = uit->first;
-                uint8_t & use_int = uit->second;
+                std::string const & use_name = kv.first;
+                uint8_t & use_int = kv.second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_int, use_ind, use_name));
             }
         }
         {
             // int16
-            typedef std::map<std::string, int16_t>::iterator iterator;
-            iterator uit = wrapper->use_int16.begin();
-            iterator const uend = wrapper->use_int16.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv : wrapper->use_int16)
             {
-                std::string const & use_name = uit->first;
-                int16_t & use_int = uit->second;
+                std::string const & use_name = kv.first;
+                int16_t & use_int = kv.second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_int, use_ind, use_name));
             }
         }
         {
             // uint16
-            typedef std::map<std::string, uint16_t>::iterator iterator;
-            iterator uit = wrapper->use_uint16.begin();
-            iterator const uend = wrapper->use_uint16.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv : wrapper->use_uint16)
             {
-                std::string const & use_name = uit->first;
-                uint16_t & use_int = uit->second;
+                std::string const & use_name = kv.first;
+                uint16_t & use_int = kv.second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_int, use_ind, use_name));
             }
         }
         {
             // int32
-            typedef std::map<std::string, int32_t>::iterator iterator;
-            iterator uit = wrapper->use_int32.begin();
-            iterator const uend = wrapper->use_int32.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv : wrapper->use_int32)
             {
-                std::string const & use_name = uit->first;
-                int32_t & use_int = uit->second;
+                std::string const & use_name = kv.first;
+                int32_t & use_int = kv.second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_int, use_ind, use_name));
             }
         }
         {
             // uint32
-            typedef std::map<std::string, uint32_t>::iterator iterator;
-            iterator uit = wrapper->use_uint32.begin();
-            iterator const uend = wrapper->use_uint32.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv : wrapper->use_uint32)
             {
-                std::string const & use_name = uit->first;
-                uint32_t & use_int = uit->second;
+                std::string const & use_name = kv.first;
+                uint32_t & use_int = kv.second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_int, use_ind, use_name));
             }
         }
         {
             // int64
-            typedef std::map<std::string, int64_t>::iterator iterator;
-            iterator uit = wrapper->use_int64.begin();
-            iterator const uend = wrapper->use_int64.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv : wrapper->use_int64)
             {
-                std::string const & use_name = uit->first;
-                int64_t & use_longlong = uit->second;
+                std::string const & use_name = kv.first;
+                int64_t & use_longlong = kv.second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_longlong, use_ind, use_name));
             }
         }
         {
             // uint64
-            typedef std::map<std::string, uint64_t>::iterator iterator;
-            iterator uit = wrapper->use_uint64.begin();
-            iterator const uend = wrapper->use_uint64.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv : wrapper->use_uint64)
             {
-                std::string const & use_name = uit->first;
-                uint64_t & use_longlong = uit->second;
+                std::string const & use_name = kv.first;
+                uint64_t & use_longlong = kv.second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_longlong, use_ind, use_name));
             }
         }
         {
             // doubles
-            typedef std::map<std::string, double>::iterator iterator;
-            iterator uit = wrapper->use_doubles.begin();
-            iterator const uend = wrapper->use_doubles.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv : wrapper->use_doubles)
             {
-                std::string const & use_name = uit->first;
-                double & use_double = uit->second;
+                std::string const & use_name = kv.first;
+                double & use_double = kv.second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_double, use_ind, use_name));
             }
         }
         {
             // dates
-            typedef std::map<std::string, std::tm>::iterator iterator;
-            iterator uit = wrapper->use_dates.begin();
-            iterator const uend = wrapper->use_dates.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv : wrapper->use_dates)
             {
-                std::string const & use_name = uit->first;
-                std::tm & use_date = uit->second;
+                std::string const & use_name = kv.first;
+                std::tm & use_date = kv.second;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_date, use_ind, use_name));
             }
         }
         {
             // blobs
-            typedef std::map<std::string, blob_wrapper *>::iterator iterator;
-            iterator uit = wrapper->use_blob.begin();
-            iterator uend = wrapper->use_blob.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv : wrapper->use_blob)
             {
-                std::string const & use_name = uit->first;
-                blob &use_blob = uit->second->blob_;
+                std::string const & use_name = kv.first;
+                blob &use_blob = kv.second->blob_;
                 indicator & use_ind = wrapper->use_indicators[use_name];
                 wrapper->st.exchange(use(use_blob, use_ind, use_name));
             }
@@ -3350,14 +3309,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         // bind all use vector elements
         {
             // strings
-            typedef std::map<std::string,
-                std::vector<std::string> >::iterator iterator;
-            iterator uit = wrapper->use_strings_v.begin();
-            iterator const uend = wrapper->use_strings_v.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv : wrapper->use_strings_v)
             {
-                std::string const & use_name = uit->first;
-                std::vector<std::string> & use_string = uit->second;
+                std::string const & use_name = kv.first;
+                std::vector<std::string> & use_string = kv.second;
                 std::vector<indicator> & use_ind =
                     wrapper->use_indicators_v[use_name];
                 wrapper->st.exchange(use(use_string, use_ind, use_name));
@@ -3365,14 +3320,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         }
         {
             // int8
-            typedef std::map<std::string,
-                std::vector<int8_t> >::iterator iterator;
-            iterator uit = wrapper->use_int8_v.begin();
-            iterator const uend = wrapper->use_int8_v.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv  : wrapper->use_int8_v)
             {
-                std::string const & use_name = uit->first;
-                std::vector<int8_t> & use_int = uit->second;
+                std::string const & use_name = kv.first;
+                std::vector<int8_t> & use_int = kv.second;
                 std::vector<indicator> & use_ind =
                     wrapper->use_indicators_v[use_name];
                 wrapper->st.exchange(use(use_int, use_ind, use_name));
@@ -3380,14 +3331,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         }
         {
             // uint8
-            typedef std::map<std::string,
-                std::vector<uint8_t> >::iterator iterator;
-            iterator uit = wrapper->use_uint8_v.begin();
-            iterator const uend = wrapper->use_uint8_v.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv  : wrapper->use_uint8_v)
             {
-                std::string const & use_name = uit->first;
-                std::vector<uint8_t> & use_int = uit->second;
+                std::string const & use_name = kv.first;
+                std::vector<uint8_t> & use_int = kv.second;
                 std::vector<indicator> & use_ind =
                     wrapper->use_indicators_v[use_name];
                 wrapper->st.exchange(use(use_int, use_ind, use_name));
@@ -3395,14 +3342,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         }
         {
             // int16
-            typedef std::map<std::string,
-                std::vector<int16_t> >::iterator iterator;
-            iterator uit = wrapper->use_int16_v.begin();
-            iterator const uend = wrapper->use_int16_v.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv  : wrapper->use_int16_v)
             {
-                std::string const & use_name = uit->first;
-                std::vector<int16_t> & use_int = uit->second;
+                std::string const & use_name = kv.first;
+                std::vector<int16_t> & use_int = kv.second;
                 std::vector<indicator> & use_ind =
                     wrapper->use_indicators_v[use_name];
                 wrapper->st.exchange(use(use_int, use_ind, use_name));
@@ -3410,14 +3353,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         }
         {
             // uint16
-            typedef std::map<std::string,
-                std::vector<uint16_t> >::iterator iterator;
-            iterator uit = wrapper->use_uint16_v.begin();
-            iterator const uend = wrapper->use_uint16_v.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv  : wrapper->use_uint16_v)
             {
-                std::string const & use_name = uit->first;
-                std::vector<uint16_t> & use_int = uit->second;
+                std::string const & use_name = kv.first;
+                std::vector<uint16_t> & use_int = kv.second;
                 std::vector<indicator> & use_ind =
                     wrapper->use_indicators_v[use_name];
                 wrapper->st.exchange(use(use_int, use_ind, use_name));
@@ -3425,14 +3364,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         }
         {
             // int32
-            typedef std::map<std::string,
-                std::vector<int32_t> >::iterator iterator;
-            iterator uit = wrapper->use_int32_v.begin();
-            iterator const uend = wrapper->use_int32_v.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv  : wrapper->use_int32_v)
             {
-                std::string const & use_name = uit->first;
-                std::vector<int32_t> & use_int = uit->second;
+                std::string const & use_name = kv.first;
+                std::vector<int32_t> & use_int = kv.second;
                 std::vector<indicator> & use_ind =
                     wrapper->use_indicators_v[use_name];
                 wrapper->st.exchange(use(use_int, use_ind, use_name));
@@ -3440,14 +3375,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         }
         {
             // uint32
-            typedef std::map<std::string,
-                std::vector<uint32_t> >::iterator iterator;
-            iterator uit = wrapper->use_uint32_v.begin();
-            iterator const uend = wrapper->use_uint32_v.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv  : wrapper->use_uint32_v)
             {
-                std::string const & use_name = uit->first;
-                std::vector<uint32_t> & use_int = uit->second;
+                std::string const & use_name = kv.first;
+                std::vector<uint32_t> & use_int = kv.second;
                 std::vector<indicator> & use_ind =
                     wrapper->use_indicators_v[use_name];
                 wrapper->st.exchange(use(use_int, use_ind, use_name));
@@ -3455,14 +3386,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         }
         {
             // int64
-            typedef std::map<std::string,
-                std::vector<int64_t> >::iterator iterator;
-            iterator uit = wrapper->use_int64_v.begin();
-            iterator const uend = wrapper->use_int64_v.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv  : wrapper->use_int64_v)
             {
-                std::string const & use_name = uit->first;
-                std::vector<int64_t> & use_longlong = uit->second;
+                std::string const & use_name = kv.first;
+                std::vector<int64_t> & use_longlong = kv.second;
                 std::vector<indicator> & use_ind =
                     wrapper->use_indicators_v[use_name];
                 wrapper->st.exchange(use(use_longlong, use_ind, use_name));
@@ -3470,14 +3397,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         }
         {
             // uint64
-            typedef std::map<std::string,
-                std::vector<uint64_t> >::iterator iterator;
-            iterator uit = wrapper->use_uint64_v.begin();
-            iterator const uend = wrapper->use_uint64_v.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv  : wrapper->use_uint64_v)
             {
-                std::string const & use_name = uit->first;
-                std::vector<uint64_t> & use_longlong = uit->second;
+                std::string const & use_name = kv.first;
+                std::vector<uint64_t> & use_longlong = kv.second;
                 std::vector<indicator> & use_ind =
                     wrapper->use_indicators_v[use_name];
                 wrapper->st.exchange(use(use_longlong, use_ind, use_name));
@@ -3485,14 +3408,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         }
         {
             // doubles
-            typedef std::map<std::string,
-                std::vector<double> >::iterator iterator;
-            iterator uit = wrapper->use_doubles_v.begin();
-            iterator const uend = wrapper->use_doubles_v.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv  : wrapper->use_doubles_v)
             {
-                std::string const & use_name = uit->first;
-                std::vector<double> & use_double = uit->second;
+                std::string const & use_name = kv.first;
+                std::vector<double> & use_double = kv.second;
                 std::vector<indicator> & use_ind =
                     wrapper->use_indicators_v[use_name];
                 wrapper->st.exchange(use(use_double, use_ind, use_name));
@@ -3500,14 +3419,10 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
         }
         {
             // dates
-            typedef std::map<std::string,
-                std::vector<std::tm> >::iterator iterator;
-            iterator uit = wrapper->use_dates_v.begin();
-            iterator const uend = wrapper->use_dates_v.end();
-            for ( ; uit != uend; ++uit)
+            for (auto& kv  : wrapper->use_dates_v)
             {
-                std::string const & use_name = uit->first;
-                std::vector<std::tm> & use_date = uit->second;
+                std::string const & use_name = kv.first;
+                std::vector<std::tm> & use_date = kv.second;
                 std::vector<indicator> & use_ind =
                     wrapper->use_indicators_v[use_name];
                 wrapper->st.exchange(use(use_date, use_ind, use_name));
