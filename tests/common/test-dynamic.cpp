@@ -666,10 +666,9 @@ TEST_CASE_METHOD(common_tests, "Dynamic binding with rowset", "[core][dynamic][t
         rowset<PhonebookEntry> rs = (sql.prepare << "select * from soci_test");
 
         int count = 0;
-        for (rowset<PhonebookEntry>::const_iterator it = rs.begin(); it != rs.end(); ++it)
+        for (PhonebookEntry const& p2 : rs)
         {
             ++count;
-            PhonebookEntry const& p2 = (*it);
             if (p2.name == "david")
             {
                 // see type_conversion<PhonebookEntry>
