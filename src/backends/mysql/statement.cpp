@@ -9,7 +9,6 @@
 #define SOCI_MYSQL_SOURCE
 #include "soci/mysql/soci-mysql.h"
 #include <cctype>
-#include <ciso646>
 
 using namespace soci;
 using namespace soci::details;

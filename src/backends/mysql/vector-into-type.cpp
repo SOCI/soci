@@ -11,7 +11,6 @@
 #include "soci-mktime.h"
 #include "common.h"
 #include "soci/soci-platform.h"
-#include <ciso646>
 #include <cstdint>
 #include <cstdlib>
 
