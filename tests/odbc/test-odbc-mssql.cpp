@@ -180,9 +180,8 @@ TEST_CASE("MS SQL table records count", "[odbc][mssql][count]")
     soci::rowset<soci::row> rs = (sql.prepare << sql_query);
 
     // Check that we can access the results.
-    for (auto it = rs.begin(); it != rs.end(); ++it)
+    for (soci::row const& row : rs)
     {
-        soci::row const& row = *it;
         std::string instance_name = row.get<std::string>(0);
         std::string database_name = row.get<std::string>(1);
         std::string table_name = row.get<std::string>(2);
