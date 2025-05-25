@@ -9,7 +9,6 @@
 #define SOCI_MYSQL_SOURCE
 #include "soci/mysql/soci-mysql.h"
 #include <cctype>
-#include <ciso646>
 
 using namespace soci;
 using namespace soci::details;
@@ -153,9 +152,9 @@ mysql_statement_backend::execute(int number)
         }
 
         std::string query;
-        if (not useByPosBuffers_.empty() or not useByNameBuffers_.empty())
+        if (!useByPosBuffers_.empty() || !useByNameBuffers_.empty())
         {
-            if (not useByPosBuffers_.empty() and not useByNameBuffers_.empty())
+            if (!useByPosBuffers_.empty() && !useByNameBuffers_.empty())
             {
                 throw soci_error(
                     "Binding for use elements must be either by position "
@@ -166,7 +165,7 @@ mysql_statement_backend::execute(int number)
             {
                 std::vector<char *> paramValues;
 
-                if (not useByPosBuffers_.empty())
+                if (!useByPosBuffers_.empty())
                 {
                     // use elements bind by position
                     // the map of use buffers can be traversed
@@ -202,7 +201,7 @@ mysql_statement_backend::execute(int number)
                 //cerr << "queryChunks_.size(): "<<queryChunks_.size()<<endl;
                 //cerr << "paramValues.size(): "<<paramValues.size()<<endl;
                 if (queryChunks_.size() != paramValues.size()
-                    and queryChunks_.size() != paramValues.size() + 1)
+                    && queryChunks_.size() != paramValues.size() + 1)
                 {
                     throw soci_error("Wrong number of parameters.");
                 }
@@ -266,7 +265,7 @@ mysql_statement_backend::execute(int number)
                 mysql_errno(session_.conn_));
         }
         result_ = mysql_store_result(session_.conn_);
-        if (result_ == NULL and mysql_field_count(session_.conn_) != 0)
+        if (result_ == NULL && mysql_field_count(session_.conn_) != 0)
         {
             throw mysql_soci_error(mysql_error(session_.conn_),
                 mysql_errno(session_.conn_));

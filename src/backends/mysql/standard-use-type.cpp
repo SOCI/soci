@@ -15,7 +15,6 @@
 #include "soci-mktime.h"
 #include "soci/blob.h"
 // std
-#include <ciso646>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>

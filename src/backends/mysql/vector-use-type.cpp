@@ -13,7 +13,6 @@
 #include "soci-dtocstr.h"
 #include "soci-mktime.h"
 // std
-#include <ciso646>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>

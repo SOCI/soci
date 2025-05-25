@@ -12,7 +12,6 @@
 // std
 #include <cctype>
 #include <cerrno>
-#include <ciso646>
 #include <climits>
 #include <cstdio>
 #include <cstdlib>
@@ -275,7 +274,7 @@ void parse_connect_string(const string & connectString,
             *password = val;
             *password_p = true;
         }
-        else if ((par == "db" || par == "dbname" || par == "service") and !*db_p)
+        else if ((par == "db" || par == "dbname" || par == "service") && !*db_p)
         {
             *db = val;
             *db_p = true;
