@@ -1,5 +1,5 @@
-# Continuous integration workflow for SOCI.
-name: GitHub CI
+# Continuous integration workflow for SOCI Unix builds.
+name: Unix builds
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
     paths-ignore:
       - .circleci/**
       - .cirrus.yml
+      - .github/workflows/ci_msw.yml
       - .github/workflows/codeql.yml
       - appveyor.yml
   pull_request:
@@ -17,6 +18,7 @@ on:
     paths-ignore:
       - .circleci/**
       - .cirrus.yml
+      - .github/workflows/ci_msw.yml
       - .github/workflows/codeql.yml
       - appveyor.yml
   workflow_dispatch:

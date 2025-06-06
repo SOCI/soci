@@ -1,0 +1,67 @@
+# Continuous integration workflow for SOCI Windows builds.
+name: Windows builds
+
+on:
+  push:
+    branches:
+      - master
+      - 'release/**'
+    paths-ignore:
+      - .circleci/**
+      - .cirrus.yml
+      - .github/workflows/ci.yml
+      - .github/workflows/codeql.yml
+      - appveyor.yml
+  pull_request:
+    branches:
+      - master
+    paths-ignore:
+      - .circleci/**
+      - .cirrus.yml
+      - .github/workflows/ci.yml
+      - .github/workflows/codeql.yml
+      - appveyor.yml
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - lib_type: shared
+            build_type: Debug
+          - lib_type: shared
+            build_type: Release
+            unity_build: true
+
+    runs-on: windows-2022
+    name: MSVS ${{ matrix.lib_type }} ${{ matrix.build_type }} ${{ matrix.unity_build ? '(unity build)' : '' }}
+
+    env:
+      SOCI_CI: true
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up MSVS environment
+        uses: seanmiddleditch/gha-setup-vsdevenv@v5
+
+      - name: Configure
+        run: |
+          $soci_shared = "${{ matrix.lib_type == shared }}" ? "ON" : "OFF"
+          $soci_enable_unity_build = "${{ matrix.unity_build }}" ? "ON" : "OFF"
+          cmake -S . -B build .. -GNinja `
+            -DCMAKE_VERBOSE_MAKEFILE=ON `
+            -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
+            -DCMAKE_UNITY_BUILD=$soci_enable_unity_build `
+            -DSOCI_SHARED=$soci_shared `
+            -DSOCI_ENABLE_WERROR=ON
+
+      - name: Build
+        run: |
+          cmake --build build
+
+      - name: Test
+        run: |
+          ctest --test-dir build -V --timeout 300 --output-on-failure
