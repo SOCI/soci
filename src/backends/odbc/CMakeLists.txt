@@ -25,6 +25,7 @@ soci_define_backend_target(
     "common.cpp"
   HEADER_FILES
     "${PROJECT_SOURCE_DIR}/include/soci/odbc/soci-odbc.h"
+    "${PROJECT_SOURCE_DIR}/include/soci/odbc/common.h"
   MISSING_DEPENDENCY_BEHAVIOR "${DEPENDENCY_MODE}"
 )
 
