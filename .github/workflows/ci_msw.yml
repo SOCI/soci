@@ -35,7 +35,7 @@ jobs:
             unity_build: true
 
     runs-on: windows-2022
-    name: MSVS ${{ matrix.lib_type }} ${{ matrix.build_type }} ${{ matrix.unity_build ? '(unity build)' : '' }}
+    name: MSVS ${{ matrix.lib_type }} ${{ matrix.build_type }} ${{ matrix.unity_build && '(unity build)' || '' }}
 
     env:
       SOCI_CI: true
