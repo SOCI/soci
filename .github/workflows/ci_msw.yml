@@ -49,7 +49,7 @@ jobs:
 
       - name: Configure
         run: |
-          $soci_shared = "${{ matrix.lib_type == shared }}" ? "ON" : "OFF"
+          $soci_shared = "${{ matrix.lib_type }}" == "shared" ? "ON" : "OFF"
           $soci_enable_unity_build = "${{ matrix.unity_build }}" ? "ON" : "OFF"
           cmake -S . -B build .. -GNinja `
             -DCMAKE_VERBOSE_MAKEFILE=ON `
