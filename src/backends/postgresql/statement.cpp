@@ -230,7 +230,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
             // prepare for single-row retrieval
 
             int result = PQsendPrepare(session_.conn_, statementName.c_str(),
-                query_.c_str(), ssize(names_), NULL);
+                query_.c_str(), isize(names_), NULL);
             if (result != 1)
             {
                 throw_soci_error(session_.conn_,
@@ -245,7 +245,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
 
             postgresql_result result(session_,
                 PQprepare(session_.conn_, statementName.c_str(),
-                    query_.c_str(), ssize(names_), NULL));
+                    query_.c_str(), isize(names_), NULL));
             result.check_for_errors("Cannot prepare statement.");
         }
 
@@ -357,7 +357,7 @@ postgresql_statement_backend::execute(int number)
                     {
                         int result = PQsendQueryPrepared(session_.conn_,
                             statementName_.c_str(),
-                            ssize(paramValues),
+                            isize(paramValues),
                             &paramValues[0], NULL, NULL, 0);
                         if (result != 1)
                         {
@@ -378,7 +378,7 @@ postgresql_statement_backend::execute(int number)
 
                         result_.reset(PQexecPrepared(session_.conn_,
                                 statementName_.c_str(),
-                                ssize(paramValues),
+                                isize(paramValues),
                                 &paramValues[0], NULL, NULL, 0));
                     }
                 }
@@ -390,7 +390,7 @@ postgresql_statement_backend::execute(int number)
                     if (single_row_mode_)
                     {
                         int result = PQsendQueryParams(session_.conn_, query_.c_str(),
-                            ssize(paramValues),
+                            isize(paramValues),
                             NULL, &paramValues[0], NULL, NULL, 0);
                         if (result != 1)
                         {
@@ -410,7 +410,7 @@ postgresql_statement_backend::execute(int number)
                         // default multi-row execution
 
                         result_.reset(PQexecParams(session_.conn_, query_.c_str(),
-                                ssize(paramValues),
+                                isize(paramValues),
                                 NULL, &paramValues[0], NULL, NULL, 0));
                     }
                 }
