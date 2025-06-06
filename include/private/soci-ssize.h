@@ -24,13 +24,17 @@ using std::ssize;
 
 #else // !C++20
 
+#include <type_traits>
+
+using ssize_t = std::make_signed<std::size_t>::type;
+
 // Provide simple implementation of C++20 std::ssize() sufficient for our needs
 // ourselves.
 
 template <typename C>
-constexpr int ssize(C const& c)
+constexpr ssize_t ssize(C const& c)
 {
-    return static_cast<int>(c.size());
+    return static_cast<ssize_t>(c.size());
 }
 
 #endif // C++20/!C++20
