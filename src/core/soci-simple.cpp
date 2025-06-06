@@ -1587,7 +1587,7 @@ SOCI_DECL int soci_into_get_size_v(statement_handle st)
         return -1;
     }
 
-    return ssize(wrapper->into_indicators_v[0]);
+    return isize(wrapper->into_indicators_v[0]);
 }
 
 SOCI_DECL void soci_into_resize_v(statement_handle st, int new_size)
@@ -2546,7 +2546,7 @@ SOCI_DECL int soci_use_get_size_v(statement_handle st)
         return -1;
     }
 
-    return ssize(wrapper->use_indicators_v.begin()->second);
+    return isize(wrapper->use_indicators_v.begin()->second);
 }
 
 SOCI_DECL void soci_use_resize_v(statement_handle st, int new_size)
@@ -3056,7 +3056,7 @@ SOCI_DECL void soci_prepare(statement_handle st, char const * query)
 
         // bind all into elements
 
-        int const into_elements = ssize(wrapper->into_types);
+        int const into_elements = isize(wrapper->into_types);
         if (wrapper->into_kind == statement_wrapper::single)
         {
             for (int i = 0; i != into_elements; ++i)

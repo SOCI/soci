@@ -149,7 +149,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
         return;
     }
 
-    int const endRow = ssize(statement_.dataCache_);
+    int const endRow = isize(statement_.dataCache_);
     for (int i = 0; i < endRow; ++i)
     {
         sqlite3_column &col = statement_.dataCache_[i][position_-1];

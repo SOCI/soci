@@ -106,7 +106,7 @@ void statement_impl::bind(values & values)
             {
                 // positional use element
 
-                int position = ssize(uses_);
+                int position = isize(uses_);
                 (*it)->bind(*this, position);
                 uses_.push_back(*it);
                 indicators_.push_back(values.indicators_[cnt]);
@@ -132,7 +132,7 @@ void statement_impl::bind(values & values)
                     }
                     else
                     {
-                        int position = ssize(uses_);
+                        int position = isize(uses_);
                         (*it)->bind(*this, position);
                         uses_.push_back(*it);
                         indicators_.push_back(values.indicators_[cnt]);
