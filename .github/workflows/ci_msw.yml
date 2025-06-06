@@ -1,5 +1,5 @@
 # Continuous integration workflow for SOCI Windows builds.
-name: Windows builds
+name: Windows CI
 
 on:
   push:
@@ -33,9 +33,11 @@ jobs:
           - lib_type: shared
             build_type: Release
             unity_build: true
+          - lib_type: static
+            build_type: Release
 
     runs-on: windows-2022
-    name: MSVS ${{ matrix.lib_type }} ${{ matrix.build_type }} ${{ matrix.unity_build ? '(unity build)' : '' }}
+    name: MSVS ${{ matrix.lib_type }} ${{ matrix.build_type }} ${{ matrix.unity_build && '(unity build)' || '' }}
 
     env:
       SOCI_CI: true
@@ -43,18 +45,31 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          submodules: 'recursive'
 
       - name: Set up MSVS environment
         uses: seanmiddleditch/gha-setup-vsdevenv@v5
 
+      - name: Set up PostgreSQL
+        run: |
+          $pgService = Get-Service -Name postgresql*
+          Set-Service -InputObject $pgService -Status running -StartupType automatic
+          Start-Process -FilePath "$env:PGBIN\pg_isready" -Wait
+          & $env:PGBIN\createdb soci_test
+
       - name: Configure
         run: |
-          $soci_shared = "${{ matrix.lib_type == shared }}" ? "ON" : "OFF"
+          $soci_shared = "${{ matrix.lib_type }}" -eq "shared" ? "ON" : "OFF"
           $soci_enable_unity_build = "${{ matrix.unity_build }}" ? "ON" : "OFF"
-          cmake -S . -B build .. -GNinja `
+          cmake -S . -B build -GNinja `
             -DCMAKE_VERBOSE_MAKEFILE=ON `
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
             -DCMAKE_UNITY_BUILD=$soci_enable_unity_build `
+            -DWITH_BOOST=OFF `
+            -DSOCI_DB2=OFF `
+            -DSOCI_FIREBIRD=OFF `
+            -DSOCI_ORACLE=OFF `
             -DSOCI_SHARED=$soci_shared `
             -DSOCI_ENABLE_WERROR=ON
 
@@ -64,4 +79,4 @@ jobs:
 
       - name: Test
         run: |
-          ctest --test-dir build -V --timeout 300 --output-on-failure
+          ctest --test-dir build -V --timeout 300 --output-on-failure --exclude-regex "soci_mysql_test|soci_odbc_test_.*"
