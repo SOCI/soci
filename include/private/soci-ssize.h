@@ -46,7 +46,17 @@ constexpr ssize_t ssize(C const& c)
     Cast size_t to integer safely, raising exception if the value is out of
     range.
  */
-constexpr inline int icast(size_t n)
+#ifdef _MSC_VER
+    #if _MSC_VER < 1910
+        // MSVS 2015 can't compile "if" and "throw" in constexpr functions.
+        #define SOCI_NO_ICAST_CONSTEXPR
+    #endif
+#endif
+
+#ifndef SOCI_NO_ICAST_CONSTEXPR
+constexpr
+#endif
+inline int icast(size_t n)
 {
     if ( n >= INT_MAX )
     {
