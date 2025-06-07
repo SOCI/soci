@@ -103,8 +103,6 @@ if (NOT TARGET MySQL::MySQL)
 
   set(MySQL_COMPILE_DEFINITIONS "")
 
-  include(CheckCXXSourceCompiles)
-
   if(WIN32)
     find_path(MySQL_INCLUDE_DIRS mysql.h
         PATHS
