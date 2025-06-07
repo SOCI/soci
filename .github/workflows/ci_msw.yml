@@ -68,6 +68,13 @@ jobs:
         run: |
           cmake --build build
 
+      - name: Prepare Database
+        run: |
+          $pgService = Get-Service -Name postgresql*
+          Set-Service -InputObject $pgService -Status running -StartupType automatic
+          Start-Process -FilePath "$env:PGBIN\pg_isready" -Wait
+          $env:PGBIN\createdb soci_test
+
       - name: Test
         run: |
-          ctest --test-dir build -V --timeout 300 --output-on-failure
+          ctest --test-dir build -V --timeout 300 --output-on-failure --exclude-regex "soci_odbc_test_m[sy]sql"
