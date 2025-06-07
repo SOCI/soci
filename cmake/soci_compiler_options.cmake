@@ -55,7 +55,7 @@ if (MSVC)
     message(FATAL_ERROR "Using a non-default linker is not supported when using MSVC")
   endif()
 
-  target_compile_options(soci_compiler_interface INTERFACE "/bigobj" "/utf-8")
+  target_compile_options(soci_compiler_interface INTERFACE "/nologo" "/bigobj" "/utf-8")
 else()
 
   if (SOCI_ENABLE_WERROR)
