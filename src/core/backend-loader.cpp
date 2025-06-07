@@ -14,9 +14,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#ifndef _MSC_VER
-#include <stdint.h>
-#endif
 
 using namespace soci;
 using namespace soci::dynamic_backends;
