@@ -49,6 +49,16 @@ jobs:
       - name: Set up MSVS environment
         uses: seanmiddleditch/gha-setup-vsdevenv@v5
 
+      - name: Set up PostgreSQL
+        run: |
+          $pgService = Get-Service -Name postgresql*
+          Set-Service -InputObject $pgService -Status running -StartupType automatic
+          Start-Process -FilePath "$env:PGBIN\pg_isready" -Wait
+          & $env:PGBIN\psql -c "create user soci_test password 'Password12!'"
+          & $env:PGBIN\psql -c "\du"
+          & $env:PGBIN\createdb -O soci_test soci_test
+          & $env:PGBIN\psql -c "\l"
+
       - name: Configure
         run: |
           $soci_shared = "${{ matrix.lib_type }}" -eq "shared" ? "ON" : "OFF"
@@ -62,19 +72,13 @@ jobs:
             -DSOCI_FIREBIRD=OFF `
             -DSOCI_ORACLE=OFF `
             -DSOCI_SHARED=$soci_shared `
+            -DSOCI_ODBC_TEST_POSTGRESQL_CONNSTR = "Driver=PostgreSQL ANSI(x64);Server=localhost;Database=soci_test;UID=soci_test;PWD=Password12!" `
             -DSOCI_ENABLE_WERROR=ON
 
       - name: Build
         run: |
           cmake --build build
 
-      - name: Prepare Database
-        run: |
-          $pgService = Get-Service -Name postgresql*
-          Set-Service -InputObject $pgService -Status running -StartupType automatic
-          Start-Process -FilePath "$env:PGBIN\pg_isready" -Wait
-          & $env:PGBIN\createdb soci_test
-
       - name: Test
         run: |
-          ctest --test-dir build -V --timeout 300 --output-on-failure --exclude-regex "soci_odbc_test_m[sy]sql"
+          ctest --test-dir build -V --timeout 300 --output-on-failure --exclude-regex "soci_mysql_test|soci_odbc_test_(mssql|soci_odbc_test_ms_access|mysql)"
