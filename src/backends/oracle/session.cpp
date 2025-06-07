@@ -124,7 +124,7 @@ sb4 fo_callback(void * /* svchp */, void * /* envhp */, void * fo_ctx,
 
 oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     std::string const & userName, std::string const & password, int mode,
-    bool decimals_as_strings, int charset, int ncharset)
+    bool decimals_as_strings, ub2 charset, ub2 ncharset)
     : envhp_(NULL), srvhp_(NULL), errhp_(NULL), svchp_(NULL), usrhp_(NULL),
       decimals_as_strings_(decimals_as_strings)
 {
