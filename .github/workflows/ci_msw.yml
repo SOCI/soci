@@ -57,6 +57,7 @@ jobs:
             -DCMAKE_VERBOSE_MAKEFILE=ON `
             -DCMAKE_BUILD_TYPE=${{ matrix.build_type }} `
             -DCMAKE_UNITY_BUILD=$soci_enable_unity_build `
+            -DWITH_BOOST=OFF `
             -DSOCI_DB2=OFF `
             -DSOCI_FIREBIRD=OFF `
             -DSOCI_ORACLE=OFF `
