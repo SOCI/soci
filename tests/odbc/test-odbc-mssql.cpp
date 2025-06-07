@@ -180,6 +180,7 @@ TEST_CASE("MS SQL table records count", "[odbc][mssql][count]")
     soci::rowset<soci::row> rs = (sql.prepare << sql_query);
 
     // Check that we can access the results.
+    bool hasTables = false;
     for (soci::row const& row : rs)
     {
         std::string instance_name = row.get<std::string>(0);
@@ -193,10 +194,10 @@ TEST_CASE("MS SQL table records count", "[odbc][mssql][count]")
         INFO("Table " << instance_name << "." << table_name <<
              " has " << number_of_records << " records");
         CHECK( database_name == "master" );
-        return;
+        hasTables = true;
     }
 
-    FAIL("No tables found in the master database");
+    CHECK(hasTables);
 }
 
 // DDL Creation objects for common tests

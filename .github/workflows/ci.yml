@@ -1,5 +1,5 @@
 # Continuous integration workflow for SOCI Unix builds.
-name: Unix builds
+name: Unix CI
 
 on:
   push:
