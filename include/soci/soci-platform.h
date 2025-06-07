@@ -29,42 +29,11 @@
 #define LL_FMT_FLAGS "ll"
 #endif
 
-// Portability hacks for Microsoft Visual C++ compiler
 #ifdef _MSC_VER
-#include <stdlib.h>
-
 //Disables warnings about STL objects need to have dll-interface and/or
 //base class must have dll interface
 #pragma warning(disable:4251 4275)
-
-
-// Define if you have the vsnprintf variants.
-#if _MSC_VER < 1500
-# define vsnprintf _vsnprintf
 #endif
-
-// Define if you have the snprintf variants.
-#if _MSC_VER < 1900
-# define snprintf _snprintf
-#endif
-
-// Define if you have the strtoll and strtoull variants.
-#if _MSC_VER < 1300
-# error "Visual C++ versions prior 1300 don't support _strtoi64 and _strtoui64"
-#elif _MSC_VER >= 1300 && _MSC_VER < 1800
-namespace std {
-    inline long long strtoll(char const* str, char** str_end, int base)
-    {
-        return _strtoi64(str, str_end, base);
-    }
-
-    inline unsigned long long strtoull(char const* str, char** str_end, int base)
-    {
-        return _strtoui64(str, str_end, base);
-    }
-}
-#endif // _MSC_VER < 1800
-#endif // _MSC_VER
 
 #if defined(__CYGWIN__) || defined(__MINGW32__)
 #include <stdlib.h>
