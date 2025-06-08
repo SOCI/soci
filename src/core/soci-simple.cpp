@@ -897,7 +897,7 @@ bool string_to_date(char const * val, std::tm & /* out */ dt,
     int hour;
     int minute;
     int second;
-    int const converted = std::sscanf(val, "%d %d %d %d %d %d",
+    int const converted = soci::sscanf(val, "%d %d %d %d %d %d",
         &year, &month, &day, &hour, &minute, &second);
     if (converted != 6)
     {

@@ -632,7 +632,7 @@ server_version get_postgresql_version(soci::session& sql)
     std::string version;
     std::pair<int,int> result;
     sql << "select version()",into(version);
-    if (sscanf(version.c_str(),"PostgreSQL %i.%i", &result.first, &result.second) < 2)
+    if (soci::sscanf(version.c_str(),"PostgreSQL %i.%i", &result.first, &result.second) < 2)
     {
         throw std::runtime_error("Failed to retrieve PostgreSQL version number");
     }

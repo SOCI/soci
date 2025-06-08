@@ -219,7 +219,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         nlsServiceLen = serviceName.size();
         if (nlsServiceLen < serviceBufLen)
         {
-            std::strcpy(nlsService, serviceName.c_str());
+            strncpy(nlsService, serviceName.c_str(), nlsServiceLen + 1);
         }
         else
         {
@@ -229,7 +229,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         nlsUserNameLen = userName.size();
         if (nlsUserNameLen < authBufLen)
         {
-            std::strcpy(nlsUserName, userName.c_str());
+            strncpy(nlsUserName, userName.c_str(), nlsUserNameLen + 1);
         }
         else
         {
@@ -239,7 +239,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         nlsPasswordLen = password.size();
         if (nlsPasswordLen < authBufLen)
         {
-            std::strcpy(nlsPassword, password.c_str());
+            strncpy(nlsPassword, password.c_str(), nlsPasswordLen + 1);
         }
         else
         {

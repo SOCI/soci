@@ -55,7 +55,7 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind)
         if (ind != NULL && ind[i] == i_null)
         {
             buf = new char[5];
-            std::strcpy(buf, "NULL");
+            strncpy(buf, "NULL", 5);
         }
         else
         {
@@ -195,7 +195,7 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind)
                     std::string const s = double_to_cstring(v[i]);
 
                     buf = new char[s.size() + 1];
-                    std::strcpy(buf, s.c_str());
+                    strncpy(buf, s.c_str(), s.size() + 1);
                 }
                 break;
             case x_stdtm:

@@ -8,11 +8,6 @@
 #ifndef SOCI_PLATFORM_H_INCLUDED
 #define SOCI_PLATFORM_H_INCLUDED
 
-//disable MSVC deprecated warnings
-#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
 #include <stdarg.h>
 #include <string.h>
 #include <string>
@@ -120,5 +115,48 @@ private: \
 #else
     #define SOCI_DUMMY_RETURN(x) return x
 #endif
+
+// Provide some wrappers for standard functions avoiding deprecation warnings
+// from MSVC.
+namespace soci
+{
+
+#ifdef _MSC_VER
+
+inline const char* getenv(const char* name)
+{
+  #pragma warning(push)
+  #pragma warning(disable:4996)
+
+  return std::getenv(name);
+
+  #pragma warning(pop)
+}
+
+inline int sscanf(const char* str, const char* format, ...)
+{
+  va_list args;
+  va_start(args, format);
+
+  const int result = vsscanf_s(str, format, args);
+
+  va_end(args);
+  return result;
+}
+
+inline char* strncpy(char* dest, const char* src, size_t n)
+{
+  strncpy_s(dest, n, src, _TRUNCATE);
+  return dest;
+}
+
+#else // !_MSC_VER
+
+using std::getenv;
+using std::sscanf;
+using std::strncpy;
+
+#endif // MSC_VER/!_MSC_VER
+}
 
 #endif // SOCI_PLATFORM_H_INCLUDED

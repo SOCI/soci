@@ -82,10 +82,10 @@ odbc_soci_error::interpret_odbc_error(SQLSMALLINT htype,
     if (socierror)
     {
         // Use our own error message if we failed to retrieve the ODBC one.
-        strcpy(reinterpret_cast<char*>(message_), socierror);
+        strncpy(reinterpret_cast<char*>(message_), socierror, sizeof(message_));
 
         // Use "General warning" SQLSTATE code.
-        strcpy(reinterpret_cast<char*>(sqlstate_), "01000");
+        strncpy(reinterpret_cast<char*>(sqlstate_), "01000", sizeof(sqlstate_));
 
         sqlcode_ = 0;
     }

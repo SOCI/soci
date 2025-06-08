@@ -50,12 +50,12 @@ TEST_CASE("SQLite connection string", "[sqlite][connstring]")
 
     // Finally allow testing arbitrary connection strings by specifying them in
     // the environment variables.
-    if (auto const connstr = std::getenv("SOCI_TEST_CONNSTR_GOOD"))
+    if (auto const connstr = soci::getenv("SOCI_TEST_CONNSTR_GOOD"))
     {
         CHECK_NOTHROW(soci::session(backEnd, connstr));
     }
 
-    if (auto const connstr = std::getenv("SOCI_TEST_CONNSTR_BAD"))
+    if (auto const connstr = soci::getenv("SOCI_TEST_CONNSTR_BAD"))
     {
         CHECK_THROWS_AS(soci::session(backEnd, connstr), soci_error);
     }
@@ -877,7 +877,14 @@ TEST_CASE("SQLite std::tm bind", "[sqlite][std-tm-bind]")
 
     std::time_t datetimeEpoch = 1491307200; // 2017-04-04 12:00:00
 
-    std::tm datetime = *std::gmtime(&datetimeEpoch);
+    std::tm datetime;
+
+#ifdef _MSC_VER
+    gmtime_s(&datetime, &datetimeEpoch);
+#else
+    datetime = *std::gmtime(&datetimeEpoch);
+#endif
+
     soci::rowset<std::tm> rs = (sql.prepare << "select date from soci_test where date=:dt", soci::use(datetime));
 
     std::vector<std::tm> result;

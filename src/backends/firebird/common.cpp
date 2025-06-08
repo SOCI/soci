@@ -138,14 +138,14 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
             || sqltype == SQL_TYPE_DATE)
     {
         unsigned short year, month, day, hour, min, sec;
-        if (std::sscanf(s, "%hu-%hu-%hu %hu:%hu:%hu",
+        if (soci::sscanf(s, "%hu-%hu-%hu %hu:%hu:%hu",
                     &year, &month, &day, &hour, &min, &sec) != 6)
         {
-            if (std::sscanf(s, "%hu-%hu-%huT%hu:%hu:%hu",
+            if (soci::sscanf(s, "%hu-%hu-%huT%hu:%hu:%hu",
                         &year, &month, &day, &hour, &min, &sec) != 6)
             {
                 hour = min = sec = 0;
-                if (std::sscanf(s, "%hu-%hu-%hu", &year, &month, &day) != 3)
+                if (soci::sscanf(s, "%hu-%hu-%hu", &year, &month, &day) != 3)
                 {
                     throw soci_error("Could not parse timestamp value.");
                 }
@@ -165,7 +165,7 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
     else if (sqltype == SQL_TYPE_TIME)
     {
         unsigned short hour, min, sec;
-        if (std::sscanf(s, "%hu:%hu:%hu", &hour, &min, &sec) != 3)
+        if (soci::sscanf(s, "%hu:%hu:%hu", &hour, &min, &sec) != 3)
         {
             throw soci_error("Could not parse timestamp value.");
         }
