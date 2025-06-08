@@ -90,31 +90,6 @@ namespace std {
     #endif
 #endif
 
-// Define SOCI_ALLOW_DEPRECATED_BEGIN and SOCI_ALLOW_DEPRECATED_END
-// Ref.: https://www.fluentcpp.com/2019/08/30/how-to-disable-a-warning-in-cpp/
-#if defined(__GNUC__) || defined(__clang__)
-# define SOCI_ALLOW_DEPRECATED_BEGIN \
-    _Pragma("GCC diagnostic push") \
-    _Pragma("GCC diagnostic ignored \"-Wdeprecated\"") \
-    _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
-# define SOCI_ALLOW_DEPRECATED_END \
-    _Pragma("GCC diagnostic pop")
-#elif defined(_MSC_VER)
-# define SOCI_ALLOW_DEPRECATED_BEGIN \
-    __pragma(warning(push)) \
-    __pragma(warning(disable: 4973 )) \
-    __pragma(warning(disable: 4974 )) \
-    __pragma(warning(disable: 4995 )) \
-    __pragma(warning(disable: 4996 ))
-# define SOCI_ALLOW_DEPRECATED_END \
-    __pragma(warning(pop))
-# define SOCI_DONT_WARN(statement) statement
-#else
-# pragma message("WARNING: SOCI_ALLOW_DEPRECATED_* not available for this compilet")
-# define SOCI_ALLOW_DEPRECATED_BEGIN
-# define SOCI_ALLOW_DEPRECATED_END
-#endif
-
 #define SOCI_NOT_ASSIGNABLE(classname) \
 public: \
     classname(const classname&) = default; \
