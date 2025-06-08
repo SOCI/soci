@@ -154,12 +154,15 @@ if (WITH_BOOST)
   endif()
 endif()
 
+target_link_libraries(soci_core
+  PUBLIC
+    $<BUILD_INTERFACE:soci_compiler_interface>
+)
+
 if (NOT MSVC)
   find_package(Threads REQUIRED)
 
   target_link_libraries(soci_core
-    PUBLIC
-      $<BUILD_INTERFACE:soci_compiler_interface>
     PRIVATE
       Threads::Threads
       ${CMAKE_DL_LIBS}
