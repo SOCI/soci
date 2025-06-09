@@ -11,11 +11,6 @@
 
 #include <cctype>
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable:4355 4702)
-#endif
-
 using namespace soci;
 using namespace soci::details;
 
@@ -121,7 +116,3 @@ void mysql_blob_backend::load_from_hex_str(const char *str, std::size_t length)
         buffer_[i] = (decode_hex_digit(str[2 + 2 * i]) << 4) + decode_hex_digit(str[2 + 2 * i + 1]);
     }
 }
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif

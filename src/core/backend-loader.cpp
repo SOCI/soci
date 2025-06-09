@@ -14,9 +14,6 @@
 #include <sstream>
 #include <string>
 #include <vector>
-#ifndef _MSC_VER
-#include <stdint.h>
-#endif
 
 using namespace soci;
 using namespace soci::dynamic_backends;
@@ -224,7 +221,7 @@ std::vector<std::string>& get_default_search_paths()
     if (!paths.empty())
         return paths;
 
-    char const* const penv = std::getenv("SOCI_BACKENDS_PATH");
+    char const* const penv = soci::getenv("SOCI_BACKENDS_PATH");
     std::string const env(penv ? penv : "");
     if (env.empty())
     {

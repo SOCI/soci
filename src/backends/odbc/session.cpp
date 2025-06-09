@@ -70,7 +70,7 @@ odbc_session_backend::odbc_session_backend(
         // one of SQL_DRIVER_XXX constants but don't check for the exact value in
         // case more of them are added in the future, the ODBC driver will return
         // an error if we pass it an invalid value anyhow.
-        if (std::sscanf(completionString.c_str(), "%u", &completion) != 1)
+        if (soci::sscanf(completionString.c_str(), "%u", &completion) != 1)
         {
           throw soci_error("Invalid non-numeric driver completion option value \"" +
                             completionString + "\".");
@@ -165,7 +165,7 @@ void odbc_session_backend::configure_connection()
         // need to parse it fully, we just need the major version which,
         // conveniently, comes first.
         unsigned major_ver = 0;
-        if (std::sscanf(product_ver, "%u", &major_ver) != 1)
+        if (soci::sscanf(product_ver, "%u", &major_ver) != 1)
         {
             throw soci_error("DBMS version \"" + std::string(product_ver) +
                              "\" in unrecognizable format.");

@@ -144,7 +144,7 @@ TEST_CASE("Firebird char types", "[firebird][string]")
         char buf[20];
         std::string buf_str;
         sql << "select p1 from test2", into(buf_str);
-        std::strcpy(buf, buf_str.c_str());
+        soci::strncpy(buf, buf_str.c_str(), sizeof(buf));
 
         CHECK(std::strncmp(buf, msg, 5) == 0);
         // This test works only for charset none

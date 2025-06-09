@@ -897,7 +897,8 @@ statement_impl::make_vector_use_type_backend()
     return backEnd_->make_vector_use_type_backend();
 }
 
-SOCI_NORETURN
+[[noreturn]]
+void
 statement_impl::rethrow_current_exception_with_context(char const* operation)
 {
     try

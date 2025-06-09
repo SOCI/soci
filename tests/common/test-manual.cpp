@@ -154,7 +154,7 @@ TEST_CASE_METHOD(common_tests, "Failover", "[keep-alive][.]")
 // SOCI_TEST_SQL environment variable and examine the resulting error.
 TEST_CASE_METHOD(common_tests, "Execute", "[.]")
 {
-    auto const text = std::getenv("SOCI_TEST_SQL");
+    auto const text = soci::getenv("SOCI_TEST_SQL");
     if (!text)
     {
         FAIL( "SOCI_TEST_SQL environment variable must be set." );

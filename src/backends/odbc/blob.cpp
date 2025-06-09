@@ -8,11 +8,6 @@
 #define SOCI_ODBC_SOURCE
 #include "soci/odbc/soci-odbc.h"
 
-#ifdef _MSC_VER
-# pragma warning(push)
-# pragma warning(disable:4702)
-#endif
-
 using namespace soci;
 using namespace soci::details;
 
@@ -57,7 +52,3 @@ details::session_backend &odbc_blob_backend::get_session_backend()
 {
     return session_;
 }
-
-#ifdef _MSC_VER
-# pragma warning(pop)
-#endif
