@@ -3,7 +3,11 @@ include(soci_utils)
 # Defines a CMake target for a database backend.
 #
 # This function takes care of orchestrating the boilerplate that is needed in order to set up
-# a library target as used for different DB backends. Accepted arguments are
+# a library target as used for different DB backends. If the backend is being built as a shared
+# library, the respective SOCI_<uppercase-name>_SOURCE macro is defined during compilation via
+# the CMake DEFINE_SYMBOL target property to control symbol visibility.
+#
+# Accepted arguments are the following:
 #
 # NAME <name>                              Name of the backend. This function will create an alias target using this name with "SOCI::" prefix.
 # MISSING_DEPENDENCY_BEHAVIOR <behavior>   What to do if a dependency is not found. Valid values are "ERROR", "DISABLE" and "BUILTIN".
@@ -135,6 +139,7 @@ function(soci_define_backend_target)
       SOVERSION ${PROJECT_VERSION_MAJOR}
       VERSION ${PROJECT_VERSION}
       EXPORT_NAME ${DEFINE_BACKEND_NAME}
+      DEFINE_SYMBOL SOCI_${BACKEND_UPPER}_SOURCE
   )
 
   if (DEFINED ABI_SUFFIX)
