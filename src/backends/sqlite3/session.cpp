@@ -13,9 +13,15 @@
 
 #include <functional>
 #include <memory>
-#include <sqlite3.h>
 #include <sstream>
 #include <string>
+
+namespace sqlite_api
+{
+
+#include <sqlite3.h>
+
+} // namespace sqlite_api
 
 #ifdef _MSC_VER
 #pragma warning(disable:4355)

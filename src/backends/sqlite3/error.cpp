@@ -6,7 +6,15 @@
 //
 
 #include "soci/sqlite3/soci-sqlite3.h"
+
 #include <cstring>
+
+namespace sqlite_api
+{
+
+#include <sqlite3.h>
+
+} // namespace sqlite_api
 
 using namespace soci;
 
