@@ -9,7 +9,6 @@
 #pragma warning(disable : 4512)
 #endif
 
-#define SOCI_SQLITE3_SOURCE
 #include "soci-cstrtoi.h"
 #include "soci-dtocstr.h"
 #include "soci-exchange-cast.h"
@@ -330,7 +329,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                         set_in_vector(data_, i, xml);
                         break;
                     }
-                    
+
                     case db_wstring:
                         throw soci_error("Wide string data type is not supported");
                 };
