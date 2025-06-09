@@ -97,13 +97,13 @@ if (NOT TARGET MySQL::MySQL)
     endif()
   endif()
 
-  if (NOT MySQL_LIBRARIES)
+  # Under Windows, it's normal to not have neither pkg-config nor mysql_config,
+  # so don't warn about it, it's just annoying.
+  if (NOT MySQL_LIBRARIES AND NOT WIN32)
     message(WARNING "Falling back to manual MySQL search -> this might miss dependencies")
   endif()
 
   set(MySQL_COMPILE_DEFINITIONS "")
-
-  include(CheckCXXSourceCompiles)
 
   if(WIN32)
     find_path(MySQL_INCLUDE_DIRS mysql.h
