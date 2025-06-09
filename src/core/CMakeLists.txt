@@ -40,6 +40,7 @@ set_target_properties(
   SOVERSION ${PROJECT_VERSION_MAJOR}
   VERSION ${PROJECT_VERSION}
   EXPORT_NAME Core
+  DEFINE_SYMBOL SOCI_SOURCE
 )
 
 # We have to explicitly list all public header files in order for them to get

@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_SOURCE
 #include "soci/blob.h"
 #include "soci/blob-exchange.h"
 #include "soci/statement.h"
