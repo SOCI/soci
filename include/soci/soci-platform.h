@@ -47,8 +47,8 @@ namespace std {
 #  define SOCI_DECL_EXPORT __declspec(dllexport)
 #  define SOCI_DECL_IMPORT __declspec(dllimport)
 # endif
-
-#elif defined(SOCI_HAVE_VISIBILITY_SUPPORT)
+// assuming GCC-like compiler
+#else
 // note: public visibility only applied when SOCI_DLL is defined. current build
 // config will use -fvisibility=hidden or equivalent for unexported symbols
 # ifdef SOCI_DLL
