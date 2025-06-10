@@ -30,6 +30,8 @@ add_library(soci_core
     "use-type.cpp"
     "values.cpp"
 )
+# always define during compilation to control symbol visibility/export
+target_compile_definitions(soci_core PRIVATE SOCI_SOURCE)
 
 add_library(SOCI::Core ALIAS soci_core)
 
@@ -38,7 +40,6 @@ set_target_properties(
   SOVERSION ${PROJECT_VERSION_MAJOR}
   VERSION ${PROJECT_VERSION}
   EXPORT_NAME Core
-  DEFINE_SYMBOL SOCI_SOURCE
 )
 
 # We have to explicitly list all public header files in order for them to get
