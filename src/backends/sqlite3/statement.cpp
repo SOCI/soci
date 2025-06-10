@@ -15,13 +15,6 @@
 #include <functional>
 #include <string>
 
-namespace sqlite_api
-{
-
-#include <sqlite3.h>
-
-} // namespace sqlite_api
-
 #include "soci-case.h"
 
 using namespace soci;

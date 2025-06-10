@@ -21,13 +21,6 @@
 #include <sstream>
 #include <string>
 
-namespace sqlite_api
-{
-
-#include <sqlite3.h>
-
-} // namespace sqlite_api
-
 using namespace soci;
 using namespace soci::details;
 
