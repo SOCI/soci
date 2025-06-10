@@ -39,9 +39,8 @@ namespace std {
 #endif
 
 #ifdef _WIN32
-// VS2015 support: https://msdn.microsoft.com/de-de/library/6sehtctf.aspx
 # ifndef _WIN32_WINNT
-#   define _WIN32_WINNT 0x0502  // _WIN32_WINNT_WS03 (Windows Server 2003)
+#   define _WIN32_WINNT 0x0502 //_WIN32_WINNT_WS03, VS2015 support: https://msdn.microsoft.com/de-de/library/6sehtctf.aspx
 # endif
 // SOCI_DLL should be defined when SOCI is used as a DLL/DSO
 # ifdef SOCI_DLL
