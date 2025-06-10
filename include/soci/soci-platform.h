@@ -8,11 +8,6 @@
 #ifndef SOCI_PLATFORM_H_INCLUDED
 #define SOCI_PLATFORM_H_INCLUDED
 
-//disable MSVC deprecated warnings
-#if defined(_MSC_VER) && !defined(_CRT_SECURE_NO_WARNINGS)
-#define _CRT_SECURE_NO_WARNINGS
-#endif
-
 #include <stdarg.h>
 #include <string.h>
 #include <string>
@@ -29,42 +24,11 @@
 #define LL_FMT_FLAGS "ll"
 #endif
 
-// Portability hacks for Microsoft Visual C++ compiler
 #ifdef _MSC_VER
-#include <stdlib.h>
-
 //Disables warnings about STL objects need to have dll-interface and/or
 //base class must have dll interface
 #pragma warning(disable:4251 4275)
-
-
-// Define if you have the vsnprintf variants.
-#if _MSC_VER < 1500
-# define vsnprintf _vsnprintf
 #endif
-
-// Define if you have the snprintf variants.
-#if _MSC_VER < 1900
-# define snprintf _snprintf
-#endif
-
-// Define if you have the strtoll and strtoull variants.
-#if _MSC_VER < 1300
-# error "Visual C++ versions prior 1300 don't support _strtoi64 and _strtoui64"
-#elif _MSC_VER >= 1300 && _MSC_VER < 1800
-namespace std {
-    inline long long strtoll(char const* str, char** str_end, int base)
-    {
-        return _strtoi64(str, str_end, base);
-    }
-
-    inline unsigned long long strtoull(char const* str, char** str_end, int base)
-    {
-        return _strtoui64(str, str_end, base);
-    }
-}
-#endif // _MSC_VER < 1800
-#endif // _MSC_VER
 
 #if defined(__CYGWIN__) || defined(__MINGW32__)
 #include <stdlib.h>
@@ -128,31 +92,6 @@ namespace std {
     #endif
 #endif
 
-// Define SOCI_ALLOW_DEPRECATED_BEGIN and SOCI_ALLOW_DEPRECATED_END
-// Ref.: https://www.fluentcpp.com/2019/08/30/how-to-disable-a-warning-in-cpp/
-#if defined(__GNUC__) || defined(__clang__)
-# define SOCI_ALLOW_DEPRECATED_BEGIN \
-    _Pragma("GCC diagnostic push") \
-    _Pragma("GCC diagnostic ignored \"-Wdeprecated\"") \
-    _Pragma("GCC diagnostic ignored \"-Wdeprecated-declarations\"")
-# define SOCI_ALLOW_DEPRECATED_END \
-    _Pragma("GCC diagnostic pop")
-#elif defined(_MSC_VER)
-# define SOCI_ALLOW_DEPRECATED_BEGIN \
-    __pragma(warning(push)) \
-    __pragma(warning(disable: 4973 )) \
-    __pragma(warning(disable: 4974 )) \
-    __pragma(warning(disable: 4995 )) \
-    __pragma(warning(disable: 4996 ))
-# define SOCI_ALLOW_DEPRECATED_END \
-    __pragma(warning(pop))
-# define SOCI_DONT_WARN(statement) statement
-#else
-# pragma message("WARNING: SOCI_ALLOW_DEPRECATED_* not available for this compilet")
-# define SOCI_ALLOW_DEPRECATED_BEGIN
-# define SOCI_ALLOW_DEPRECATED_END
-#endif
-
 #define SOCI_NOT_ASSIGNABLE(classname) \
 public: \
     classname(const classname&) = default; \
@@ -183,5 +122,48 @@ private: \
 #else
     #define SOCI_DUMMY_RETURN(x) return x
 #endif
+
+// Provide some wrappers for standard functions avoiding deprecation warnings
+// from MSVC.
+namespace soci
+{
+
+#ifdef _MSC_VER
+
+inline const char* getenv(const char* name)
+{
+  #pragma warning(push)
+  #pragma warning(disable:4996)
+
+  return std::getenv(name);
+
+  #pragma warning(pop)
+}
+
+inline int sscanf(const char* str, const char* format, ...)
+{
+  va_list args;
+  va_start(args, format);
+
+  const int result = vsscanf_s(str, format, args);
+
+  va_end(args);
+  return result;
+}
+
+inline char* strncpy(char* dest, const char* src, size_t n)
+{
+  strncpy_s(dest, n, src, _TRUNCATE);
+  return dest;
+}
+
+#else // !_MSC_VER
+
+using std::getenv;
+using std::sscanf;
+using std::strncpy;
+
+#endif // MSC_VER/!_MSC_VER
+}
 
 #endif // SOCI_PLATFORM_H_INCLUDED

@@ -10,6 +10,8 @@
 
 #include "soci/soci.h"
 
+#include "soci-compiler.h"
+
 #include <cassert>
 #include <clocale>
 #include <cstdlib>
@@ -127,7 +129,7 @@ public:
         // environment variable can be set and then the current default locale
         // (which can itself be changed by setting LC_ALL environment variable)
         // will then be used.
-        if (std::getenv("SOCI_TEST_USE_LC_ALL"))
+        if (soci::getenv("SOCI_TEST_USE_LC_ALL"))
             std::setlocale(LC_ALL, "");
 
         return true;

@@ -38,8 +38,9 @@ public:
 
     bool init_from_string(char const* s)
     {
-        initialized_ = std::sscanf(s, "%u.%u.%u",
-                                   &major_, &minor_, &release_) == 3;
+        initialized_ = soci::sscanf(s, "%u.%u.%u",
+                                    &major_, &minor_, &release_) == 3;
+
         return initialized_;
     }
 

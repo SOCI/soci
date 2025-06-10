@@ -5,10 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifdef _MSC_VER
-#pragma warning(disable : 4512)
-#endif
-
 #include "soci-cstrtoi.h"
 #include "soci-dtocstr.h"
 #include "soci-exchange-cast.h"

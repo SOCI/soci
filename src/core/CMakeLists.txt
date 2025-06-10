@@ -5,8 +5,6 @@ set(SOCI_LIB_SUFFIX "${CMAKE_SHARED_LIBRARY_SUFFIX}" CACHE STRING "Specifies suf
 set(SOCI_DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}" CACHE STRING "Specifies suffix for the library file in debug mode")
 
 
-find_package(Threads REQUIRED)
-
 add_library(soci_core
   ${SOCI_LIB_TYPE}
     "backend-loader.cpp"
@@ -157,10 +155,17 @@ endif()
 target_link_libraries(soci_core
   PUBLIC
     $<BUILD_INTERFACE:soci_compiler_interface>
-  PRIVATE
-    Threads::Threads
-    ${CMAKE_DL_LIBS}
 )
+
+if (NOT MSVC)
+  find_package(Threads REQUIRED)
+
+  target_link_libraries(soci_core
+    PRIVATE
+      Threads::Threads
+      ${CMAKE_DL_LIBS}
+  )
+endif()
 
 if (DEFINED ABI_SUFFIX)
   set_target_properties(soci_core

@@ -45,7 +45,7 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
     if (ind != NULL && *ind == i_null)
     {
         buf_ = new char[5];
-        std::strcpy(buf_, "NULL");
+        strncpy(buf_, "NULL", 5);
     }
     else
     {
@@ -144,7 +144,7 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::string const s = double_to_cstring(d);
 
                 buf_ = new char[s.size() + 1];
-                std::strcpy(buf_, s.c_str());
+                strncpy(buf_, s.c_str(), s.size() + 1);
             }
             break;
         case x_stdtm:

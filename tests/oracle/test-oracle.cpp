@@ -1544,7 +1544,7 @@ public:
 
     bool start_testing() override
     {
-        if (!std::getenv("ORACLE_HOME"))
+        if (!soci::getenv("ORACLE_HOME"))
         {
             std::cerr << "ORACLE_HOME environment variable must be defined for Oracle tests.\n";
             return false;

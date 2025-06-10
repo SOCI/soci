@@ -16,20 +16,16 @@
 #include <cstring>
 #include <ctime>
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
-
 using namespace soci;
 using namespace soci::details;
 
 // decode charset and ncharset names
-int charset_code(const std::string & name)
+static ub2 charset_code(const std::string & name)
 {
     // Note: unofficial reference for charset ids is:
     // http://www.mydul.net/charsets.html
 
-    int code;
+    ub2 code;
 
     if (name == "utf8")
     {
@@ -95,13 +91,13 @@ oracle_session_backend * oracle_backend_factory::make_session(
         decimals_as_strings = value == "1" || value == "Y" || value == "y";
     }
 
-    int charset = 0;
+    ub2 charset = 0;
     if (params.get_option("charset", value))
     {
         charset = charset_code(value);
     }
 
-    int ncharset = 0;
+    ub2 ncharset = 0;
     if (params.get_option("ncharset", value))
     {
         ncharset = charset_code(value);

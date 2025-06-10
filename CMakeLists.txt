@@ -130,3 +130,7 @@ install(
     "${CMAKE_CURRENT_BINARY_DIR}/soci-config-version.cmake"
     DESTINATION "${SOCI_INSTALL_CMAKEDIR}"
 )
+
+# Final status
+message(STATUS "SOCI ${SOCI_VERSION} will be built as ${SOCI_LIB_TYPE} library.")
+message(STATUS "Enabled SOCI backends are: ${SOCI_ENABLED_BACKENDS}")

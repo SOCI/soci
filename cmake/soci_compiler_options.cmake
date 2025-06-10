@@ -14,14 +14,6 @@ set(SOCI_LD "" CACHE STRING "Specify a non-default linker")
 
 
 if (WIN32)
-  target_compile_definitions(soci_compiler_interface
-    INTERFACE
-      _CRT_SECURE_NO_DEPRECATE
-      _CRT_SECURE_NO_WARNINGS
-      _CRT_NONSTDC_NO_WARNING
-      _SCL_SECURE_NO_WARNINGS
-  )
-
   # Prevent the Windows header files from defining annoying macros
   # and also cut down on the definitions in general
   target_compile_definitions(soci_compiler_interface

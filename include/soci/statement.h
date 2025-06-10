@@ -11,7 +11,6 @@
 #include "soci/bind-values.h"
 #include "soci/into-type.h"
 #include "soci/into.h"
-#include "soci/noreturn.h"
 #include "soci/use-type.h"
 #include "soci/use.h"
 #include "soci/soci-backend.h"
@@ -99,7 +98,8 @@ private:
     // after adding the context in which it happened, including the provided
     // description of the operation that failed, the SQL query and, if
     // applicable, its parameters.
-    SOCI_NORETURN rethrow_current_exception_with_context(char const* operation);
+    [[noreturn]]
+    void rethrow_current_exception_with_context(char const* operation);
 
     int refCount_;
 

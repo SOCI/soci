@@ -45,7 +45,9 @@ public:
     std::size_t get_len();
 
     // offset is backend-specific
+#ifndef SOCI_SOURCE
     [[deprecated("Use read_from_start instead")]]
+#endif
     std::size_t read(std::size_t offset, void * buf, std::size_t toRead);
 
     // Extracts data from this blob into the given buffer.
@@ -58,7 +60,9 @@ public:
         std::size_t offset = 0);
 
     // offset is backend-specific
+#ifndef SOCI_SOURCE
     [[deprecated("Use write_from_start instead")]]
+#endif
     std::size_t write(std::size_t offset, const void * buf,
         std::size_t toWrite);
 

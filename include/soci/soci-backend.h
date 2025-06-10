@@ -346,11 +346,8 @@ public:
 
     // Deprecated functions with backend-specific semantics preserved only for
     // compatibility.
-    [[deprecated("Use read_from_start instead")]]
     std::size_t read(std::size_t offset, void* buf, std::size_t toRead) { return do_deprecated_read(offset, buf, toRead); }
-
-    [[deprecated("Use write_from_start instead")]]
-    virtual std::size_t write(std::size_t offset, const void* buf, std::size_t toWrite) { return do_deprecated_write(offset, buf, toWrite); }
+    std::size_t write(std::size_t offset, const void* buf, std::size_t toWrite) { return do_deprecated_write(offset, buf, toWrite); }
 
 private:
     virtual std::size_t do_deprecated_read(std::size_t offset, void* buf, std::size_t toRead) { return read_from_start(buf, toRead, offset); }

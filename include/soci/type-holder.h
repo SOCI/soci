@@ -276,6 +276,7 @@ struct type_holder_trait<uint64_t>
     static const db_type type = db_uint64;
 };
 
+// See comment before the similar test in exchange-traits.h for explanations.
 #if defined(SOCI_INT64_T_IS_LONG)
 template <>
 struct type_holder_trait<long long> : type_holder_trait<int64_t>
@@ -286,24 +287,15 @@ template <>
 struct type_holder_trait<unsigned long long> : type_holder_trait<uint64_t>
 {
 };
-#elif defined(SOCI_LONG_IS_64_BIT)
-template <>
-struct type_holder_trait<long> : type_holder_trait<int64_t>
-{
-};
-
-template <>
-struct type_holder_trait<unsigned long> : type_holder_trait<uint64_t>
-{
-};
 #else
+
 template <>
-struct type_holder_trait<long> : type_holder_trait<int32_t>
+struct type_holder_trait<long> : type_holder_trait<soci_long_t>
 {
 };
 
 template <>
-struct type_holder_trait<unsigned long> : type_holder_trait<uint32_t>
+struct type_holder_trait<unsigned long> : type_holder_trait<soci_ulong_t>
 {
 };
 #endif

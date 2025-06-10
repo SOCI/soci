@@ -21,11 +21,6 @@
 #include <sstream>
 #include <vector>
 
-#ifdef _MSC_VER
-#pragma warning(disable:4512 4511)
-#endif
-
-
 namespace soci
 {
 
@@ -329,8 +324,8 @@ struct SOCI_ORACLE_DECL oracle_session_backend : details::session_backend
         std::string const & password,
         int mode,
         bool decimals_as_strings = false,
-        int charset = 0,
-        int ncharset = 0);
+        ub2 charset = 0,
+        ub2 ncharset = 0);
 
     ~oracle_session_backend() override;
 

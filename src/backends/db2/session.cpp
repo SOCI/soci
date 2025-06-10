@@ -13,10 +13,6 @@
 
 #include <cstdio>
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
-
 using namespace soci;
 using namespace soci::details;
 
@@ -126,7 +122,7 @@ db2_session_backend::db2_session_backend(
       // one of SQL_DRIVER_XXX constants but don't check for the exact value in
       // case more of them are added in the future, the ODBC driver will return
       // an error if we pass it an invalid value anyhow.
-      if (std::sscanf(completionString.c_str(), "%u", &completion) != 1)
+      if (soci::sscanf(completionString.c_str(), "%u", &completion) != 1)
       {
         throw soci_error("Invalid non-numeric driver completion option value \"" +
                           completionString + "\".");

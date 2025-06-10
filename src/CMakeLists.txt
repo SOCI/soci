@@ -12,23 +12,8 @@ add_subdirectory(backends)
 # platform-dependent settings
 ###############################################################################
 
-include(CheckTypeSize)
-check_type_size(long SOCI_SIZEOF_LONG LANGUAGE CXX)
-
 soci_are_types_same(TYPES "int64_t" "long" OUTPUT_VARIABLE SOCI_INT64_T_IS_LONG)
 soci_are_types_same(TYPES "int8_t" "char" OUTPUT_VARIABLE SOCI_INT8_T_IS_CHAR)
-
-include(CheckCXXSourceCompiles)
-check_cxx_source_compiles(
-  "
-      __attribute__ (( visibility(\"default\") )) int f1() { return 0; }
-      __attribute__ (( visibility(\"hidden\") ))  int f2() { return 1; }
-
-      int main(int argc, char* argv[]) { f1(); f2(); return 0; }
-  "
-  SOCI_VISIBILITY_ATTRIBUTE_SUPPORTED
-)
-
 
 # Generate the soci-config.h file
 
@@ -43,8 +28,6 @@ set(CONFIG_VARS
   SOCI_ORACLE
   SOCI_POSTGRESQL
   SOCI_SQLITE3
-  SOCI_VISIBILITY_ATTRIBUTE_SUPPORTED
-  SOCI_SIZEOF_LONG
   SOCI_INT64_T_IS_LONG
   SOCI_INT8_T_IS_CHAR
 )
@@ -57,8 +40,6 @@ set(CONFIG_MACROS
   SOCI_HAVE_ORACLE
   SOCI_HAVE_POSTGRESQL
   SOCI_HAVE_SQLITE3
-  SOCI_HAVE_VISIBILITY_SUPPORT
-  SOCI_SIZEOF_LONG
   SOCI_INT64_T_IS_LONG
   SOCI_INT8_T_IS_CHAR
 )

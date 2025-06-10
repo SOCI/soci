@@ -23,7 +23,6 @@
 #include <windows.h>
 #endif
 #include <sqlext.h> // ODBC
-#include <string.h> // strcpy()
 
 namespace soci
 {

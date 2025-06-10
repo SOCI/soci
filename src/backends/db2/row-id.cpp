@@ -8,10 +8,6 @@
 
 #include "soci/db2/soci-db2.h"
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
-
 using namespace soci;
 using namespace soci::details;
 

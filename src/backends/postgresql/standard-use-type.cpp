@@ -243,5 +243,5 @@ void postgresql_standard_use_type_backend::clean_up()
 void postgresql_standard_use_type_backend::copy_from_string(std::string const& s)
 {
     buf_ = new char[s.size() + 1];
-    std::strcpy(buf_, s.c_str());
+    strncpy(buf_, s.c_str(), s.size() + 1);
 }

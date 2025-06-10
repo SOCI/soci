@@ -8,11 +8,6 @@
 
 #include "soci/mysql/soci-mysql.h"
 
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable:4355 4702)
-#endif
-
 using namespace soci;
 using namespace soci::details;
 
@@ -25,7 +20,3 @@ mysql_rowid_backend::mysql_rowid_backend(
 mysql_rowid_backend::~mysql_rowid_backend()
 {
 }
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif

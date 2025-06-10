@@ -22,12 +22,6 @@
 #include <soci/soci-backend.h>
 #include <soci/trivial-blob-backend.h>
 
-// Disable flood of nonsense warnings generated for SQLite
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable:4510 4512 4610)
-#endif
-
 namespace sqlite_api
 {
 
@@ -50,10 +44,6 @@ struct sqlite3_stmt;
 #endif
 
 } // namespace sqlite_api
-
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 namespace soci
 {

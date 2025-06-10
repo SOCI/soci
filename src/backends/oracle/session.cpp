@@ -15,10 +15,6 @@
 #include <ctime>
 #include <sstream>
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
-
 using namespace soci;
 using namespace soci::details;
 using namespace soci::details::oracle;
@@ -123,7 +119,7 @@ sb4 fo_callback(void * /* svchp */, void * /* envhp */, void * fo_ctx,
 
 oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     std::string const & userName, std::string const & password, int mode,
-    bool decimals_as_strings, int charset, int ncharset)
+    bool decimals_as_strings, ub2 charset, ub2 ncharset)
     : envhp_(NULL), srvhp_(NULL), errhp_(NULL), svchp_(NULL), usrhp_(NULL),
       decimals_as_strings_(decimals_as_strings)
 {
@@ -222,7 +218,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         nlsServiceLen = serviceName.size();
         if (nlsServiceLen < serviceBufLen)
         {
-            std::strcpy(nlsService, serviceName.c_str());
+            strncpy(nlsService, serviceName.c_str(), nlsServiceLen + 1);
         }
         else
         {
@@ -232,7 +228,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         nlsUserNameLen = userName.size();
         if (nlsUserNameLen < authBufLen)
         {
-            std::strcpy(nlsUserName, userName.c_str());
+            strncpy(nlsUserName, userName.c_str(), nlsUserNameLen + 1);
         }
         else
         {
@@ -242,7 +238,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         nlsPasswordLen = password.size();
         if (nlsPasswordLen < authBufLen)
         {
-            std::strcpy(nlsPassword, password.c_str());
+            strncpy(nlsPassword, password.c_str(), nlsPasswordLen + 1);
         }
         else
         {

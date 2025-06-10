@@ -100,6 +100,10 @@ struct exchange_traits<uint64_t>
     enum { x_type = x_uint64 };
 };
 
+// If "long" itself is the same type as int64_t, "long long" must be a
+// different type and we need to specialize exchange_traits for it, otherwise
+// it must be same as "long long" and we need to define specialization for
+// "long" instead (whether it's 32 or 64 bits).
 #if defined(SOCI_INT64_T_IS_LONG)
 template <>
 struct exchange_traits<long long> : exchange_traits<int64_t>
@@ -110,24 +114,14 @@ template <>
 struct exchange_traits<unsigned long long> : exchange_traits<uint64_t>
 {
 };
-#elif defined(SOCI_LONG_IS_64_BIT)
-template <>
-struct exchange_traits<long> : exchange_traits<int64_t>
-{
-};
-
-template <>
-struct exchange_traits<unsigned long> : exchange_traits<uint64_t>
-{
-};
 #else
 template <>
-struct exchange_traits<long> : exchange_traits<int32_t>
+struct exchange_traits<long> : exchange_traits<soci_long_t>
 {
 };
 
 template <>
-struct exchange_traits<unsigned long> : exchange_traits<uint32_t>
+struct exchange_traits<unsigned long> : exchange_traits<soci_ulong_t>
 {
 };
 #endif

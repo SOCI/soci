@@ -15,11 +15,6 @@
 
 #include <catch.hpp>
 
-#if defined(_MSC_VER) && (_MSC_VER < 1500)
-#undef SECTION
-#define SECTION(name) INTERNAL_CATCH_SECTION(name, "dummy-for-vc8")
-#endif
-
 #include <algorithm>
 #include <clocale>
 #include <cstdint>
