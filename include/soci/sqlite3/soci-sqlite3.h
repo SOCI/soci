@@ -25,13 +25,13 @@
 namespace sqlite_api
 {
 
-// We don't include sqlite3.h from outside SOCI since this header may not
-// be available when using built-in SQLite3. Furthermore, we namespace all the
-// symbols inside sqlite_api. This ok because sqlite3 symbols have C linkage,
-// which has the interesting side effect of making the namespaced name also
-// referencable in the global namespace (e.g. unqualified).
-//
-// To make this header itself compile we only need a couple forward decls.
+// Don't include sqlite3.h from outside SOCI: this header might not be
+// available when using built-in SQLite3 as we don't install it in this case.
+#ifdef SOCI_SQLITE3_SOURCE
+    #include <sqlite3.h>
+#else // !SOCI_SQLITE3_SOURCE
+// We need just a couple of forward declarations to make this header itself
+// compile.
 struct sqlite3;
 struct sqlite3_stmt;
 
@@ -42,6 +42,7 @@ struct sqlite3_stmt;
   typedef long long int sqlite3_int64;
   typedef unsigned long long int sqlite3_uint64;
 #endif
+#endif // SOCI_SQLITE3_SOURCE/!SOCI_SQLITE3_SOURCE
 
 } // namespace sqlite_api
 
