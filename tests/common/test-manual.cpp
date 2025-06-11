@@ -11,6 +11,7 @@
 
 #include <catch.hpp>
 
+#include <chrono>
 #include <iostream>
 
 #include "test-context.h"
@@ -44,6 +45,9 @@ TEST_CASE_METHOD(common_tests, "Reconnect", "[keep-alive][.]")
                  "and press Enter" << std::endl;
     std::cin.get();
 
+    using Clock = std::chrono::steady_clock;
+    auto const start = Clock::now();
+
     try
     {
         CHECK( !sql.is_connected() );
@@ -69,7 +73,11 @@ TEST_CASE_METHOD(common_tests, "Reconnect", "[keep-alive][.]")
         }
     }
 
-    std::cout << "Please undo the previous action "
+    auto const elapsed = Clock::now() - start;
+    std::cout << "Database query failed after "
+              << std::chrono::duration_cast<std::chrono::seconds>(elapsed).count()
+              << " seconds as expected.\n"
+              << "Now please undo the previous action "
                  "(restart the server, plug the cable back, ...) "
                  "and press Enter" << std::endl;
     std::cin.get();
