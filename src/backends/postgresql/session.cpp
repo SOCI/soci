@@ -215,6 +215,28 @@ void postgresql_session_backend::connect(
         single_row_mode_ = connection_parameters::is_true_value(name, value);
     }
 
+    if (params.extract_option("tracefile", value) && !value.empty())
+    {
+        const char* mode;
+        if (value.front() == '+')
+        {
+            mode = "a";
+            value.erase(0, 1);
+        }
+        else
+        {
+            mode = "w";
+        }
+
+        traceFile_ = fopen(value.c_str(), mode);
+        if (!traceFile_)
+        {
+            std::ostringstream oss;
+            oss << "Cannot open database trace file: \"" << value << "\".";
+            throw soci_error(oss.str());
+        }
+    }
+
     // We can't use SOCI connection string with PQconnectdb() directly because
     // libpq uses single quotes instead of double quotes used by SOCI.
     PGconn* conn = PQconnectdb(params.build_string_from_options('\'').c_str());
@@ -229,6 +251,11 @@ void postgresql_session_backend::connect(
         }
 
         throw soci_error(msg);
+    }
+
+    if (traceFile_)
+    {
+        PQtrace(conn, traceFile_);
     }
 
 #ifdef _WIN32
@@ -278,15 +305,19 @@ void postgresql_session_backend::connect(
     }
 #endif // _WIN32
 
-    // Increase the number of digits used for floating point values to ensure
-    // that the conversions to/from text round trip correctly, which is not the
-    // case with the default value of 0. Use the maximal supported value, which
-    // was 2 until 9.x and is 3 since it.
+    // With older PostgreSQL versions we need to change the extra_float_digits
+    // parameter to ensure that the conversions to/from text round trip
+    // losslessly. This is not necessary since 12.0, which behaves correctly by
+    // default, but for older versions use the maximal supported value, which
+    // was 2 until 9.x and 3 after it.
     int const version = PQserverVersion(conn);
-    hard_exec(*this, conn,
-        version >= 90000 ? "SET extra_float_digits = 3"
-                         : "SET extra_float_digits = 2",
-        "Cannot set extra_float_digits parameter");
+    if (version < 120000)
+    {
+        hard_exec(*this, conn,
+            version >= 90000 ? "SET extra_float_digits = 3"
+                             : "SET extra_float_digits = 2",
+            "Cannot set extra_float_digits parameter");
+    }
 
     conn_ = conn;
     connectionParameters_ = parameters;
@@ -329,10 +360,19 @@ void postgresql_session_backend::rollback()
 void postgresql_session_backend::deallocate_prepared_statement(
     const std::string & statementName)
 {
+    if (!deallocatePreparedStatements_)
+        return;
+
     const std::string & query = "DEALLOCATE " + statementName;
 
     hard_exec(*this, conn_, query.c_str(),
         "Cannot deallocate prepared statement.");
+}
+
+void postgresql_session_backend::deallocate_all_prepared_statements()
+{
+    hard_exec(*this, conn_, "DEALLOCATE ALL",
+        "Cannot deallocate all prepared statements.");
 }
 
 bool postgresql_session_backend::get_next_sequence_value(
@@ -349,6 +389,12 @@ void postgresql_session_backend::clean_up()
     {
         PQfinish(conn_);
         conn_ = 0;
+    }
+
+    if (traceFile_)
+    {
+        std::fclose(traceFile_);
+        traceFile_ = nullptr;
     }
 }
 
