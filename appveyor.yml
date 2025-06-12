@@ -18,6 +18,15 @@ environment:
       MYSQL_VER: 57
       MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
       VCVARS_SCRIPT: "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC"
+    - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+      G: "Ninja"
+      BOOST_ROOT: C:\Libraries\boost_1_60_0
+      MSSQL_VER: 2014
+      POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\11
+      POSTGRESQL_VER: 11
+      MYSQL_VER: 57
+      MYSQL_DIR: C:\Program Files\MySql\MySQL Server 5.7
+      VCVARS_SCRIPT: "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC"
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       G: "Ninja"
       BOOST_ROOT: C:\Libraries\boost_1_69_0
