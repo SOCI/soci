@@ -12,7 +12,6 @@ add_subdirectory(backends)
 # platform-dependent settings
 ###############################################################################
 
-soci_are_types_same(TYPES "int64_t" "long" OUTPUT_VARIABLE SOCI_INT64_T_IS_LONG)
 soci_are_types_same(TYPES "int8_t" "char" OUTPUT_VARIABLE SOCI_INT8_T_IS_CHAR)
 
 # Generate the soci-config.h file
@@ -28,7 +27,6 @@ set(CONFIG_VARS
   SOCI_ORACLE
   SOCI_POSTGRESQL
   SOCI_SQLITE3
-  SOCI_INT64_T_IS_LONG
   SOCI_INT8_T_IS_CHAR
 )
 set(CONFIG_MACROS
@@ -40,7 +38,6 @@ set(CONFIG_MACROS
   SOCI_HAVE_ORACLE
   SOCI_HAVE_POSTGRESQL
   SOCI_HAVE_SQLITE3
-  SOCI_INT64_T_IS_LONG
   SOCI_INT8_T_IS_CHAR
 )
 
