@@ -31,6 +31,11 @@ if (NOT SOCI_POSTGRESQL)
   return()
 endif()
 
+if (WIN32)
+  # We use WinSock functions under Windows.
+  target_link_libraries(soci_postgresql PUBLIC ws2_32)
+endif()
+
 option(SOCI_POSTGRESQL_NO_LO64
   "Do not use lo_xxx64() functions for compatibility with PostgreSQL < 9.3"
   OFF

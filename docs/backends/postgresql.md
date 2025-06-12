@@ -62,6 +62,8 @@ Note that in the single-row operation:
 * bulk queries are not supported, and
 * in order to fulfill the expectations of the underlying client library, the complete rowset has to be exhausted before executing further queries on the same session.
 
+Another parameter is handled specially: while libpq client library supports `tcp_user_timeout` parameter, it only provides support for it under Linux. SOCI also handles this parameter, which can change the time before a broken connection times out (which depends on the system settings but is typically relatively long), under Windows. It handles it in the same way as libpq itself, i.e. the value of this parameter is expressed in milliseconds, but because Windows sockets only use second granularity, SOCI will round the value to the nearest second. In particular, this means that this parameter must be greater than or equal to 500 to be accepted.
+
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 
 ```cpp

@@ -19,6 +19,33 @@
 #include <ctime>
 #include <sstream>
 
+// We have 3 cases of handling tcp_user_timeout option:
+//
+//  - Windows: libpq doesn't handle it at all in all the current versions, but
+//    we may implement support for it ourselves, see below.
+//  - Linux (or, to be optimistic, any other system defining TCP_USER_TIMEOUT):
+//    libpq supports it since v12, so we don't have anything to do.
+//  - Other: there is no support for it in libpq and we can't implement it
+//    (although macOS has TCP_RXT_CONNDROPTIME which seems similar and we could
+//    try using it if there is interest in it).
+//
+// Currently we don't differentiate between the last 2 cases as we don't have
+// any fallback implementation anyhow, even if, in theory, we could switch to
+// using async libpq API to implement it on all platforms, so we only check for
+// Windows.
+#ifdef _WIN32
+    // Include the headers we need for setsockopt(TCP_MAXRT) used below.
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+
+    // Some old MinGW versions don't define TCP_MAXRT, do it ourselves.
+    #ifndef TCP_MAXRT
+        #define TCP_MAXRT 5
+    #endif
+
+    #include "soci-cstrtoi.h"
+#endif
+
 using namespace soci;
 using namespace soci::details;
 
@@ -203,6 +230,53 @@ void postgresql_session_backend::connect(
 
         throw soci_error(msg);
     }
+
+#ifdef _WIN32
+    // As explained above, implement our own support for this option under
+    // Windows.
+    std::string timeoutStr;
+    if (params.get_option("tcp_user_timeout", timeoutStr))
+    {
+        int timeoutMs = 0;
+        if (!cstring_to_integer(timeoutMs, timeoutStr.c_str()))
+        {
+            std::ostringstream oss;
+            oss << "Invalid value for tcp_user_timeout option: \""
+                << timeoutStr << "\".";
+            PQfinish(conn);
+
+            throw soci_error(oss.str());
+        }
+
+        // The value is in milliseconds, but we need to convert it to seconds,
+        // prefer to round it rather than truncate.
+        DWORD const timeoutSec = (timeoutMs + 500) / 1000;
+
+        // It's not clear what does the timeout of 0 mean, so ignore it.
+        if (!timeoutSec)
+        {
+            std::ostringstream oss;
+            oss << "Invalid value for tcp_user_timeout option: "
+                << timeoutMs << "ms. It must be greater than 1s.";
+            PQfinish(conn);
+
+            throw soci_error(oss.str());
+        }
+
+        int const sock = PQsocket(conn);
+        if (setsockopt(sock, IPPROTO_TCP, TCP_MAXRT,
+                       reinterpret_cast<char const*>(&timeoutSec),
+                       sizeof(timeoutSec)) != 0)
+        {
+            std::ostringstream oss;
+            oss << "Failed to set TCP_MAXRT option on the socket: WinSock error "
+                << WSAGetLastError() << ".";
+            PQfinish(conn);
+
+            throw soci_error(oss.str());
+        }
+    }
+#endif // _WIN32
 
     // Increase the number of digits used for floating point values to ensure
     // that the conversions to/from text round trip correctly, which is not the
