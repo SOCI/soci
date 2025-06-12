@@ -45,7 +45,7 @@ struct exchange_traits
 };
 
 template <>
-struct exchange_traits<int8_t>
+struct exchange_traits<soci_int8_t>
 {
     typedef basic_type_tag type_family;
     enum { x_type = x_int8 };
@@ -117,14 +117,12 @@ struct exchange_traits<double>
     enum { x_type = x_double };
 };
 
-#ifndef SOCI_INT8_T_IS_CHAR
 template <>
 struct exchange_traits<char>
 {
     typedef basic_type_tag type_family;
     enum { x_type = x_char };
 };
-#endif // !SOCI_INT8_T_IS_CHAR
 
 template <>
 struct exchange_traits<std::string>

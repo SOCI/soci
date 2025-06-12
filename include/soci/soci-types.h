@@ -35,4 +35,17 @@ using soci_ul_or_ull_int_t =
     std::conditional<sizeof(soci_ul_or_ull_t) == 4,
                      uint32_t, uint64_t>::type;
 
+// We also specialize some templates for both char and int8_t, but they can be
+// the same type, so in this case we define some other type to specialize the
+// template for as we just can't do it for int8_t itself if it's the same as
+// char, for which we always provide a specialization.
+struct soci_int8_t_wrapper
+{
+    int8_t value = 0;
+};
+
+using soci_int8_t =
+    std::conditional<std::is_same<int8_t, char>::value,
+                     soci_int8_t_wrapper, int8_t>::type;
+
 #endif // SOCI_TYPES_H_INCLUDED
