@@ -62,6 +62,61 @@ void postgresql_result::clear()
 namespace // unnamed
 {
 
+// Helper function to set maximum socket timeout under Windows.
+//
+// Throws if the parameter is not an integer, but silently ignores invalid
+// negative timeout values for consistency with libpq behaviour.
+//
+// Also throws if the timeout couldn't be set.
+#ifdef _WIN32
+
+void set_tcp_user_timeout(int sock, std::string const& timeoutStr)
+{
+    int timeoutMs = 0;
+    if (!cstring_to_integer(timeoutMs, timeoutStr.c_str()))
+    {
+        std::ostringstream oss;
+        oss << "Invalid value for tcp_user_timeout connection option: \""
+            << timeoutStr << "\".";
+
+        throw soci_error(oss.str());
+    }
+
+    // Zero timeout means system default and so can be just ignored.
+    if (timeoutMs == 0)
+        return;
+
+    // Negative timeout seems to be just ignored by both libpq (and Linux fails
+    // with EINVAL if it's specified), so ignore it here too (note that -1 has
+    // a special meaning for Windows and means to turn off the timeout
+    // entirely).
+    if (timeoutMs < 0)
+        return;
+
+    // The value is in milliseconds, but we need to convert it to seconds,
+    // prefer to round it rather than truncate.
+    constexpr int MS_PER_SEC = 1000;
+
+    // We also shouldn't set timeout to 0 (it's not clear what does this do),
+    // so always set it to at least 1 second.
+    DWORD timeoutSec = (timeoutMs + MS_PER_SEC / 2) / MS_PER_SEC;
+    if (timeoutSec == 0)
+        timeoutSec = 1;
+
+    if (setsockopt(sock, IPPROTO_TCP, TCP_MAXRT,
+                   reinterpret_cast<char const*>(&timeoutSec),
+                   sizeof(timeoutSec)) != 0)
+    {
+        std::ostringstream oss;
+        oss << "Failed to set TCP_MAXRT option on the socket: WinSock error "
+            << WSAGetLastError() << ".";
+
+        throw soci_error(oss.str());
+    }
+}
+
+#endif // _WIN32
+
 // helper function for hardcoded queries
 void hard_exec(postgresql_session_backend & session_backend,
     PGconn * conn, char const * query, char const * errMsg)
@@ -268,41 +323,7 @@ void postgresql_session_backend::connect(
     std::string timeoutStr;
     if (params.get_option("tcp_user_timeout", timeoutStr))
     {
-        int timeoutMs = 0;
-        if (!cstring_to_integer(timeoutMs, timeoutStr.c_str()))
-        {
-            std::ostringstream oss;
-            oss << "Invalid value for tcp_user_timeout option: \""
-                << timeoutStr << "\".";
-
-            throw soci_error(oss.str());
-        }
-
-        // The value is in milliseconds, but we need to convert it to seconds,
-        // prefer to round it rather than truncate.
-        DWORD const timeoutSec = (timeoutMs + 500) / 1000;
-
-        // It's not clear what does the timeout of 0 mean, so ignore it.
-        if (!timeoutSec)
-        {
-            std::ostringstream oss;
-            oss << "Invalid value for tcp_user_timeout option: "
-                << timeoutMs << "ms. It must be greater than 1s.";
-
-            throw soci_error(oss.str());
-        }
-
-        int const sock = PQsocket(conn);
-        if (setsockopt(sock, IPPROTO_TCP, TCP_MAXRT,
-                       reinterpret_cast<char const*>(&timeoutSec),
-                       sizeof(timeoutSec)) != 0)
-        {
-            std::ostringstream oss;
-            oss << "Failed to set TCP_MAXRT option on the socket: WinSock error "
-                << WSAGetLastError() << ".";
-
-            throw soci_error(oss.str());
-        }
+        set_tcp_user_timeout(PQsocket(conn), timeoutStr);
     }
 #endif // _WIN32
 
