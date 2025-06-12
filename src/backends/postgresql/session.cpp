@@ -17,6 +17,7 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <memory>
 #include <sstream>
 
 // We have 3 cases of handling tcp_user_timeout option:
@@ -239,7 +240,11 @@ void postgresql_session_backend::connect(
 
     // We can't use SOCI connection string with PQconnectdb() directly because
     // libpq uses single quotes instead of double quotes used by SOCI.
-    PGconn* conn = PQconnectdb(params.build_string_from_options('\'').c_str());
+    PGconn* const conn = PQconnectdb(params.build_string_from_options('\'').c_str());
+
+    // Ensure that the connection pointer is freed if we return early.
+    std::unique_ptr<PGconn, void(*)(PGconn*)> connPtr(conn, PQfinish);
+
     if (0 == conn || CONNECTION_OK != PQstatus(conn))
     {
         std::string msg = "Cannot establish connection to the database.";
@@ -247,7 +252,6 @@ void postgresql_session_backend::connect(
         {
             msg += '\n';
             msg += PQerrorMessage(conn);
-            PQfinish(conn);
         }
 
         throw soci_error(msg);
@@ -270,7 +274,6 @@ void postgresql_session_backend::connect(
             std::ostringstream oss;
             oss << "Invalid value for tcp_user_timeout option: \""
                 << timeoutStr << "\".";
-            PQfinish(conn);
 
             throw soci_error(oss.str());
         }
@@ -285,7 +288,6 @@ void postgresql_session_backend::connect(
             std::ostringstream oss;
             oss << "Invalid value for tcp_user_timeout option: "
                 << timeoutMs << "ms. It must be greater than 1s.";
-            PQfinish(conn);
 
             throw soci_error(oss.str());
         }
@@ -298,7 +300,6 @@ void postgresql_session_backend::connect(
             std::ostringstream oss;
             oss << "Failed to set TCP_MAXRT option on the socket: WinSock error "
                 << WSAGetLastError() << ".";
-            PQfinish(conn);
 
             throw soci_error(oss.str());
         }
@@ -319,7 +320,7 @@ void postgresql_session_backend::connect(
             "Cannot set extra_float_digits parameter");
     }
 
-    conn_ = conn;
+    conn_ = connPtr.release();
     connectionParameters_ = parameters;
 }
 
