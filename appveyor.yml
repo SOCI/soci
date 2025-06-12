@@ -20,6 +20,7 @@ environment:
       VCVARS_SCRIPT: "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC"
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       G: "Ninja"
+      CONFIGURATION: Debug
       BOOST_ROOT: C:\Libraries\boost_1_60_0
       MSSQL_VER: 2014
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\11
