@@ -109,10 +109,8 @@ before_build:
 
 build_script:
   - cd C:\projects\soci
-  - mkdir build
-  - cd build
-  - cmake .. -G"%G%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_VERBOSE_MAKEFILE=ON -DSOCI_ENABLE_WERROR=ON -DCMAKE_UNITY_BUILD=ON
-  - cmake --build . --config %CONFIGURATION% -- %BUILD_TOOL_OPTIONS%
+  - cmake -S . -B build -G"%G%" -DCMAKE_BUILD_TYPE=%CONFIGURATION% -DCMAKE_VERBOSE_MAKEFILE=ON -DSOCI_ENABLE_WERROR=ON -DCMAKE_UNITY_BUILD=ON
+  - cmake --build build --config %CONFIGURATION% -- %BUILD_TOOL_OPTIONS%
 
 test_script:
   - ctest -V --timeout 300 --output-on-failure --build-config %CONFIGURATION% --exclude-regex "%SOCI_ODBC_SKIP_TESTS%"
