@@ -21,17 +21,17 @@ struct type_conversion<soci_l_or_ll_t>
 {
     typedef soci_l_or_ll_int_t base_type;
 
-    static void from_base(base_type const & in, indicator ind, long long & out)
+    static void from_base(base_type const & in, indicator ind, soci_l_or_ll_t & out)
     {
         if (ind == i_null)
         {
             throw soci_error("Null value not allowed for this type.");
         }
 
-        out = static_cast<long long>(in);
+        out = static_cast<soci_l_or_ll_t>(in);
     }
 
-    static void to_base(long long const & in, base_type & out, indicator & ind)
+    static void to_base(soci_l_or_ll_t const & in, base_type & out, indicator & ind)
     {
         out = static_cast<base_type>(in);
         ind = i_ok;
@@ -43,17 +43,17 @@ struct type_conversion<soci_ul_or_ull_t>
 {
     typedef soci_ul_or_ull_int_t base_type;
 
-    static void from_base(base_type const & in, indicator ind, unsigned long long & out)
+    static void from_base(base_type const & in, indicator ind, soci_ul_or_ull_t & out)
     {
         if (ind == i_null)
         {
             throw soci_error("Null value not allowed for this type.");
         }
 
-        out = static_cast<unsigned long long>(in);
+        out = static_cast<soci_ul_or_ull_t>(in);
     }
 
-    static void to_base(unsigned long long const & in, base_type & out, indicator & ind)
+    static void to_base(soci_ul_or_ull_t const & in, base_type & out, indicator & ind)
     {
         out = static_cast<base_type>(in);
         ind = i_ok;
