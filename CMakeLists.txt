@@ -132,5 +132,8 @@ install(
 )
 
 # Final status
-message(STATUS "SOCI ${SOCI_VERSION} will be built as ${SOCI_LIB_TYPE} library.")
+if (CMAKE_BUILD_TYPE)
+  set(SOCI_CONFIG_DESCRIPTION " in ${CMAKE_BUILD_TYPE} configuration")
+endif()
+message(STATUS "SOCI ${SOCI_VERSION} will be built as ${SOCI_LIB_TYPE} library${SOCI_CONFIG_DESCRIPTION}.")
 message(STATUS "Enabled SOCI backends are: ${SOCI_ENABLED_BACKENDS}")
