@@ -4,12 +4,11 @@ skip_commits:
   files:
     - .github/workflows/
 
-configuration: Release
-
 environment:
   matrix:
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
       G: "MinGW Makefiles"
+      CONFIGURATION: Release
       MINGW_BIN: C:\mingw-w64\x86_64-8.1.0-posix-seh-rt_v6-rev0\mingw64\bin
       MSSQL_VER: 2014
       BOOST_ROOT: C:\Libraries\boost_1_60_0
@@ -30,6 +29,7 @@ environment:
       VCVARS_SCRIPT: "C:/Program Files (x86)/Microsoft Visual Studio 14.0/VC"
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2017
       G: "Ninja"
+      CONFIGURATION: Release
       BOOST_ROOT: C:\Libraries\boost_1_69_0
       MSSQL_VER: 2016
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\12
@@ -39,6 +39,7 @@ environment:
       VCVARS_SCRIPT: "C:/Program Files (x86)/Microsoft Visual Studio/2017/Community/VC/Auxiliary/Build"
     - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2019
       G: "Visual Studio 16 2019"
+      CONFIGURATION: Debug
       BOOST_ROOT: C:\Libraries\boost_1_77_0
       MSSQL_VER: 2017
       POSTGRESQL_ROOT: C:\Program Files\PostgreSQL\13
