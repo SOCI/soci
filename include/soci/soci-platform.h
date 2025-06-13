@@ -95,7 +95,7 @@ private: \
     classname(const classname&) = delete; \
     classname& operator=(const classname&) = delete;
 
-#define SOCI_UNUSED(x) (void)x;
+#define SOCI_UNUSED(x) (void)x
 
 // This macro can be used to avoid warnings from MSVC (and sometimes from gcc,
 // if initialization is indirect) about "uninitialized" variables that are
