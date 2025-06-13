@@ -45,5 +45,5 @@ if (POSTGRESQL_VERSION VERSION_LESS "9.3.0")
 endif()
 
 if (SOCI_POSTGRESQL_NO_LO64)
-  target_compile_definitions(soci_postgresql INTERFACE SOCI_POSTGRESQL_NO_LO64)
+  target_compile_definitions(soci_postgresql PRIVATE SOCI_POSTGRESQL_NO_LO64)
 endif()
