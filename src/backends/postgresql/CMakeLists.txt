@@ -47,3 +47,9 @@ endif()
 if (SOCI_POSTGRESQL_NO_LO64)
   target_compile_definitions(soci_postgresql PRIVATE SOCI_POSTGRESQL_NO_LO64)
 endif()
+
+if (POSTGRESQL_VERSION VERSION_LESS "9.1.0")
+  # PQlibVersion() has appeared in PostgreSQL 9.1, so we can't use it with
+  # older versions.
+  target_compile_definitions(soci_postgresql PRIVATE SOCI_POSTGRESQL_NO_LIBVERSION)
+endif()
