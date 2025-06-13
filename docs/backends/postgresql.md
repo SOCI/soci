@@ -44,23 +44,12 @@ session sql("postgresql", "dbname=mydatabase");
 session sql("postgresql://dbname=mydatabase");
 ```
 
-The set of parameters used in the connection string for PostgreSQL is the same as accepted by the [PQconnectdb](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PQCONNECTDB) function from the `libpq` library.
+The set of parameters used in the connection string for PostgreSQL is the same as accepted by the [PQconnectdb](https://www.postgresql.org/docs/current/libpq-connect.html#LIBPQ-PQCONNECTDB) function from the `libpq` library, however in addition to standard PostgreSQL connection parameters, SOCI PostgreSQL backend accepts a couple of additional ones:
 
-In addition to standard PostgreSQL connection parameters, the following can be set:
+* `tracefile`: if specified, enables tracing all database activity using [PQtrace()](https://www.postgresql.org/docs/current/libpq-control.html#LIBPQ-PQTRACE) into the file with the given path. Note that this file is overwritten by default, prepend it with a plus sign, i.e. use `tracefile=+/path/to/file`, to append to the file instead.
+* `singlerow` or `singlerows`: if set to `true` or `yes`, enables single-row mode for the session (see next section).
 
-* `singlerow` or `singlerows`
-
-For example:
-
-```cpp
-session sql(postgresql, "dbname=mydatabase singlerows=true");
-```
-
-If the `singlerows` parameter is set to `true` or `yes`, then queries will be executed in the single-row mode, which prevents the client library from loading full query result sets into memory and instead fetches rows one by one, as they are requested by the statement's fetch() function. This mode can be of interest to those users who want to make their client applications more responsive (with more fine-grained operation) by avoiding potentially long blocking times when complete query results are loaded to client's memory.
-Note that in the single-row operation:
-
-* bulk queries are not supported, and
-* in order to fulfill the expectations of the underlying client library, the complete rowset has to be exhausted before executing further queries on the same session.
+Another parameter is handled specially: while libpq client library supports `tcp_user_timeout` parameter, it only provides support for it under Linux. SOCI also handles this parameter, which can change the time before a broken connection times out (which depends on the system settings but is typically relatively long), under Windows. It handles it in the same way as libpq itself, i.e. the value of this parameter is expressed in milliseconds, but because Windows sockets only use second granularity, SOCI will round the value to the nearest second. In particular, this means that if this parameter is not 0 (which means to use the system default, i.e. is same as not specifying it at all), then it will be always set to at least 1 second. Also note that negative values for this option are currently ignored, but shouldn't be used as their interpretation may change in the future versions of the library.
 
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 
@@ -70,6 +59,20 @@ sql << "select count(*) from invoices", into(count);
 ```
 
 (See the [connection](../connections.md) and [data binding](../binding.md) documentation for general information on using the `session` class.)
+
+#### Single Row Mode
+
+If this mode is enabled, e.g.
+
+```cpp
+session sql(postgresql, "dbname=mydatabase singlerows=true");
+```
+
+then queries will be executed in the single-row mode, which prevents the client library from loading full query result sets into memory and instead fetches rows one by one, as they are requested by the statement's fetch() function. This mode can be of interest to those users who want to make their client applications more responsive (with more fine-grained operation) by avoiding potentially long blocking times when complete query results are loaded to client's memory.
+Note that in the single-row operation:
+
+* bulk queries are not supported, and
+* in order to fulfill the expectations of the underlying client library, the complete rowset has to be exhausted before executing further queries on the same session.
 
 ## SOCI Feature Support
 
@@ -155,3 +158,11 @@ The PostgreSQL backend provides the following concrete classes for native API ac
 
 The PostgreSQL backend supports working with data stored in columns of type UUID via simple string operations. All string representations of UUID supported by PostgreSQL are accepted on input, the backend will return the standard
 format of UUID on output. See the test `test_uuid_column_type_support` for usage examples.
+
+### Optimizing Prepared Statements Deallocation
+
+By default, this backend executes `DEALLOCATE` statement for each prepared statement when it is destroyed. This is correct, but may be surprisingly time-consuming and is not necessary for short-running programs as all resources associated with a connection, including any statements prepared by it, are deallocated when it is closed in any case.
+
+To save time spent on deallocation, `postgresql_session_backend::set_deallocate_prepared_statements(bool)` function can be used to disable automatic deallocation of prepared statements. This function can be called at any time, but will only affect statements destroyed after its call, so it is recommended to do it early.
+
+Not deallocating prepared statements may lead to memory leaks in long-running programs, so in case of such programs it is recommended to only call `set_deallocate_prepared_statements(false)` before starting a performance-sensitive operation involving many prepared statements, and then call `deallocate_all_prepared_statements()` once the operation is finished and no prepared statements remain, followed by a call to `set_deallocate_prepared_statements(true)` to restore the default behaviour.

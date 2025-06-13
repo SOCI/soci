@@ -88,6 +88,7 @@ soci_error::error_category firebird_soci_error::get_error_category() const
         case isc_foreign_key:
         case isc_primary_key_ref:
         case isc_primary_key_notnull:
+        case isc_unique_key_violation:
             return constraint_violation;
 
         case isc_tra_state:

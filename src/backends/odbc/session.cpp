@@ -170,16 +170,22 @@ void odbc_session_backend::configure_connection()
                              "\" in unrecognizable format.");
         }
 
-        details::auto_statement<odbc_statement_backend> st(*this);
-
-        std::string const q(major_ver >= 9 ? "SET extra_float_digits = 3"
-                                           : "SET extra_float_digits = 2");
-        rc = SQLExecDirect(st.hstmt_, sqlchar_cast(q), static_cast<SQLINTEGER>(q.size()));
-
-        if (is_odbc_error(rc))
+        // As explained in src/backends/postgresql/session.cpp, we need to
+        // increase the number of digits used for floating point values to
+        // ensure that all numbers round trip correctly with old PostgreSQL.
+        if (major_ver < 12)
         {
-            throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
-                                  "setting extra_float_digits for PostgreSQL");
+            details::auto_statement<odbc_statement_backend> st(*this);
+
+            std::string const q(major_ver >= 9 ? "SET extra_float_digits = 3"
+                                               : "SET extra_float_digits = 2");
+            rc = SQLExecDirect(st.hstmt_, sqlchar_cast(q), static_cast<SQLINTEGER>(q.size()));
+
+            if (is_odbc_error(rc))
+            {
+                throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
+                                      "setting extra_float_digits for PostgreSQL");
+            }
         }
 
         // This is extracted from pgapifunc.h header from psqlODBC driver.

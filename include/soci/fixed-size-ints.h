@@ -16,24 +16,22 @@ namespace soci
 // long and long long. With the following type_conversion specializations,
 // this becomes possible.
 
-// See comment before the similar test in exchange-traits.h for explanations.
-#if defined(SOCI_INT64_T_IS_LONG)
 template <>
-struct type_conversion<long long>
+struct type_conversion<soci_l_or_ll_t>
 {
-    typedef int64_t base_type;
+    typedef soci_l_or_ll_int_t base_type;
 
-    static void from_base(base_type const & in, indicator ind, long long & out)
+    static void from_base(base_type const & in, indicator ind, soci_l_or_ll_t & out)
     {
         if (ind == i_null)
         {
             throw soci_error("Null value not allowed for this type.");
         }
 
-        out = static_cast<long long>(in);
+        out = static_cast<soci_l_or_ll_t>(in);
     }
 
-    static void to_base(long long const & in, base_type & out, indicator & ind)
+    static void to_base(soci_l_or_ll_t const & in, base_type & out, indicator & ind)
     {
         out = static_cast<base_type>(in);
         ind = i_ok;
@@ -41,71 +39,26 @@ struct type_conversion<long long>
 };
 
 template <>
-struct type_conversion<unsigned long long>
+struct type_conversion<soci_ul_or_ull_t>
 {
-    typedef uint64_t base_type;
+    typedef soci_ul_or_ull_int_t base_type;
 
-    static void from_base(base_type const & in, indicator ind, unsigned long long & out)
+    static void from_base(base_type const & in, indicator ind, soci_ul_or_ull_t & out)
     {
         if (ind == i_null)
         {
             throw soci_error("Null value not allowed for this type.");
         }
 
-        out = static_cast<unsigned long long>(in);
+        out = static_cast<soci_ul_or_ull_t>(in);
     }
 
-    static void to_base(unsigned long long const & in, base_type & out, indicator & ind)
+    static void to_base(soci_ul_or_ull_t const & in, base_type & out, indicator & ind)
     {
         out = static_cast<base_type>(in);
         ind = i_ok;
     }
 };
-#else
-template <>
-struct type_conversion<long>
-{
-    typedef soci_long_t base_type;
-
-    static void from_base(base_type const & in, indicator ind, long & out)
-    {
-        if (ind == i_null)
-        {
-            throw soci_error("Null value not allowed for this type.");
-        }
-
-        out = static_cast<long>(in);
-    }
-
-    static void to_base(long const & in, base_type & out, indicator & ind)
-    {
-        out = static_cast<base_type>(in);
-        ind = i_ok;
-    }
-};
-
-template <>
-struct type_conversion<unsigned long>
-{
-    typedef soci_ulong_t base_type;
-
-    static void from_base(base_type const & in, indicator ind, unsigned long & out)
-    {
-        if (ind == i_null)
-        {
-            throw soci_error("Null value not allowed for this type.");
-        }
-
-        out = static_cast<unsigned long>(in);
-    }
-
-    static void to_base(unsigned long const & in, base_type & out, indicator & ind)
-    {
-        out = static_cast<base_type>(in);
-        ind = i_ok;
-    }
-};
-#endif
 
 } // namespace soci
 

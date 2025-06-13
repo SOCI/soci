@@ -16,7 +16,35 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <memory>
 #include <sstream>
+
+// We have 3 cases of handling tcp_user_timeout option:
+//
+//  - Windows: libpq doesn't handle it at all in all the current versions, but
+//    we may implement support for it ourselves, see below.
+//  - Linux (or, to be optimistic, any other system defining TCP_USER_TIMEOUT):
+//    libpq supports it since v12, so we don't have anything to do.
+//  - Other: there is no support for it in libpq and we can't implement it
+//    (although macOS has TCP_RXT_CONNDROPTIME which seems similar and we could
+//    try using it if there is interest in it).
+//
+// Currently we don't differentiate between the last 2 cases as we don't have
+// any fallback implementation anyhow, even if, in theory, we could switch to
+// using async libpq API to implement it on all platforms, so we only check for
+// Windows.
+#ifdef _WIN32
+    // Include the headers we need for setsockopt(TCP_MAXRT) used below.
+    #include <winsock2.h>
+    #include <ws2tcpip.h>
+
+    // Some old MinGW versions don't define TCP_MAXRT, do it ourselves.
+    #ifndef TCP_MAXRT
+        #define TCP_MAXRT 5
+    #endif
+
+    #include "soci-cstrtoi.h"
+#endif
 
 using namespace soci;
 using namespace soci::details;
@@ -32,6 +60,61 @@ void postgresql_result::clear()
 
 namespace // unnamed
 {
+
+// Helper function to set maximum socket timeout under Windows.
+//
+// Throws if the parameter is not an integer, but silently ignores invalid
+// negative timeout values for consistency with libpq behaviour.
+//
+// Also throws if the timeout couldn't be set.
+#ifdef _WIN32
+
+void set_tcp_user_timeout(int sock, std::string const& timeoutStr)
+{
+    int timeoutMs = 0;
+    if (!cstring_to_integer(timeoutMs, timeoutStr.c_str()))
+    {
+        std::ostringstream oss;
+        oss << "Invalid value for tcp_user_timeout connection option: \""
+            << timeoutStr << "\".";
+
+        throw soci_error(oss.str());
+    }
+
+    // Zero timeout means system default and so can be just ignored.
+    if (timeoutMs == 0)
+        return;
+
+    // Negative timeout seems to be just ignored by both libpq (and Linux fails
+    // with EINVAL if it's specified), so ignore it here too (note that -1 has
+    // a special meaning for Windows and means to turn off the timeout
+    // entirely).
+    if (timeoutMs < 0)
+        return;
+
+    // The value is in milliseconds, but we need to convert it to seconds,
+    // prefer to round it rather than truncate.
+    constexpr int MS_PER_SEC = 1000;
+
+    // We also shouldn't set timeout to 0 (it's not clear what does this do),
+    // so always set it to at least 1 second.
+    DWORD timeoutSec = (timeoutMs + MS_PER_SEC / 2) / MS_PER_SEC;
+    if (timeoutSec == 0)
+        timeoutSec = 1;
+
+    if (setsockopt(sock, IPPROTO_TCP, TCP_MAXRT,
+                   reinterpret_cast<char const*>(&timeoutSec),
+                   sizeof(timeoutSec)) != 0)
+    {
+        std::ostringstream oss;
+        oss << "Failed to set TCP_MAXRT option on the socket: WinSock error "
+            << WSAGetLastError() << ".";
+
+        throw soci_error(oss.str());
+    }
+}
+
+#endif // _WIN32
 
 // helper function for hardcoded queries
 void hard_exec(postgresql_session_backend & session_backend,
@@ -187,9 +270,35 @@ void postgresql_session_backend::connect(
         single_row_mode_ = connection_parameters::is_true_value(name, value);
     }
 
+    if (params.extract_option("tracefile", value) && !value.empty())
+    {
+        const char* mode;
+        if (value.front() == '+')
+        {
+            mode = "a";
+            value.erase(0, 1);
+        }
+        else
+        {
+            mode = "w";
+        }
+
+        traceFile_ = fopen(value.c_str(), mode);
+        if (!traceFile_)
+        {
+            std::ostringstream oss;
+            oss << "Cannot open database trace file: \"" << value << "\".";
+            throw soci_error(oss.str());
+        }
+    }
+
     // We can't use SOCI connection string with PQconnectdb() directly because
     // libpq uses single quotes instead of double quotes used by SOCI.
-    PGconn* conn = PQconnectdb(params.build_string_from_options('\'').c_str());
+    PGconn* const conn = PQconnectdb(params.build_string_from_options('\'').c_str());
+
+    // Ensure that the connection pointer is freed if we return early.
+    std::unique_ptr<PGconn, void(*)(PGconn*)> connPtr(conn, PQfinish);
+
     if (0 == conn || CONNECTION_OK != PQstatus(conn))
     {
         std::string msg = "Cannot establish connection to the database.";
@@ -197,23 +306,41 @@ void postgresql_session_backend::connect(
         {
             msg += '\n';
             msg += PQerrorMessage(conn);
-            PQfinish(conn);
         }
 
         throw soci_error(msg);
     }
 
-    // Increase the number of digits used for floating point values to ensure
-    // that the conversions to/from text round trip correctly, which is not the
-    // case with the default value of 0. Use the maximal supported value, which
-    // was 2 until 9.x and is 3 since it.
-    int const version = PQserverVersion(conn);
-    hard_exec(*this, conn,
-        version >= 90000 ? "SET extra_float_digits = 3"
-                         : "SET extra_float_digits = 2",
-        "Cannot set extra_float_digits parameter");
+    if (traceFile_)
+    {
+        PQtrace(conn, traceFile_);
+    }
 
-    conn_ = conn;
+#ifdef _WIN32
+    // As explained above, implement our own support for this option under
+    // Windows.
+    std::string timeoutStr;
+    if (params.get_option("tcp_user_timeout", timeoutStr))
+    {
+        set_tcp_user_timeout(PQsocket(conn), timeoutStr);
+    }
+#endif // _WIN32
+
+    // With older PostgreSQL versions we need to change the extra_float_digits
+    // parameter to ensure that the conversions to/from text round trip
+    // losslessly. This is not necessary since 12.0, which behaves correctly by
+    // default, but for older versions use the maximal supported value, which
+    // was 2 until 9.x and 3 after it.
+    int const version = PQserverVersion(conn);
+    if (version < 120000)
+    {
+        hard_exec(*this, conn,
+            version >= 90000 ? "SET extra_float_digits = 3"
+                             : "SET extra_float_digits = 2",
+            "Cannot set extra_float_digits parameter");
+    }
+
+    conn_ = connPtr.release();
     connectionParameters_ = parameters;
 }
 
@@ -254,10 +381,19 @@ void postgresql_session_backend::rollback()
 void postgresql_session_backend::deallocate_prepared_statement(
     const std::string & statementName)
 {
+    if (!deallocatePreparedStatements_)
+        return;
+
     const std::string & query = "DEALLOCATE " + statementName;
 
     hard_exec(*this, conn_, query.c_str(),
         "Cannot deallocate prepared statement.");
+}
+
+void postgresql_session_backend::deallocate_all_prepared_statements()
+{
+    hard_exec(*this, conn_, "DEALLOCATE ALL",
+        "Cannot deallocate all prepared statements.");
 }
 
 bool postgresql_session_backend::get_next_sequence_value(
@@ -274,6 +410,12 @@ void postgresql_session_backend::clean_up()
     {
         PQfinish(conn_);
         conn_ = 0;
+    }
+
+    if (traceFile_)
+    {
+        std::fclose(traceFile_);
+        traceFile_ = nullptr;
     }
 }
 

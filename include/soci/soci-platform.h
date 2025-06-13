@@ -12,6 +12,7 @@
 #include <string.h>
 #include <string>
 #include <cstring>
+#include <cstdio>
 #include <cstdlib>
 #include <ctime>
 #include <memory>
@@ -129,6 +130,13 @@ namespace soci
 
 #ifdef _MSC_VER
 
+inline FILE* fopen(const char* filename, const char* mode)
+{
+    FILE* file = nullptr;
+    fopen_s(&file, filename, mode);
+    return file;
+}
+
 inline const char* getenv(const char* name)
 {
   #pragma warning(push)
@@ -158,6 +166,7 @@ inline char* strncpy(char* dest, const char* src, size_t n)
 
 #else // !_MSC_VER
 
+using std::fopen;
 using std::getenv;
 using std::sscanf;
 using std::strncpy;
