@@ -46,7 +46,11 @@ if (NOT TARGET SQLite::SQLite3)
   # available, and if we're allowed to use it.
   if (NOT "${SOCI_SQLITE3_BUILTIN}" STREQUAL "OFF")
     if (NOT EXISTS ${SQLITE3_SOURCE_FILE})
-      message(WARNING "SQLite3 not found and built-in version not available, have you cloned SOCI repository with --recurse-submodules?")
+      message(
+        FATAL_ERROR
+        "SQLite3 not found and built-in version not available. Please ensure "
+"that you have cloned the SOCI repository with --recurse-submodules."
+      )
     else()
       set(SOCI_SQLITE3_USE_BUILTIN ON)
     endif()

@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_ODBC_SOURCE
 #include "soci/odbc/soci-odbc.h"
 #include "soci/soci-unicode.h"
 #include "soci/type-holder.h"

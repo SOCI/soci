@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_SOURCE
 #include "soci/session.h"
 #include "soci/connection-parameters.h"
 #include "soci/connection-pool.h"
