@@ -9,10 +9,12 @@
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci/session.h"
 #include "soci-compiler.h"
+#include "soci-cstrtoi.h"
 
 #include <libpq-fe.h>
 
 #include <cctype>
+#include <cerrno>
 #include <cstdio>
 #include <cstring>
 #include <ctime>
@@ -24,15 +26,15 @@
 //  - Windows: libpq doesn't handle it at all in all the current versions, but
 //    we may implement support for it ourselves, see below.
 //  - Linux (or, to be optimistic, any other system defining TCP_USER_TIMEOUT):
-//    libpq supports it since v12, so we don't have anything to do.
+//    libpq supports it since v12, but we also want to provide it when using
+//    older versions.
 //  - Other: there is no support for it in libpq and we can't implement it
 //    (although macOS has TCP_RXT_CONNDROPTIME which seems similar and we could
 //    try using it if there is interest in it).
 //
-// Currently we don't differentiate between the last 2 cases as we don't have
-// any fallback implementation anyhow, even if, in theory, we could switch to
-// using async libpq API to implement it on all platforms, so we only check for
-// Windows.
+// Note that, in theory, we could switch to using async libpq API to implement
+// it on all platforms, but for now having it only under Linux and Windows is
+// enough for our needs.
 #ifdef _WIN32
     // Include the headers we need for setsockopt(TCP_MAXRT) used below.
     #include <winsock2.h>
@@ -42,9 +44,11 @@
     #ifndef TCP_MAXRT
         #define TCP_MAXRT 5
     #endif
-
-    #include "soci-cstrtoi.h"
-#endif
+#else // !_WIN32
+    #include <sys/socket.h>
+    #include <netinet/in.h>
+    #include <netinet/tcp.h>
+#endif // _WIN32/!_WIN32
 
 using namespace soci;
 using namespace soci::details;
@@ -67,7 +71,6 @@ namespace // unnamed
 // negative timeout values for consistency with libpq behaviour.
 //
 // Also throws if the timeout couldn't be set.
-#ifdef _WIN32
 
 void set_tcp_user_timeout(int sock, std::string const& timeoutStr)
 {
@@ -92,6 +95,7 @@ void set_tcp_user_timeout(int sock, std::string const& timeoutStr)
     if (timeoutMs < 0)
         return;
 
+#ifdef _WIN32
     // The value is in milliseconds, but we need to convert it to seconds,
     // prefer to round it rather than truncate.
     constexpr int MS_PER_SEC = 1000;
@@ -112,9 +116,38 @@ void set_tcp_user_timeout(int sock, std::string const& timeoutStr)
 
         throw soci_error(oss.str());
     }
-}
+#elif defined(TCP_USER_TIMEOUT)
+    // We can only set this option for an AF_INET, not AF_UNIX, socket.
+    sockaddr_storage sa;
+    socklen_t saLen = sizeof(sa);
+    if (getsockname(sock, reinterpret_cast<sockaddr*>(&sa), &saLen) != 0)
+    {
+        std::ostringstream oss;
+        oss << "Failed to get socket address: " << strerror(errno) << ".";
 
-#endif // _WIN32
+        throw soci_error(oss.str());
+    }
+
+    if (sa.ss_family == AF_UNIX)
+        return;
+
+    if (setsockopt(sock, IPPROTO_TCP, TCP_USER_TIMEOUT,
+                   &timeoutMs, sizeof(timeoutMs)) != 0)
+    {
+        std::ostringstream oss;
+        oss << "Failed to set TCP_USER_TIMEOUT option on the socket: "
+            << strerror(errno) << ".";
+
+        throw soci_error(oss.str());
+    }
+#else
+    // Don't do anything and silently ignore this option. This is not great,
+    // but consistent with libpq behaviour and it's not clear what else could
+    // we do: throwing an exception would seem to be too drastic, but we don't
+    // have any "warning" mechanism for reporting this otherwise.
+    SOCI_UNUSED(sock);
+#endif // _WIN32/other platforms
+}
 
 // helper function for hardcoded queries
 void hard_exec(postgresql_session_backend & session_backend,
@@ -292,6 +325,23 @@ void postgresql_session_backend::connect(
         }
     }
 
+    // Support for tcp_user_timeout option has been added in libpq 12, so we
+    // need to take care of it ourselves if we use an older libpq version. We
+    // also need to always do it under Windows as no known libpq version has
+    // support for this parameter there.
+    //
+    // Note that if we don't even have PQlibVersion(), it means we're using
+    // libpq < 9.1, i.e. definitely less than 12.
+    std::string timeoutStr;
+#if !defined(_WIN32) && !defined(SOCI_POSTGRESQL_NO_LIBVERSION)
+    if ( PQlibVersion() < 120000 )
+#endif
+    {
+        params.extract_option("tcp_user_timeout", timeoutStr);
+    }
+    // else: We're not under Windows and libpq is recent enough to handle this
+    //       connection option itself, so just let it do it.
+
     // We can't use SOCI connection string with PQconnectdb() directly because
     // libpq uses single quotes instead of double quotes used by SOCI.
     PGconn* const conn = PQconnectdb(params.build_string_from_options('\'').c_str());
@@ -316,15 +366,10 @@ void postgresql_session_backend::connect(
         PQtrace(conn, traceFile_);
     }
 
-#ifdef _WIN32
-    // As explained above, implement our own support for this option under
-    // Windows.
-    std::string timeoutStr;
-    if (params.get_option("tcp_user_timeout", timeoutStr))
+    if (!timeoutStr.empty())
     {
         set_tcp_user_timeout(PQsocket(conn), timeoutStr);
     }
-#endif // _WIN32
 
     // With older PostgreSQL versions we need to change the extra_float_digits
     // parameter to ensure that the conversions to/from text round trip

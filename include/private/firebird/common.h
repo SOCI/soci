@@ -115,7 +115,11 @@ template<> struct cond_to_isc<false>
 };
 template<> struct cond_to_isc<true>
 {
-    static void checkInteger(short scale,short type) { SOCI_UNUSED(scale) SOCI_UNUSED(type) }
+    static void checkInteger(short scale,short type)
+    {
+        SOCI_UNUSED(scale);
+        SOCI_UNUSED(type);
+    }
 };
 
 template<typename T1>
@@ -219,7 +223,7 @@ template<> struct cond_from_isc<true> {
 };
 template<> struct cond_from_isc<false>
 {
-    static void checkInteger(short scale) { SOCI_UNUSED(scale) }
+    static void checkInteger(short scale) { SOCI_UNUSED(scale); }
 };
 
 template<typename T1>
