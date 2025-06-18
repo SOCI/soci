@@ -56,6 +56,7 @@ jobs:
     environment:
       SOCI_CI: true
       SOCI_CI_BACKEND: << parameters.backend >>
+      SOCI_SOURCE_DIR: /home/circleci/soci
     steps:
       - checkout
       - run:
