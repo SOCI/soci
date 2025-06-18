@@ -46,6 +46,7 @@ jobs:
           name: deploy website
           command: lftp sftp://${DEPLOY_DOCS_USER}:${DEPLOY_DOCS_PASS}@${DEPLOY_DOCS_HOST} -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate no; set sftp:auto-confirm yes; mirror -v -R ./www ${DEPLOY_DOCS_BASE}; quit"
 
+  # This job is not currently used, see the commented out build-workflow below.
   build-fedora:
     docker:
       - image: fedora
@@ -105,9 +106,14 @@ workflows:
             branches:
               only:
                 - master
-  build-workflow:
-    jobs:
-      - build-fedora:
-          matrix:
-            parameters:
-              backend: [ 'postgresql', 'mysql', 'odbc', 'sqlite3' ]
+
+# For some reason pipelines don't work for pull requests on Circle CI (they are
+# just never triggered), which makes them useless for us, so comment this out
+# for now. If anybody knows how to make this work, please fix it.
+#
+#  build-workflow:
+#    jobs:
+#      - build-fedora:
+#          matrix:
+#            parameters:
+#              backend: [ 'postgresql', 'mysql', 'odbc', 'sqlite3' ]
