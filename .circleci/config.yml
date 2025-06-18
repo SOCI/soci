@@ -46,6 +46,31 @@ jobs:
           name: deploy website
           command: lftp sftp://${DEPLOY_DOCS_USER}:${DEPLOY_DOCS_PASS}@${DEPLOY_DOCS_HOST} -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate no; set sftp:auto-confirm yes; mirror -v -R ./www ${DEPLOY_DOCS_BASE}; quit"
 
+  build-fedora:
+    docker:
+      - image: fedora
+    parameters:
+      backend:
+        type: string
+        description: 'Database backend to use for the build'
+    environment:
+      SOCI_CI: true
+      SOCI_CI_BACKEND: << parameters.backend >>
+    steps:
+      - checkout
+      - run:
+          name: Install dependencies
+          command: ./scripts/ci/install.sh
+      - run:
+          name: Prepare for build
+          command: ./scripts/ci/before_build.sh
+      - run:
+          name: Build
+          command: ./scripts/ci/build.sh
+      - run:
+          name: Test
+          command: ./scripts/ci/test.sh
+
 workflows:
   version: 2
   website-workflow:
@@ -69,3 +94,9 @@ workflows:
             branches:
               only:
                 - master
+  build-workflow:
+    jobs:
+      - build-fedora:
+          matrix:
+            parameters:
+              backend: [ 'postgresql', 'mysql', 'odbc', 'sqlite3' ]
