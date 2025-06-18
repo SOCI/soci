@@ -60,6 +60,16 @@ jobs:
     steps:
       - checkout
       - run:
+          name: Prepare environment
+          command: |
+            set_env_var() {
+              echo "Setting environment variable $1=$2"
+              echo $1=$2 >> $BASH_ENV
+            }
+            set_env_var SOCI_SOURCE_DIR $(pwd)
+            env
+
+      - run:
           name: Install dependencies
           command: ./scripts/ci/install.sh
       - run:
