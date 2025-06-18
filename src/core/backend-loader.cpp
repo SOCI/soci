@@ -11,6 +11,7 @@
 #include "soci/error.h"
 #include <cstdlib>
 #include <map>
+#include <cstdint>
 #include <sstream>
 #include <string>
 #include <vector>
