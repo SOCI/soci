@@ -69,7 +69,3 @@ workflows:
             branches:
               only:
                 - master
-
-notify:
-  webhooks:
-    - url: https://webhooks.gitter.im/e/9ff4be3a6f08f55106e2
