@@ -124,7 +124,7 @@ private:
     backend_factory const * factory_;
     std::string connectString_;
 
-    // References the backend name used for obtaining the factor from
+    // References the backend name used for obtaining the factory from
     // dynamic_backends.
     details::dynamic_backend_ref * backendRef_;
 
