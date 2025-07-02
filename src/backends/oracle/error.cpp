@@ -15,8 +15,24 @@ using namespace soci;
 using namespace soci::details;
 using namespace soci::details::oracle;
 
+namespace
+{
+
+// Oracle errors seem to always come with a new line at the end, which is
+// inconsistent with the other backends and SOCI internal errors, so strip it.
+std::string chomp(std::string const & msg)
+{
+    std::string result{msg};
+    while (!result.empty() && result.back() == '\n')
+        result.pop_back();
+
+    return result;
+}
+
+} // anonymous namespace
+
 oracle_soci_error::oracle_soci_error(std::string const & msg, int errNum)
-    : soci_error(msg), err_num_(errNum)
+    : soci_error(chomp(msg)), err_num_(errNum)
 {
 }
 
