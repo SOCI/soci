@@ -131,9 +131,18 @@ install(
     DESTINATION "${SOCI_INSTALL_CMAKEDIR}"
 )
 
-# Final status
+# Give build summary at the end but only if it's the first time we're running,
+# as indicated by SOCI_SUMMARY not being cached yet, or if it has changed.
+set(SOCI_SUMMARY_NOW
+  "${SOCI_VERSION}-${SOCI_LIB_TYPE}-${SOCI_ENABLED_BACKENDS}-${CMAKE_BUILD_TYPE}"
+)
+if(NOT "${SOCI_SUMMARY_NOW}" STREQUAL "$CACHE{SOCI_SUMMARY}")
+set(SOCI_SUMMARY ${SOCI_SUMMARY_NOW} CACHE INTERNAL "SOCI internal build summary")
+
 if (CMAKE_BUILD_TYPE)
   set(SOCI_CONFIG_DESCRIPTION " in ${CMAKE_BUILD_TYPE} configuration")
 endif()
 message(STATUS "SOCI ${SOCI_VERSION} will be built as ${SOCI_LIB_TYPE} library${SOCI_CONFIG_DESCRIPTION}.")
 message(STATUS "Enabled SOCI backends are: ${SOCI_ENABLED_BACKENDS}")
+
+endif()
