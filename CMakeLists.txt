@@ -86,19 +86,29 @@ endif()
 # When using shared libraries, use version-dependent suffix in their names.
 if (SOCI_SHARED)
   if (WIN32)
-    # Use the full version number as ABI version on Windows and define
-    # ABI_SUFFIX which is used to add it to the DLL name manually because this
-    # is just a convention and so is not done automatically by CMake.
+    # Use the full version number as ABI version on Windows, different minor
+    # versions are not ABI-compatible.
     set(ABI_VERSION "${PROJECT_VERSION_MAJOR}_${PROJECT_VERSION_MINOR}")
-    set(ABI_SUFFIX "_${ABI_VERSION}")
+
+    # Also use it in the library name by default to ensure that the DLLs of
+    # different versions are called differently as there is no SOVERSION on
+    # Windows to prevent this from happening.
+    set(soci_default_suffix "_${ABI_VERSION}")
   elseif(UNIX)
     # Use same value as for SOVERSION, which is only the major version (and is
     # used automatically to construct the shared libraries names, so there is
-    # no need for ABI_SUFFIX).
+    # no need for any suffix).
     set(ABI_VERSION "${PROJECT_VERSION_MAJOR}")
   endif()
 endif()
 
+set(SOCI_NAME_PREFIX "" CACHE STRING "Optional prefix to add before 'soci_' in library names")
+set(SOCI_NAME_SUFFIX "${soci_default_suffix}" CACHE STRING "Optional suffix to add to the library names")
+
+# Helper function appending prefix and suffix to the library name.
+function(soci_build_library_name result basename)
+  set(${result} "${SOCI_NAME_PREFIX}${basename}${SOCI_NAME_SUFFIX}" PARENT_SCOPE)
+endfunction()
 
 include(soci_compiler_options)
 include(soci_install_dirs)
