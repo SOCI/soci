@@ -68,13 +68,13 @@ for the required components.
 The following sections provide summary of variables accepted by CMake scripts configuring SOCI build.
 The lists consist of common variables for SOCI core and all backends as well as variables specific to SOCI backends and their direct dependencies.
 
-List of a few essential CMake variables:
+SOCI build system respects the following standard CMake variables:
 
-* `CMAKE_BUILD_TYPE` - string - Specifies the build type for make based generators (see CMake [help](https://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_BUILD_TYPE)).
-* `CMAKE_INSTALL_PREFIX` - path - Install directory used by install command (see CMake [help](https://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_INSTALL_PREFIX)).
-* `CMAKE_VERBOSE_MAKEFILE` - boolean - If ON, create verbose makefile (see CMake [help](https://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_VERBOSE_MAKEFILE)).
+* `CMAKE_BUILD_TYPE` - string - Specifies the build type for make based generators (see CMake [help](https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html)).
+* `CMAKE_INSTALL_PREFIX` - path - Install directory used by install command (see CMake [help](https://cmake.org/cmake/help/latest/variable/CMAKE_INSTALL_PREFIX.html)).
+* `CMAKE_VERBOSE_MAKEFILE` - boolean - If ON, create verbose makefile (see CMake [help](https://cmake.org/cmake/help/latest/variable/CMAKE_VERBOSE_MAKEFILE.html)).
 
-List of variables to control common SOCI features and dependencies:
+The following SOCI-specific variables control common SOCI features and dependencies:
 
 * `SOCI_SHARED` - boolean - Request to build shared libraries for SOCI. Default is `ON`.
 * `SOCI_TESTS` - boolean - Request to build unit tests for SOCI. Default is `ON`, if you build SOCI standalone. Otherwise, it defaults to `OFF`.
