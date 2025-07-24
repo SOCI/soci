@@ -20,7 +20,7 @@ jobs:
       - checkout
       - run:
           name: install mkdocs
-          command: sudo pip install mkdocs
+          command: pip install mkdocs
       - run:
           name: generate docs
           command: mkdocs build --clean
