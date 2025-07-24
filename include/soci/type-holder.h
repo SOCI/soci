@@ -364,12 +364,6 @@ public:
         }
     }
 
-#ifdef _MSC_VER
-// MSVC complains about "unreachable code" even though all
-// code here can be reached.
-#pragma warning(push)
-#pragma warning(disable:4702)
-#endif
     template <typename T>
     T get(value_cast_tag)
     {
@@ -443,9 +437,6 @@ public:
 
         throw std::bad_cast();
     }
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 private:
     holder(db_type dt, void* val) : dt_(dt)
