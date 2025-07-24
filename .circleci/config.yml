@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   lint-docs:
     docker:
-      - image: circleci/ruby:2.4.1-node
+      - image: cimg/ruby:2.7.8
     steps:
       - checkout
       - run:
@@ -15,7 +15,7 @@ jobs:
           command: markdownlint --config .markdownlint.json .
   deploy-docs:
     docker:
-      - image: circleci/python:2.7
+      - image: cimg/python:3.13.5
     steps:
       - checkout
       - run:
@@ -34,7 +34,7 @@ jobs:
           command: lftp sftp://${DEPLOY_DOCS_USER}:${DEPLOY_DOCS_PASS}@${DEPLOY_DOCS_HOST} -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate no; set sftp:auto-confirm yes; mirror -v -R ./site ${DEPLOY_DOCS_BASE}/doc/${CIRCLE_BRANCH}; quit"
   deploy-website:
     docker:
-      - image: circleci/python:2.7
+      - image: cimg/python:3.13.5
     steps:
       - checkout
       - run:
