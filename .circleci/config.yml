@@ -2,7 +2,7 @@ version: 2.1
 jobs:
   lint-docs:
     docker:
-      - image: cimg/ruby:2.7.8
+      - image: cimg/ruby:2.7.8-node
     steps:
       - checkout
       - run:
