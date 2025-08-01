@@ -28,6 +28,8 @@ add_library(soci_core
     "use-type.cpp"
     "values.cpp"
 )
+# always define during compilation to control symbol visibility/export
+target_compile_definitions(soci_core PRIVATE SOCI_SOURCE)
 
 add_library(SOCI::Core ALIAS soci_core)
 
@@ -114,12 +116,9 @@ target_include_directories(soci_core
     "${PROJECT_SOURCE_DIR}/include/private"
 )
 
+# consistently define SOCI_DLL to enable export visibility
 if (SOCI_SHARED)
-  target_compile_definitions(soci_core
-    PUBLIC
-      # Define the macro SOCI_DLL on Windows
-      $<IF:$<PLATFORM_ID:Windows>,SOCI_DLL,>
-  )
+  target_compile_definitions(soci_core PUBLIC SOCI_DLL)
 endif()
 
 if (WITH_BOOST)
