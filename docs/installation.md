@@ -149,7 +149,7 @@ Furthermore, the `MYSQL_DIR` _environment variable_ can be set to the MySQL inst
 
 #### SQLite 3
 
-* `SOCI_SQLITE3` - Enabler - Enables the [SQLite3](backends/sqlite3.md) backend. Note that, unlike with all the other backends, if SQLite3 library is not found, built-in version of SQLite3 is used instead of the backend being disabled. `SOCI_SQLITE3_BUILTIN` can be set to `OFF` to prevent this from happening, i.e. force using system version only, or, on the contrary, set to `ON` to always use the built-in version, even if SQLite3 library is available on the system.
+* `SOCI_SQLITE3` - Enabler - Enables the [SQLite3](backends/sqlite3.md) backend. Note that, unlike with all the other backends, if SQLite3 library is not found, built-in version of SQLite3 is used instead of the backend being disabled. `SOCI_SQLITE3_BUILTIN` can be set to `OFF` to prevent this from happening, i.e. force using system version only, or, on the contrary, set to `ON` to always use the built-in version, even if SQLite3 library is available on the system. In the latter case you may additionally set `SOCI_SQLITE3_DIRECTORY` to specify the directory containing `sqlite3.c` file which will be used during the build or `SOCI_SQLITE3_SOURCE_FILE` to specify the path to the `sqlite3.c` file directly.
 * `SOCI_SQLITE3_TEST_CONNSTR` - string - Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check [SQLite3 backend reference](backends/sqlite3.md) for details. Example: `-DSOCI_SQLITE3_TEST_CONNSTR="my.db"` or `-DSOCI_SQLITE3_TEST_CONNSTR=":memory:"`.
 * `SOCI_SQLITE3_SKIP_TESTS` - boolean - Skips testing this backend.
 
