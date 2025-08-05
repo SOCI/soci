@@ -83,7 +83,7 @@ struct wide_text_table_creator : public table_creator_base
       : table_creator_base(sql)
   {
       sql << "create table soci_test ("
-                  "wide_text nvarchar(40) null"
+                  "wide_text nvarchar(17) null"
               ")";
   }
 };
