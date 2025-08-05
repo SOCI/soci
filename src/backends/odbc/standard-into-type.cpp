@@ -56,7 +56,8 @@ void odbc_standard_into_type_backend::define_by_pos(
         // Do exactly the same thing here as for x_stdstring above.
         size = static_cast<SQLUINTEGER>(statement_.column_size(position_));
         size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
-        size += sizeof(SQLWCHAR);
+        size++;
+        size = size * sizeof(SQLWCHAR); // size in bytes
         buf_ = new char[size];
         data = buf_;
         break;
