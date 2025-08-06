@@ -157,13 +157,14 @@ unset(__dep_dep_targets)
 check_required_components(SOCI)
 
 if (NOT DEFINED SOCI_FOUND OR SOCI_FOUND)
-  add_library(soci_interface INTERFACE)
+  if (NOT TARGET soci_interface)
+    add_library(soci_interface INTERFACE)
+    add_library(SOCI::soci ALIAS soci_interface)
+  endif()
 
   foreach (__comp IN LISTS SOCI_FIND_COMPONENTS)
       target_link_libraries(soci_interface INTERFACE SOCI::${__comp})
   endforeach()
-
-  add_library(SOCI::soci ALIAS soci_interface)
 
   if (NOT SOCI_FIND_QUIETLY)
       list(JOIN SOCI_FIND_COMPONENTS ", " __components)
