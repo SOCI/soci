@@ -23,6 +23,8 @@ using namespace soci::dynamic_backends;
 
 #include <windows.h>
 
+extern "C" IMAGE_DOS_HEADER __ImageBase;
+
 namespace
 {
 
@@ -43,8 +45,6 @@ private:
 };
 
 typedef HMODULE soci_dynlib_handle_t;
-
-extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 std::string get_this_dynlib_path()
 {
