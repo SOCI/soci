@@ -20,7 +20,22 @@ endif()
 
 
 if (NOT DEFINED SOCI_FIND_COMPONENTS OR SOCI_FIND_COMPONENTS STREQUAL "")
-    # Use all available SOCI components
+  set(SOCI_FIND_COMPONENTS "")
+
+  foreach(__current_comp IN LISTS __dep_soci_comps)
+    string(REPLACE "SOCI::" "" __comp_name "${__current_comp}")
+    string(TOUPPER "${__comp_name}" __comp_name_upper)
+
+    message(STATUS "Checking for SOCI_${__comp_name_upper}")
+    if (DEFINED "SOCI_${__comp_name_upper}")
+      message(WARNING "Setting SOCI_${__comp_name_upper} when using find_package has no effect - specify components in find_package instead")
+    endif()
+  endforeach()
+  unset(__current_comp)
+  unset(__comp_name)
+  unset(__comp_name_upper)
+
+  # Use all available SOCI components
   set(SOCI_FIND_COMPONENTS "${__dep_soci_comps}")
   list(REMOVE_DUPLICATES SOCI_FIND_COMPONENTS)
   list(TRANSFORM SOCI_FIND_COMPONENTS REPLACE "SOCI::" "")
