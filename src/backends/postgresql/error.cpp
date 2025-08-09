@@ -29,7 +29,8 @@ soci_error::error_category postgresql_soci_error::get_error_category() const
     {
         return connection_error;
     }
-    else if (std::memcmp(sqlstate_, "42501", 5) == 0)
+    else if (std::memcmp(sqlstate_, "42501", 5) == 0 ||
+             std::memcmp(sqlstate_, "25006", 5) == 0)
     {
         return no_privilege;
     }

@@ -1,7 +1,5 @@
 include(GNUInstallDirs)
 
-set(SOCI_LIB_PREFIX "${CMAKE_SHARED_LIBRARY_PREFIX}soci_" CACHE STRING "Specifies prefix for the lib directory")
-set(SOCI_LIB_SUFFIX "${CMAKE_SHARED_LIBRARY_SUFFIX}" CACHE STRING "Specifies suffix for the lib directory")
 set(SOCI_DEBUG_POSTFIX "${CMAKE_DEBUG_POSTFIX}" CACHE STRING "Specifies suffix for the library file in debug mode")
 
 
@@ -35,8 +33,11 @@ target_compile_definitions(soci_core PRIVATE SOCI_SOURCE)
 
 add_library(SOCI::Core ALIAS soci_core)
 
+soci_build_library_name(soci_core_name "soci_core")
+
 set_target_properties(
   soci_core PROPERTIES
+  OUTPUT_NAME ${soci_core_name}
   SOVERSION ${PROJECT_VERSION_MAJOR}
   VERSION ${PROJECT_VERSION}
   EXPORT_NAME Core
@@ -168,13 +169,6 @@ if (NOT MSVC)
   )
 endif()
 
-if (DEFINED ABI_SUFFIX)
-  set_target_properties(soci_core
-    PROPERTIES
-      OUTPUT_NAME "soci_core${ABI_SUFFIX}"
-  )
-endif()
-
 cmake_path(
   ABSOLUTE_PATH SOCI_INSTALL_LIBDIR
   BASE_DIRECTORY "${CMAKE_INSTALL_PREFIX}"
@@ -184,17 +178,10 @@ cmake_path(
 target_compile_definitions(soci_core
   PRIVATE
     DEFAULT_BACKENDS_PATH="${SOCI_INSTALL_FULL_LIBDIR}"
-    SOCI_LIB_PREFIX="${SOCI_LIB_PREFIX}"
-    SOCI_LIB_SUFFIX="${SOCI_LIB_SUFFIX}"
+    SOCI_LIB_PREFIX="${CMAKE_SHARED_LIBRARY_PREFIX}${SOCI_NAME_PREFIX}soci_"
+    SOCI_LIB_SUFFIX="${SOCI_NAME_SUFFIX}${CMAKE_SHARED_LIBRARY_SUFFIX}"
     SOCI_DEBUG_POSTFIX="${SOCI_DEBUG_POSTFIX}"
 )
-if (DEFINED ABI_VERSION)
-  target_compile_definitions(soci_core
-    PRIVATE
-      SOCI_ABI_VERSION="${ABI_VERSION}"
-  )
-endif()
-
 
 install(
   TARGETS soci_core

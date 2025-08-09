@@ -136,19 +136,15 @@ function(soci_define_backend_target)
   target_link_libraries(${DEFINE_BACKEND_TARGET_NAME} PUBLIC SOCI::Core)
   target_include_directories(${DEFINE_BACKEND_TARGET_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/include/private")
 
+  soci_build_library_name(full_backend_target_name "${DEFINE_BACKEND_TARGET_NAME}")
+
   set_target_properties(${DEFINE_BACKEND_TARGET_NAME}
     PROPERTIES
+      OUTPUT_NAME ${full_backend_target_name}
       SOVERSION ${PROJECT_VERSION_MAJOR}
       VERSION ${PROJECT_VERSION}
       EXPORT_NAME ${DEFINE_BACKEND_NAME}
   )
-
-  if (DEFINED ABI_SUFFIX)
-    set_target_properties(${DEFINE_BACKEND_TARGET_NAME}
-      PROPERTIES
-        OUTPUT_NAME "${DEFINE_BACKEND_TARGET_NAME}${ABI_SUFFIX}"
-    )
-  endif()
 
   if (DEFINE_BACKEND_HEADER_FILES)
     target_sources(${DEFINE_BACKEND_TARGET_NAME}

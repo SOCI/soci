@@ -1,8 +1,8 @@
-version: 2
+version: 2.1
 jobs:
   lint-docs:
     docker:
-      - image: circleci/ruby:2.4.1-node
+      - image: cimg/ruby:2.7.8-node
     steps:
       - checkout
       - run:
@@ -15,12 +15,12 @@ jobs:
           command: markdownlint --config .markdownlint.json .
   deploy-docs:
     docker:
-      - image: circleci/python:2.7
+      - image: cimg/python:3.13.5
     steps:
       - checkout
       - run:
           name: install mkdocs
-          command: sudo pip install mkdocs
+          command: pip install mkdocs
       - run:
           name: generate docs
           command: mkdocs build --clean
@@ -34,7 +34,7 @@ jobs:
           command: lftp sftp://${DEPLOY_DOCS_USER}:${DEPLOY_DOCS_PASS}@${DEPLOY_DOCS_HOST} -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate no; set sftp:auto-confirm yes; mirror -v -R ./site ${DEPLOY_DOCS_BASE}/doc/${CIRCLE_BRANCH}; quit"
   deploy-website:
     docker:
-      - image: circleci/python:2.7
+      - image: cimg/python:3.13.5
     steps:
       - checkout
       - run:
@@ -45,6 +45,43 @@ jobs:
       - run:
           name: deploy website
           command: lftp sftp://${DEPLOY_DOCS_USER}:${DEPLOY_DOCS_PASS}@${DEPLOY_DOCS_HOST} -e "set ftp:ssl-force true; set ftp:ssl-protect-data true; set ssl:verify-certificate no; set sftp:auto-confirm yes; mirror -v -R ./www ${DEPLOY_DOCS_BASE}; quit"
+
+  # This job is not currently used, see the commented out build-workflow below.
+  build-fedora:
+    docker:
+      - image: fedora
+    parameters:
+      backend:
+        type: string
+        description: 'Database backend to use for the build'
+    environment:
+      SOCI_CI: true
+      SOCI_CI_BACKEND: << parameters.backend >>
+      SOCI_SOURCE_DIR: /home/circleci/soci
+    steps:
+      - checkout
+      - run:
+          name: Prepare environment
+          command: |
+            set_env_var() {
+              echo "Setting environment variable $1=$2"
+              echo $1=$2 >> $BASH_ENV
+            }
+            set_env_var SOCI_SOURCE_DIR $(pwd)
+            env
+
+      - run:
+          name: Install dependencies
+          command: ./scripts/ci/install.sh
+      - run:
+          name: Prepare for build
+          command: ./scripts/ci/before_build.sh
+      - run:
+          name: Build
+          command: ./scripts/ci/build.sh
+      - run:
+          name: Test
+          command: ./scripts/ci/test.sh
 
 workflows:
   version: 2
@@ -70,6 +107,13 @@ workflows:
               only:
                 - master
 
-notify:
-  webhooks:
-    - url: https://webhooks.gitter.im/e/9ff4be3a6f08f55106e2
+# For some reason pipelines don't work for pull requests on Circle CI (they are
+# just never triggered), which makes them useless for us, so comment this out
+# for now. If anybody knows how to make this work, please fix it.
+#
+#  build-workflow:
+#    jobs:
+#      - build-fedora:
+#          matrix:
+#            parameters:
+#              backend: [ 'postgresql', 'mysql', 'odbc', 'sqlite3' ]

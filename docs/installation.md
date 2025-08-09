@@ -68,13 +68,13 @@ for the required components.
 The following sections provide summary of variables accepted by CMake scripts configuring SOCI build.
 The lists consist of common variables for SOCI core and all backends as well as variables specific to SOCI backends and their direct dependencies.
 
-List of a few essential CMake variables:
+SOCI build system respects the following standard CMake variables:
 
-* `CMAKE_BUILD_TYPE` - string - Specifies the build type for make based generators (see CMake [help](https://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_BUILD_TYPE)).
-* `CMAKE_INSTALL_PREFIX` - path - Install directory used by install command (see CMake [help](https://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_INSTALL_PREFIX)).
-* `CMAKE_VERBOSE_MAKEFILE` - boolean - If ON, create verbose makefile (see CMake [help](https://cmake.org/cmake/help/cmake-2-8-docs.html#variable:CMAKE_VERBOSE_MAKEFILE)).
+* `CMAKE_BUILD_TYPE` - string - Specifies the build type for make based generators (see CMake [help](https://cmake.org/cmake/help/latest/variable/CMAKE_BUILD_TYPE.html)).
+* `CMAKE_INSTALL_PREFIX` - path - Install directory used by install command (see CMake [help](https://cmake.org/cmake/help/latest/variable/CMAKE_INSTALL_PREFIX.html)).
+* `CMAKE_VERBOSE_MAKEFILE` - boolean - If ON, create verbose makefile (see CMake [help](https://cmake.org/cmake/help/latest/variable/CMAKE_VERBOSE_MAKEFILE.html)).
 
-List of variables to control common SOCI features and dependencies:
+The following SOCI-specific variables control common SOCI features and dependencies:
 
 * `SOCI_SHARED` - boolean - Request to build shared libraries for SOCI. Default is `ON`.
 * `SOCI_TESTS` - boolean - Request to build unit tests for SOCI. Default is `ON`, if you build SOCI standalone. Otherwise, it defaults to `OFF`.
@@ -85,6 +85,7 @@ Some other build options:
 * `SOCI_ASAN` - boolean - Build with address sanitizer (ASAN) support. Useful for finding problems when debugging, but shouldn't be used for the production builds due to extra overhead. Default is `OFF`.
 * `SOCI_UBSAN` - boolean - Build with undefined behaviour sanitizer (ASAN) support. Default is `OFF`.
 * `SOCI_LTO` - boolean - Build with link-time optimizations, if supported. This produces noticeably smaller libraries. Default is `OFF`, but turning it on is recommended for the production builds.
+* `SOCI_NAME_PREFIX` and `SOCI_NAME_SUFFIX` - strings - If specified, the former is prepended and the latter appended to the names of all SOCI libraries. Note that by default SOCI build system appends `_MAJOR_MINOR` suffix to the names of Windows DLLs (but not to the names of Unix shared libraries) to prevent mixing up ABI-incompatible builds from different SOCI versions. If you want to override this behaviour, you can set `SOCI_NAME_SUFFIX` to an empty string.
 
 When it comes to enabling specific backends, SOCI supports three distinct options that can be used as `Enabler` type as used below:
 
@@ -148,7 +149,7 @@ Furthermore, the `MYSQL_DIR` _environment variable_ can be set to the MySQL inst
 
 #### SQLite 3
 
-* `SOCI_SQLITE3` - Enabler - Enables the [SQLite3](backends/sqlite3.md) backend. Note that, unlike with all the other backends, if SQLite3 library is not found, built-in version of SQLite3 is used instead of the backend being disabled. `SOCI_SQLITE3_BUILTIN` can be set to `OFF` to prevent this from happening, i.e. force using system version only, or, on the contrary, set to `ON` to always use the built-in version, even if SQLite3 library is available on the system.
+* `SOCI_SQLITE3` - Enabler - Enables the [SQLite3](backends/sqlite3.md) backend. Note that, unlike with all the other backends, if SQLite3 library is not found, built-in version of SQLite3 is used instead of the backend being disabled. `SOCI_SQLITE3_BUILTIN` can be set to `OFF` to prevent this from happening, i.e. force using system version only, or, on the contrary, set to `ON` to always use the built-in version, even if SQLite3 library is available on the system. In the latter case you may additionally set `SOCI_SQLITE3_DIRECTORY` to specify the directory containing `sqlite3.c` file which will be used during the build or `SOCI_SQLITE3_SOURCE_FILE` to specify the path to the `sqlite3.c` file directly.
 * `SOCI_SQLITE3_TEST_CONNSTR` - string - Connection string is simply a file path where SQLite3 test database will be created (e.g. /home/john/soci_test.db). Check [SQLite3 backend reference](backends/sqlite3.md) for details. Example: `-DSOCI_SQLITE3_TEST_CONNSTR="my.db"` or `-DSOCI_SQLITE3_TEST_CONNSTR=":memory:"`.
 * `SOCI_SQLITE3_SKIP_TESTS` - boolean - Skips testing this backend.
 

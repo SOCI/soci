@@ -10,7 +10,7 @@ env:
   WITH_BOOST: OFF
 
 task:
-  skip: "changesIncludeOnly('.github/workflows/*')"
+  skip: "changesIncludeOnly('.github/workflows/*', '.circleci/config.yml')"
   matrix:
     - name: Cirrus CI / Empty FreeBSD
       env:

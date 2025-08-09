@@ -34,6 +34,7 @@ if (MSVC)
     INTERFACE
       "$<${soci_cxx_source}:/W4>"
       "$<${soci_cxx_source}:/we4266>"
+      "$<${soci_cxx_source}:/wd4702>"  # we get many bogus "unreachable code"
   )
 
   if (SOCI_ENABLE_WERROR)
