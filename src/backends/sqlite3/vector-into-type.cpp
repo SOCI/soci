@@ -315,7 +315,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                         set_in_vector(data_, i, xml);
                         break;
                     }
-                    
+
                     case db_wstring:
                         throw soci_error("Wide string data type is not supported");
                 };

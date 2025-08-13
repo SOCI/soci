@@ -174,7 +174,7 @@ void oracle_standard_into_type_backend::define_by_pos(
     default:
         throw soci_error("Into element used with non-supported type.");
     }
-    
+
 
     sword res = OCIDefineByPos(statement_.stmtp_, &defnp_,
             statement_.session_.errhp_,
