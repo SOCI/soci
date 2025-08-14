@@ -40,8 +40,8 @@ add_subdirectory(${CMAKE_CURRENT_SOURCE_DIR}/../.. ${SOCI_BINARY_DIR})
 
 add_executable(subdir_include subdir-include.cpp)
 
-# Link to SOCI (SOCI::soci will resolve all requested dependencies automatically)
+# Link to SOCI (SOCI::SOCI will resolve all requested dependencies automatically)
 target_link_libraries(subdir_include
     PRIVATE
-      SOCI::soci
+      SOCI::SOCI
 )
