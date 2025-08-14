@@ -213,7 +213,7 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
             CHECK(t4.tm_year == t2.tm_year);
             CHECK((1900 + t4.tm_year) == i);
         }
-    }   
+    }
 }
 
 // explicit calls test

@@ -995,7 +995,7 @@ TEST_CASE("Cross-schema metadata", "[postgresql][cross-schema]")
     st.execute();
     while (st.fetch())
     {
-        if (get_table_name_without_schema(table_name) == tables) 
+        if (get_table_name_without_schema(table_name) == tables)
         {
             tables_found = true;
             schema = get_schema_from_table_name(table_name);

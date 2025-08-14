@@ -139,12 +139,13 @@ void odbc_vector_into_type_backend::define_by_pos(
                 statement_.fetchVectorByRows_ = true;
             }
 
-            colSize_ += sizeof(SQLWCHAR);
+            colSize_++;
+            colSize_ = colSize_ * sizeof(SQLWCHAR); // size in bytes
 
             const std::size_t elementsCount
                 = statement_.fetchVectorByRows_ ? 1 : vectorSize;
 
-            buf_ = new char[colSize_ * elementsCount * sizeof(SQLWCHAR)];
+            buf_ = new char[colSize_ * elementsCount];
         }
         break;
     case x_stdtm:
