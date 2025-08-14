@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_SQLITE3_SOURCE
 #include "soci/sqlite3/soci-sqlite3.h"
 
 #include "soci/connection-parameters.h"
