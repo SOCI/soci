@@ -29,6 +29,6 @@ find_package(SOCI 4.1 COMPONENTS Empty REQUIRED)
 
 add_executable(connect connect.cpp)
 
-# Note that linking to SOCI::soci is enough to inherit
+# Note that linking to SOCI::SOCI is enough to inherit
 # all of SOCI's dependencies, include directories, etc.
-target_link_libraries(connect PRIVATE SOCI::soci)
+target_link_libraries(connect PRIVATE SOCI::SOCI)

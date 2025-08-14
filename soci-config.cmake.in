@@ -157,11 +157,17 @@ unset(__dep_dep_targets)
 check_required_components(SOCI)
 
 if (NOT DEFINED SOCI_FOUND OR SOCI_FOUND)
-  add_library(SOCI::soci INTERFACE IMPORTED)
+  add_library(SOCI::SOCI INTERFACE IMPORTED)
 
   foreach (__comp IN LISTS SOCI_FIND_COMPONENTS)
-      target_link_libraries(SOCI::soci INTERFACE SOCI::${__comp})
+      target_link_libraries(SOCI::SOCI INTERFACE SOCI::${__comp})
   endforeach()
+
+  # Shall be removed in SOCI v5
+  add_library(soci_interface_deprecated INTERFACE)
+  target_link_libraries(soci_interface_deprecated INTERFACE SOCI::SOCI)
+  set_target_properties(soci_interface_deprecated PROPERTIES DEPRECATION "Use SOCI::SOCI (all-uppercase) instead of SOCI::soci")
+  add_library(SOCI::soci ALIAS soci_interface_deprecated)
 
   if (NOT SOCI_FIND_QUIETLY)
       list(JOIN SOCI_FIND_COMPONENTS ", " __components)
