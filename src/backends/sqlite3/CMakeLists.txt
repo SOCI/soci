@@ -67,9 +67,21 @@ if (NOT TARGET SQLite::SQLite3)
   endif()
 
   if ("${SOCI_SQLITE3_BUILTIN}" STREQUAL "ON")
-    message(STATUS "Using built-in version of SQLite3 in ${SOCI_SQLITE3_SOURCE_FILE}")
+    set(SOCI_SQLITE3_BUILTIN_MESSAGE_NOW
+      "Using built-in version of SQLite3 in ${SOCI_SQLITE3_SOURCE_FILE}"
+    )
   else()
-    message(STATUS "Falling back on built-in version of SQLite3")
+    set(SOCI_SQLITE3_BUILTIN_MESSAGE_NOW
+      "Falling back on built-in version of SQLite3"
+    )
+  endif()
+
+  if(NOT "${SOCI_SQLITE3_BUILTIN_MESSAGE}" STREQUAL "${SOCI_SQLITE3_BUILTIN_MESSAGE_NOW}")
+    set(SOCI_SQLITE3_BUILTIN_MESSAGE ${SOCI_SQLITE3_BUILTIN_MESSAGE_NOW}
+      CACHE INTERNAL
+      "SOCI internal message shown when using the built-in SQLite3 library"
+    )
+    message(STATUS "${SOCI_SQLITE3_BUILTIN_MESSAGE}")
   endif()
 
   target_sources(soci_sqlite3
