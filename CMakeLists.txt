@@ -156,3 +156,14 @@ message(STATUS "SOCI ${SOCI_VERSION} will be built as ${SOCI_LIB_TYPE} library${
 message(STATUS "Enabled SOCI backends are: ${SOCI_ENABLED_BACKENDS}")
 
 endif()
+
+# Also make it possible to see SOCI configuration later.
+add_custom_target(show_config
+  COMMAND ${CMAKE_COMMAND} -E echo "SOCI ${SOCI_VERSION} configured with:"
+  COMMAND ${CMAKE_COMMAND} -E echo "  Build type:       ${CMAKE_BUILD_TYPE}"
+  COMMAND ${CMAKE_COMMAND} -E echo "  Library type:     ${SOCI_LIB_TYPE}"
+  COMMAND ${CMAKE_COMMAND} -E echo "  Enabled backends: ${SOCI_ENABLED_BACKENDS}"
+  COMMENT
+    "Show SOCI build configuration summary"
+  VERBATIM
+)
