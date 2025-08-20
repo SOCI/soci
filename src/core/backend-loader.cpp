@@ -70,9 +70,29 @@ std::string get_this_dynlib_path()
     return path;
 }
 
+inline soci_dynlib_handle_t DLOPEN(std::string const& path)
+{
+  // We expect the dependencies of the backend libraries to be in the same
+  // directory as the libraries themselves, so use LOAD_WITH_ALTERED_SEARCH_PATH
+  // to search for them there first, before searching the standard locations.
+  //
+  // However we need an absolute path in order to use this flag, so make sure
+  // this is the case.
+  DWORD flags = 0;
+  char const* realpath = path.c_str();
+  char abspath[_MAX_PATH];
+  if ( _fullpath(abspath, realpath, _MAX_PATH) )
+  {
+    realpath = abspath;
+    flags = LOAD_WITH_ALTERED_SEARCH_PATH;
+  }
+  //else: If the conversion failed, fall back on LoadLibrary() behaviour.
+
+  return LoadLibraryExA(realpath, NULL, flags);
+}
+
 } // unnamed namespace
 
-#define DLOPEN(x) LoadLibraryA(x)
 #define DLCLOSE(x) FreeLibrary(x)
 #define DLSYM(x, y) GetProcAddress(x, y)
 
@@ -151,9 +171,14 @@ std::string get_this_dynlib_path()
     return path;
 }
 
+// This used to be a macro, hence it uses an all capital name.
+inline soci_dynlib_handle_t DLOPEN(std::string const& path)
+{
+    return dlopen(path.c_str(), RTLD_LAZY);
+}
+
 } // unnamed namespace
 
-#define DLOPEN(x) dlopen(x, RTLD_LAZY)
 #define DLCLOSE(x) dlclose(x)
 #define DLSYM(x, y) dlsym(x, y)
 
@@ -328,19 +353,19 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
     if (shared_object.empty() == false)
     {
         fullFileName = shared_object;
-        h = DLOPEN(shared_object.c_str());
+        h = DLOPEN(shared_object);
     }
     else
     {
         // try system paths
-        h = DLOPEN(LIBNAME(name).c_str());
+        h = DLOPEN(LIBNAME(name));
         if (0 == h)
         {
             // try all search paths
             for (auto const& path : get_default_search_paths())
             {
                 fullFileName = path + "/" + LIBNAME(name);
-                h = DLOPEN(fullFileName.c_str());
+                h = DLOPEN(fullFileName);
                 if (0 != h)
                 {
                     // already found
