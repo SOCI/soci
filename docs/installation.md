@@ -95,6 +95,8 @@ When it comes to enabling specific backends, SOCI supports three distinct option
 
 SQLite backend is special, as it may use the built-in SQLite library if the system version is not found, see its documentation below for more details.
 
+SOCI outputs the summary of its build configuration at the end of the CMake configuration step, so you can easily see which backends are effectively enabled. It is also possible to show the build configuration at any later time by running `cmake --build $builddir --target show_config` where `builddir` is the build directory.
+
 #### Empty (sample backend)
 
 * `SOCI_EMPTY` - Enabler - Enables the [sample backend](backends/index.md) called Empty. Always ON by default.
