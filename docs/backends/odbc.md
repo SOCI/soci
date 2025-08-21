@@ -40,7 +40,7 @@ or simply:
 session sql(odbc, "filedsn=c:\\my.dsn");
 ```
 
-The set of parameters used in the connection string for ODBC is the same as accepted by the [SQLDriverConnect](https://msdn.microsoft.com/library/default.asp?url=/library/en-us/odbcsql/od_odbc_d_4x4k.asp) function from the ODBC library.
+The set of parameters used in the connection string for ODBC is the same as accepted by the [SQLDriverConnect](https://msdn.microsoft.com/library/default.asp?url=/library/en-us/odbcsql/od_odbc_d_4x4k.asp) function from the ODBC library with the addition of SOCI-specific `odbc.driver_complete` option described in the [configuration options](#configuration-options) section below.
 
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 
@@ -179,10 +179,18 @@ that returns fully expanded connection string as returned by the `SQLDriverConne
 
 ## Configuration options
 
-This backend supports `odbc_option_driver_complete` option which can be passed to it via `connection_parameters` class. The value of this option is passed to `SQLDriverConnect()` function as "driver completion" parameter and so must be one of `SQL_DRIVER_XXX` values, in the string form. The default value of this option is `SQL_DRIVER_PROMPT` meaning that the driver will query the user for the user name and/or the password if they are not stored together with the connection. If this is undesirable for some reason, you can use `SQL_DRIVER_NOPROMPT` value for this option to suppress showing the message box:
+This backend supports `odbc_option_driver_complete` option which can be passed to it via `connection_parameters` class. The value of this option is passed to `SQLDriverConnect()` function as "driver completion" parameter and so must be one of `SQL_DRIVER_XXX` values, in the string form. The default value of this option is `SQL_DRIVER_PROMPT` meaning that the driver will query the user for the user name and/or the password if they are not stored together with the connection. If this is undesirable, e.g. because the program is running in non-interactive environment such as CI job context, you can use `SQL_DRIVER_NOPROMPT` value for this option to suppress showing the message box:
 
 ```cpp
 connection_parameters parameters("odbc", "DSN=mydb");
 parameters.set_option(odbc_option_driver_complete, "0" /* SQL_DRIVER_NOPROMPT */);
 session sql(parameters);
 ```
+
+For extra convenience, this option can also be specified as part of the connection string itself, e.g.
+
+```cpp
+session sql("odbc", "DSN=mydb;odbc.driver_complete=0");
+```
+
+has the same effect as the snippet above.

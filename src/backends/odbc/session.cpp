@@ -18,6 +18,64 @@ using namespace soci::details;
 
 char const * soci::odbc_option_driver_complete = "odbc.driver_complete";
 
+namespace
+{
+
+// Helper function checking of odbc_option_driver_complete is specified in the
+// connection string and returning its value while removing this SOCI-specific
+// option from the connection string.
+//
+// Returns empty string if the option is not specified in the connection string.
+std::string extract_driver_complete_option(std::string& connectString)
+{
+    auto start = connectString.find(soci::odbc_option_driver_complete);
+    if (start == std::string::npos)
+    {
+        // Not found at all.
+        return {};
+    }
+
+    // Must be followed by the equal sign, remember its position before
+    // modifying start below.
+    auto const posEq = start + strlen(soci::odbc_option_driver_complete);
+
+    if (start != 0)
+    {
+        if (connectString[start - 1] != ';')
+        {
+            // Not preceded by the semicolon (and not at the very beginning),
+            // so not a valid option.
+            return {};
+        }
+
+        start--;
+    }
+
+    if (posEq >= connectString.size() || connectString[posEq] != '=')
+    {
+        // Not followed by the equal sign, so not a valid option.
+        return {};
+    }
+
+    // It looks like we have the option, extract its value and remove it.
+    std::string value;
+    auto const end = connectString.find(';', posEq + 1);
+    if (end == std::string::npos)
+    {
+        value = connectString.substr(posEq + 1);
+        connectString.erase(start);
+    }
+    else
+    {
+        value = connectString.substr(posEq + 1, end - posEq - 1);
+        connectString.erase(start, end - start);
+    }
+
+    return value;
+}
+
+} // anonymous namespace
+
 odbc_session_backend::odbc_session_backend(
     connection_parameters const & parameters)
     : henv_(0), hdbc_(0), product_(prod_uninitialized)
@@ -49,8 +107,10 @@ odbc_session_backend::odbc_session_backend(
     SQLCHAR outConnString[1024];
     SQLSMALLINT strLength = 0;
 
+    std::string connectString = parameters.get_connect_string();
+
     // Prompt the user for any missing information (typically UID/PWD) in the
-    // connection string by default but allow overriding this using "prompt"
+    // connection string by default but allow overriding this using a special
     // option and also suppress prompts when reconnecting, see the comment in
     // soci::session::reconnect().
     SQLHWND hwnd_for_prompt = NULL;
@@ -63,7 +123,14 @@ odbc_session_backend::odbc_session_backend(
     else
     {
       std::string completionString;
-      if (parameters.get_option(odbc_option_driver_complete, completionString))
+      if (!parameters.get_option(odbc_option_driver_complete, completionString))
+      {
+        // For convenience, also allow specifying this option as part of the
+        // connection string itself.
+        completionString = extract_driver_complete_option(connectString);
+      }
+
+      if (!completionString.empty())
       {
         // The value of the option is supposed to be just the integer value of
         // one of SQL_DRIVER_XXX constants but don't check for the exact value in
@@ -81,8 +148,6 @@ odbc_session_backend::odbc_session_backend(
     if (completion != SQL_DRIVER_NOPROMPT)
       hwnd_for_prompt = ::GetDesktopWindow();
 #endif // _WIN32
-
-    std::string const & connectString = parameters.get_connect_string();
 
     // This "infinite" loop can be executed at most twice.
     std::string errContext;
