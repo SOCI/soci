@@ -1,5 +1,12 @@
 add_library(soci_interface INTERFACE)
-add_library(SOCI::soci ALIAS soci_interface)
+add_library(SOCI::SOCI ALIAS soci_interface)
+
+if (SOCI_VERSION VERSION_LESS 5)
+  add_library(soci_interface_deprecated INTERFACE)
+  target_link_libraries(soci_interface_deprecated INTERFACE soci_interface)
+  set_target_properties(soci_interface_deprecated PROPERTIES DEPRECATION "Use SOCI::SOCI (all-uppercase) instead of SOCI::soci")
+  add_library(SOCI::soci ALIAS soci_interface_deprecated)
+endif()
 
 set(SOCI_GENERATED_INCLUDES_DIR "${CMAKE_BINARY_DIR}/include")
 file(MAKE_DIRECTORY "${SOCI_GENERATED_INCLUDES_DIR}/soci")
