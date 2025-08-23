@@ -61,11 +61,9 @@ list(JOIN CONFIG_LINES "\n" CONFIG_CONTENT)
 # content to be written has differed from the file's content. Note that we do
 # *not* use file(WRITE) because the line endings would be CRLF on Windows, so
 # the file MD5 hash would *never* equal that of the content hash, as the string
-# content is of course using standard LF line endings.
-#
-# Therefore, this means that soci-config.h is updated on each configure, so
-# each subsequent cmake --build results in the needless rebuilding we wanted to
-# avoid in the first place.
+# content is of course using standard LF line endings. Usinf file(WRITE) would
+# mean that soci-config.h is updated on each configure, so each subsequent
+# cmake --build would result in the needless rebuilding we wanted to avoid.
 #
 file(GENERATE
   OUTPUT "${SOCI_GENERATED_INCLUDES_DIR}/soci/soci-config.h"
