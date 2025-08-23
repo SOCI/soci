@@ -57,18 +57,20 @@ list(APPEND CONFIG_LINES "#endif")
 
 list(JOIN CONFIG_LINES "\n" CONFIG_CONTENT)
 
-string(MD5 CONFIG_CONTENT_HASH "${CONFIG_CONTENT}")
-if (EXISTS "${SOCI_GENERATED_INCLUDES_DIR}/soci/soci-config.h")
-  file(MD5 "${SOCI_GENERATED_INCLUDES_DIR}/soci/soci-config.h" CONFIG_FILE_HASH)
-else()
-  set(CONFIG_FILE_HASH 0)
-endif()
-
-# Only overwrite the soci-config.h file if the generated content is different from the
-# file's content in order to avoid needless rebuilding
-if (NOT (CONFIG_CONTENT_HASH STREQUAL CONFIG_FILE_HASH))
-  file(WRITE "${SOCI_GENERATED_INCLUDES_DIR}/soci/soci-config.h" "${CONFIG_CONTENT}")
-endif()
+# We use file(GENERATE) to only overwrite soci-config.h if the generated
+# content to be written has differed from the file's content. Note that we do
+# *not* use file(WRITE) because the line endings would be CRLF on Windows, so
+# the file MD5 hash would *never* equal that of the content hash, as the string
+# content is of course using standard LF line endings.
+#
+# Therefore, this means that soci-config.h is updated on each configure, so
+# each subsequent cmake --build results in the needless rebuilding we wanted to
+# avoid in the first place.
+#
+file(GENERATE
+  OUTPUT "${SOCI_GENERATED_INCLUDES_DIR}/soci/soci-config.h"
+  CONTENT "${CONFIG_CONTENT}" NEWLINE_STYLE LF
+)
 
 # Append the generated config header to the public headers of the core target
 target_sources(soci_core
