@@ -49,6 +49,11 @@ cmake_dependent_option(SOCI_LTO "Enable link time optimizations in release build
 # useful later when printing the SOCI configuration in show_config.
 get_property(SOCI_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
 
+# Default build type to Release for single-config generators
+if(NOT SOCI_IS_MULTI_CONFIG AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
+
 # Configure LTO for anything but Debug builds (if enabled in the first place)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ${SOCI_LTO})
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION_DEBUG OFF)
