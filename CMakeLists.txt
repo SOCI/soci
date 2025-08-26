@@ -45,6 +45,14 @@ option(SOCI_TESTS "Enable building SOCI test cases" ${PROJECT_IS_TOP_LEVEL})
 option(WITH_BOOST "Enable Boost support" ON)
 cmake_dependent_option(SOCI_LTO "Enable link time optimizations in release builds" ON "LTO_AVAILABLE" OFF)
 
+# Determine if the CMake generator is single or multi config. This will be
+# useful later when printing the SOCI configuration in show_config.
+get_property(SOCI_IS_MULTI_CONFIG GLOBAL PROPERTY GENERATOR_IS_MULTI_CONFIG)
+
+# Default build type to Release for single-config generators
+if(NOT SOCI_IS_MULTI_CONFIG AND NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
 
 # Configure LTO for anything but Debug builds (if enabled in the first place)
 set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ${SOCI_LTO})
@@ -159,10 +167,16 @@ endif()
 
 # Also make it possible to see SOCI configuration later.
 add_custom_target(show_config
-  COMMAND ${CMAKE_COMMAND} -E echo "SOCI ${SOCI_VERSION} configured with:"
-  COMMAND ${CMAKE_COMMAND} -E echo "  Build type:       ${CMAKE_BUILD_TYPE}"
-  COMMAND ${CMAKE_COMMAND} -E echo "  Library type:     ${SOCI_LIB_TYPE}"
-  COMMAND ${CMAKE_COMMAND} -E echo "  Enabled backends: ${SOCI_ENABLED_BACKENDS}"
+  COMMAND ${CMAKE_COMMAND} -E echo
+    "SOCI ${SOCI_VERSION} configured with:"
+  COMMAND ${CMAKE_COMMAND} -E echo
+    # If using multi-config generator CMAKE_BUILD_TYPE is not meaningful. One
+    # would instead select a build type from CMAKE_CONFIGURATION_TYPES.
+    "  Build type:       $<IF:${SOCI_IS_MULTI_CONFIG},${CMAKE_CONFIGURATION_TYPES},${CMAKE_BUILD_TYPE}>"
+  COMMAND ${CMAKE_COMMAND} -E echo
+    "  Library type:     ${SOCI_LIB_TYPE}"
+  COMMAND ${CMAKE_COMMAND} -E echo
+    "  Enabled backends: ${SOCI_ENABLED_BACKENDS}"
   COMMENT
     "Show SOCI build configuration summary"
   VERBATIM
