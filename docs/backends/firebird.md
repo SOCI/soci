@@ -148,10 +148,10 @@ Firebird stored procedures can be executed by using SOCI [Procedure](../procedur
 
 ## Native API Access
 
-SOCI provides access to underlying datbabase APIs via several `get_backend()` functions,
+SOCI provides access to underlying database APIs via several `get_backend()` functions,
 as described in the [Beyond SOCI](../beyond.md) documentation.
 
-The Firebird backend provides the following concrete classes for navite API access:
+The Firebird backend provides the following concrete classes for native API access:
 
 |Accessor Function|Concrete Class|
 |--- |--- |

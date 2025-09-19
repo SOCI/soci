@@ -19,7 +19,7 @@ The SOCI ODBC backend is supported for use with ODBC 3.
 |3|Windows XP|Visual Studio 2005 (express)|
 |3|Windows XP|Visual C++ 8.0 Professional|
 |3|Windows XP|g++ 3.3.4 (Cygwin)|
-|3 (unixodbc 2.3.6)|macOS High Sierra 10.13.5|AppleClang 9.1.0.9020039|
+|3 (unixODBC 2.3.6)|macOS High Sierra 10.13.5|AppleClang 9.1.0.9020039|
 
 ### Required Client Libraries
 
@@ -110,7 +110,7 @@ The ODBC backend has support for SOCI's [bulk operations](../binding.md#bulk-ope
 |--- |--- |--- |
 |MS SQL Server 2005|YES|YES|
 |MS Access 2003|YES|NO|
-|PostgresQL 8.1|YES|YES|
+|PostgreSQL 8.1|YES|YES|
 |MySQL 4.1|NO|NO|
 
 ### Transactions
@@ -135,9 +135,9 @@ Not currently supported.
 
 ## Native API Access
 
-SOCI provides access to underlying datbabase APIs via several getBackEnd() functions, as described in the [beyond SOCI](../beyond.md) documentation.
+SOCI provides access to underlying database APIs via several getBackEnd() functions, as described in the [beyond SOCI](../beyond.md) documentation.
 
-The ODBC backend provides the following concrete classes for navite API access:
+The ODBC backend provides the following concrete classes for native API access:
 
 |Accessor Function|Concrete Class|
 |--- |--- |

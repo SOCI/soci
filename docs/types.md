@@ -293,7 +293,7 @@ sql << "select count(*) from person", into(i);
 cout << "We have " << i.get() << " persons in the database.\n";
 ```
 
-Note that there is a number of types from the Boost library integrated with SOCI out of the box, see [Integration with Boost](boost.md) for complete description. Use these as examples of conversions for more complext data types.
+Note that there is a number of types from the Boost library integrated with SOCI out of the box, see [Integration with Boost](boost.md) for complete description. Use these as examples of conversions for more complex data types.
 
 Another possibility to extend SOCI with custom data types is to use the `into_type<T>` and `use_type<T>` class templates, which specializations can be user-provided. These specializations need to implement the interface defined by, respectively, the `into_type_base` and `use_type_base`
 classes.

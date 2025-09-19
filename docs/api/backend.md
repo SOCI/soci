@@ -1,16 +1,16 @@
 # Backends reference
 
 This part of the documentation is provided for those who want to write (and contribute!) their
-own backends. It is anyway recommendedthat authors of new backend see the code of some existing
-backend forhints on how things are really done.
+own backends. It is anyway recommended that authors of new backend see the code of some existing
+backend for hints on how things are really done.
 
-The backend interface is a set of base classes that the actual backendsare supposed to specialize.
-The main SOCI interface uses only theinterface and respecting the protocol (for example,
+The backend interface is a set of base classes that the actual backends are supposed to specialize.
+The main SOCI interface uses only the interface and respecting the protocol (for example,
 the order of function calls) described here.
-Note that both the interface and theprotocol were initially designed with the Oracle database in
+Note that both the interface and the protocol were initially designed with the Oracle database in
 mind, which means that whereas it is quite natural with respect to the way Oracle API (OCI) works,
-it might impose some implementation burden on otherbackends, where things are done differently
-and therefore have to beadjusted, cached, converted, etc.
+it might impose some implementation burden on other backends, where things are done differently
+and therefore have to be adjusted, cached, converted, etc.
 
 The interface to the common SOCI interface is defined in the `core/soci-backend.h` header file.
 This file is dissected below.
@@ -133,11 +133,11 @@ management, `statement` is the master of this class.
 
 * `define_by_pos` - Called when the `into` element is bound, once and before the statement is executed. The `data` pointer points to the variable used for `into` element (or to the `cstring_descriptor` object, which is artificially created when the plain `char` buffer is used for data exchange). The `position` parameter is a "column number", assigned by the library. The backend should increase this parameter, according to the number of fields actually taken (usually 1).
 * `pre_fetch` - Called before each row is fetched.
-* `post_fetch` - Called after each row is fetched. The `gotData` parameter is `true` if the fetch operation really retrievedsome data and `false` otherwise; `calledFromFetch` is `true` when the call is from the fetch operation and `false` if it is from the execute operation (this is also the case for simple, one-time queries). In particular, `(calledFromFetch && !gotData)` indicates that there is an end-of-rowset condition. `ind` points to the indicator provided by the user, or is `NULL`, if there is no indicator.
+* `post_fetch` - Called after each row is fetched. The `gotData` parameter is `true` if the fetch operation really retrieved some data and `false` otherwise; `calledFromFetch` is `true` when the call is from the fetch operation and `false` if it is from the execute operation (this is also the case for simple, one-time queries). In particular, `(calledFromFetch && !gotData)` indicates that there is an end-of-rowset condition. `ind` points to the indicator provided by the user, or is `NULL`, if there is no indicator.
 * `clean_up` - Called once when the statement is destroyed.
 
-The intended use of `pre_fetch` and `post_fetch` functions is to manage any internal buffer and/or data conversion foreach value retrieved from the database.
-If the given server supportsbinary data transmission and the data format for the given type agreeswith what is used on the client machine, then these two functions neednot do anything; otherwise buffer management and data conversionsshould go there.
+The intended use of `pre_fetch` and `post_fetch` functions is to manage any internal buffer and/or data conversion for each value retrieved from the database.
+If the given server supports binary data transmission and the data format for the given type agrees with what is used on the client machine, then these two functions need not do anything; otherwise buffer management and data conversions should go there.
 
 ```cpp
 class vector_into_type_backend

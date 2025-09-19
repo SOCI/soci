@@ -2,7 +2,7 @@
 
 The general rule for multithreading is that SOCI classes are *not* thread-safe, meaning that their instances should not be used concurrently by multiple threads.
 
-The simplest solution for multithreaded code is to set up a separate `session` object for each thread that needs to inteact with the database.
+The simplest solution for multithreaded code is to set up a separate `session` object for each thread that needs to interact with the database.
 Depending on the design of the client application this might be also the most straightforward approach.
 
 For some applications, however, it might be preferable to decouple the set of threads from the set of sessions, so that they can be optimized separately with different resources in mind.

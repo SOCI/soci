@@ -188,9 +188,9 @@ public:
 The operations of the pool are:
 
 * Constructor that takes the intended size of the pool. After construction, the pool contains regular `session` objects in disconnected state.
-* `at` function that provides direct access to any given entryin the pool. This function is *non-synchronized*.
+* `at` function that provides direct access to any given entry in the pool. This function is *non-synchronized*.
 * `lease` function waits until some entry is available (which means that it is not used) and returns the position of that entry in the pool, marking it as *locked*.
-* `try_lease` acts like `lease`, but allows to set up a time-out (relative, in milliseconds) on waiting. Negative time-out value means no time-out. Returns `true` if the entry was obtained, in which case its position is written to the `pos` parametr, and `false` if no entry was available before the time-out.
+* `try_lease` acts like `lease`, but allows to set up a time-out (relative, in milliseconds) on waiting. Negative time-out value means no time-out. Returns `true` if the entry was obtained, in which case its position is written to the `pos` parameter, and `false` if no entry was available before the time-out.
 * `give_back` should be called when the entry on the given position is no longer in use and can be passed to other requesting thread.
 
 ## class transaction

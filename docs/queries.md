@@ -90,5 +90,5 @@ For example, the query transformation may be used to:
 * modify or add clauses of SQL statements (i.e. `WHERE` clause with new condition)
 * prefix table names with new schema to allow namespaces switch
 * validate SQL statements
-* perform sanitization checking for any unverified input
+* perform sanitizing checking for any unverified input
 * apply database-specific features like add optimization hints to SQL statements (i.e. `SELECT /*+RULE*/ A FROM C` in Oracle 9)

@@ -121,7 +121,7 @@ Oracle rowid's are accessible via SOCI's [rowid](../api/client.md#class-rowid) c
 
 ### Nested Statements
 
-The Oracle backend supports selecting into objects of type `statement`, so that you may work with nested sql statements and PL/SQL cursors:
+The Oracle backend supports selecting into objects of type `statement`, so that you may work with nested SQL statements and PL/SQL cursors:
 
 ```cpp
 statement stInner(sql);
@@ -145,9 +145,9 @@ Oracle stored procedures can be executed by using SOCI's [procedure](../procedur
 
 ## Native API Access
 
-SOCI provides access to underlying datbabase APIs via several `get_backend()` functions, as described in the [Beyond SOCI](../beyond.md) documentation.
+SOCI provides access to underlying database APIs via several `get_backend()` functions, as described in the [Beyond SOCI](../beyond.md) documentation.
 
-The Oracle backend provides the following concrete classes for navite API access:
+The Oracle backend provides the following concrete classes for native API access:
 
 |Accessor Function|Concrete Class|
 |--- |--- |

@@ -26,7 +26,7 @@ It is also possible to build similar statements piece by piece, which is useful 
 }
 ```
 
-The actual statement is executed at the end of above block, when the ddl object goes out of scope. The "not null" constraint was added to the definition of column "k" explicitly and in fact any piece of SQL can be inserted this way - with the obvious caveat of having limited portability (the "not null" piece seems to be universaly portable).
+The actual statement is executed at the end of above block, when the ddl object goes out of scope. The "not null" constraint was added to the definition of column "k" explicitly and in fact any piece of SQL can be inserted this way - with the obvious caveat of having limited portability (the "not null" piece seems to be universally portable).
 
 Columns can be added to and dropped from already existing tables as well:
 

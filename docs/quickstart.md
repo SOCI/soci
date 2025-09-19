@@ -1,6 +1,6 @@
 # Quickstart
 
-The following (complete!) example is purposedly provided without any explanation.
+The following (complete!) example is purposely provided without any explanation.
 
 ```cpp
 #include "soci.h"

@@ -138,7 +138,7 @@ MySQL version 5.0 and later supports two kinds of stored routines: stored proced
 
 ## Native API Access
 
-SOCI provides access to underlying datbabase APIs via several `get_backend()` functions, as described in the [Beyond SOCI](../beyond.md) documentation.
+SOCI provides access to underlying database APIs via several `get_backend()` functions, as described in the [Beyond SOCI](../beyond.md) documentation.
 
 The MySQL backend provides the following concrete classes for native API access:
 
