@@ -104,7 +104,7 @@ odbc_session_backend::odbc_session_backend(
                               "allocating connection handle");
     }
 
-    SQLCHAR outConnString[1024];
+    SQLCHAR outConnString[4096];
     SQLSMALLINT strLength = 0;
 
     std::string connectString = parameters.get_connect_string();
