@@ -200,7 +200,11 @@ odbc_session_backend::odbc_session_backend(
         break;
     }
 
-    connection_string_.assign((const char*)outConnString, strLength);
+    // Note that we must *not* use strLength returned by SQLDriverConnect()
+    // here because it may be larger than the actual length of the string,
+    // and while using truncated string is bad, reading beyond the end of the
+    // buffer would be even worse.
+    connection_string_ = (const char*)outConnString;
 
     reset_transaction();
 
