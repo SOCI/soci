@@ -44,6 +44,9 @@ public:
     void lock() { pthread_mutex_lock(&m_); }
     void unlock() { pthread_mutex_unlock(&m_); }
 
+    // This should be only used with pthread_cond_[timed]wait().
+    pthread_mutex_t * native_handle() { return &m_; }
+
 private:
     pthread_mutex_t m_;
 };
