@@ -40,6 +40,12 @@ constexpr ssize_t ssize(C const& c)
     return static_cast<ssize_t>(c.size());
 }
 
+template <typename T, int N>
+constexpr ssize_t ssize(T (&)[N]) noexcept
+{
+    return N;
+}
+
 #endif // C++20/!C++20
 
 /**
