@@ -15,13 +15,10 @@
 
 using namespace soci;
 
-namespace
-{
-
 // Common base class for both POSIX and Windows implementations.
-struct connection_pool_base_impl
+struct soci_connection_pool_base_impl
 {
-    explicit connection_pool_base_impl(std::size_t size)
+    explicit soci_connection_pool_base_impl(std::size_t size)
     {
         if (size == 0)
         {
@@ -35,7 +32,7 @@ struct connection_pool_base_impl
         }
     }
 
-    ~connection_pool_base_impl() = default;
+    ~soci_connection_pool_base_impl() = default;
 
     bool find_free(std::size_t & pos)
     {
@@ -56,8 +53,6 @@ struct connection_pool_base_impl
     std::vector<std::pair<bool, std::unique_ptr<session>> > sessions_;
 };
 
-} // anonymous namespace
-
 #ifndef _WIN32
 // POSIX implementation
 
@@ -65,10 +60,10 @@ struct connection_pool_base_impl
 #include <sys/time.h>
 #include <errno.h>
 
-struct connection_pool::connection_pool_impl : connection_pool_base_impl
+struct connection_pool::connection_pool_impl : soci_connection_pool_base_impl
 {
     explicit connection_pool_impl(std::size_t size)
-        : connection_pool_base_impl(size)
+        : soci_connection_pool_base_impl(size)
     {
         if (pthread_cond_init(&cond_, NULL) != 0)
         {
@@ -185,10 +180,10 @@ void connection_pool::give_back(std::size_t pos)
 
 #include <windows.h>
 
-struct connection_pool::connection_pool_impl : connection_pool_base_impl
+struct connection_pool::connection_pool_impl : soci_connection_pool_base_impl
 {
     explicit connection_pool_impl(std::size_t size)
-        : connection_pool_base_impl(size)
+        : soci_connection_pool_base_impl(size)
     {
         // initially all entries are available
         sem_ = CreateSemaphore(NULL,
