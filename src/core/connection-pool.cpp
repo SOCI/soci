@@ -98,16 +98,6 @@ struct connection_pool::connection_pool_impl : connection_pool_base_impl
     pthread_cond_t cond_;
 };
 
-connection_pool::connection_pool(std::size_t size)
-{
-    pimpl_ = new connection_pool_impl(size);
-}
-
-connection_pool::~connection_pool()
-{
-    delete pimpl_;
-}
-
 bool connection_pool::try_lease(std::size_t & pos, int timeout)
 {
     struct timespec tm;
@@ -242,16 +232,6 @@ struct connection_pool::connection_pool_impl : connection_pool_base_impl
     HANDLE sem_;
 };
 
-connection_pool::connection_pool(std::size_t size)
-{
-    pimpl_ = new connection_pool_impl(size);
-}
-
-connection_pool::~connection_pool()
-{
-    delete pimpl_;
-}
-
 bool connection_pool::try_lease(std::size_t & pos, int timeout)
 {
     DWORD cc = WaitForSingleObject(pimpl_->sem_,
@@ -307,6 +287,13 @@ void connection_pool::give_back(std::size_t pos)
 }
 
 #endif // _WIN32
+
+connection_pool::connection_pool(std::size_t size)
+               : pimpl_(std::make_unique<connection_pool_impl>(size))
+{
+}
+
+connection_pool::~connection_pool() = default;
 
 session & connection_pool::at(std::size_t pos)
 {
