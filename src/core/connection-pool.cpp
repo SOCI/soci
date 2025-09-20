@@ -11,17 +11,36 @@
 #include <vector>
 #include <utility>
 
-#ifndef _WIN32
-// POSIX implementation
-
-#include <pthread.h>
-#include <sys/time.h>
-#include <errno.h>
-
 using namespace soci;
 
-struct connection_pool::connection_pool_impl
+namespace
 {
+
+// Common base class for both POSIX and Windows implementations.
+struct connection_pool_base_impl
+{
+    explicit connection_pool_base_impl(std::size_t size)
+    {
+        if (size == 0)
+        {
+            throw soci_error("Invalid pool size");
+        }
+
+        sessions_.resize(size);
+        for (std::size_t i = 0; i != size; ++i)
+        {
+            sessions_[i] = std::make_pair(true, new session());
+        }
+    }
+
+    ~connection_pool_base_impl()
+    {
+        for (std::size_t i = 0; i != sessions_.size(); ++i)
+        {
+            delete sessions_[i].second;
+        }
+    }
+
     bool find_free(std::size_t & pos)
     {
         for (std::size_t i = 0; i != sessions_.size(); ++i)
@@ -36,49 +55,56 @@ struct connection_pool::connection_pool_impl
         return false;
     }
 
+
     // by convention, first == true means the entry is free (not used)
     std::vector<std::pair<bool, session *> > sessions_;
+};
+
+} // anonymous namespace
+
+#ifndef _WIN32
+// POSIX implementation
+
+#include <pthread.h>
+#include <sys/time.h>
+#include <errno.h>
+
+struct connection_pool::connection_pool_impl : connection_pool_base_impl
+{
+    explicit connection_pool_impl(std::size_t size)
+        : connection_pool_base_impl(size)
+    {
+        if (pthread_mutex_init(&mtx_, NULL) != 0)
+        {
+            throw soci_error("Synchronization error");
+        }
+
+        if (pthread_cond_init(&cond_, NULL) != 0)
+        {
+            throw soci_error("Synchronization error");
+        }
+    }
+
+    connection_pool_impl(connection_pool_impl const&) = delete;
+    connection_pool_impl& operator=(connection_pool_impl const&) = delete;
+
+    ~connection_pool_impl()
+    {
+        pthread_mutex_destroy(&mtx_);
+        pthread_cond_destroy(&cond_);
+    }
+
     pthread_mutex_t mtx_;
     pthread_cond_t cond_;
 };
 
 connection_pool::connection_pool(std::size_t size)
 {
-    if (size == 0)
-    {
-        throw soci_error("Invalid pool size");
-    }
-
-    pimpl_ = new connection_pool_impl();
-    pimpl_->sessions_.resize(size);
-    for (std::size_t i = 0; i != size; ++i)
-    {
-        pimpl_->sessions_[i] = std::make_pair(true, new session());
-    }
-
-    int cc = pthread_mutex_init(&(pimpl_->mtx_), NULL);
-    if (cc != 0)
-    {
-        throw soci_error("Synchronization error");
-    }
-
-    cc = pthread_cond_init(&(pimpl_->cond_), NULL);
-    if (cc != 0)
-    {
-        throw soci_error("Synchronization error");
-    }
+    pimpl_ = new connection_pool_impl(size);
 }
 
 connection_pool::~connection_pool()
 {
-    for (std::size_t i = 0; i != pimpl_->sessions_.size(); ++i)
-    {
-        delete pimpl_->sessions_[i].second;
-    }
-
-    pthread_mutex_destroy(&(pimpl_->mtx_));
-    pthread_cond_destroy(&(pimpl_->cond_));
-
     delete pimpl_;
 }
 
@@ -190,26 +216,27 @@ void connection_pool::give_back(std::size_t pos)
 
 #include <windows.h>
 
-using namespace soci;
-
-struct connection_pool::connection_pool_impl
+struct connection_pool::connection_pool_impl : connection_pool_base_impl
 {
-    bool find_free(std::size_t & pos)
+    explicit connection_pool_impl(std::size_t size)
+        : connection_pool_base_impl(size)
     {
-        for (std::size_t i = 0; i != sessions_.size(); ++i)
-        {
-            if (sessions_[i].first)
-            {
-                pos = i;
-                return true;
-            }
-        }
+        InitializeCriticalSection(&mtx_);
 
-        return false;
+        // initially all entries are available
+        sem_ = CreateSemaphore(NULL,
+            static_cast<LONG>(size), static_cast<LONG>(size), NULL);
+        if (sem_ == NULL)
+        {
+            throw soci_error("Synchronization error");
+        }
     }
 
-    // by convention, first == true means the entry is free (not used)
-    std::vector<std::pair<bool, session *> > sessions_;
+    ~connection_pool_impl()
+    {
+        DeleteCriticalSection(&mtx_);
+        CloseHandle(sem_);
+    }
 
     CRITICAL_SECTION mtx_;
     HANDLE sem_;
@@ -217,41 +244,11 @@ struct connection_pool::connection_pool_impl
 
 connection_pool::connection_pool(std::size_t size)
 {
-    if (size == 0)
-    {
-        throw soci_error("Invalid pool size");
-    }
-
-    pimpl_ = new connection_pool_impl();
-    pimpl_->sessions_.resize(size);
-    for (std::size_t i = 0; i != size; ++i)
-    {
-        pimpl_->sessions_[i] = std::make_pair(true, new session());
-    }
-
-    InitializeCriticalSection(&(pimpl_->mtx_));
-
-    // initially all entries are available
-    HANDLE s = CreateSemaphore(NULL,
-        static_cast<LONG>(size), static_cast<LONG>(size), NULL);
-    if (s == NULL)
-    {
-        throw soci_error("Synchronization error");
-    }
-
-    pimpl_->sem_ = s;
+    pimpl_ = new connection_pool_impl(size);
 }
 
 connection_pool::~connection_pool()
 {
-    for (std::size_t i = 0; i != pimpl_->sessions_.size(); ++i)
-    {
-        delete pimpl_->sessions_[i].second;
-    }
-
-    DeleteCriticalSection(&(pimpl_->mtx_));
-    CloseHandle(pimpl_->sem_);
-
     delete pimpl_;
 }
 
