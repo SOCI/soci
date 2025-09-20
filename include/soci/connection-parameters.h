@@ -86,6 +86,12 @@ public:
         return true;
     }
 
+    // Return true if the option with the given name is specified.
+    bool has_option(const char * name) const
+    {
+        return options_.find(name) != options_.end();
+    }
+
     // Same as get_option(), but also removes the option from the connection
     // string if it was present in it.
     bool extract_option(const char * name, std::string & value)
