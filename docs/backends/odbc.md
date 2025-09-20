@@ -194,3 +194,27 @@ session sql("odbc", "DSN=mydb;odbc.driver_complete=0");
 ```
 
 has the same effect as the snippet above.
+
+Additionally, the special value `soci::odbc_option_remember_completed` (defined
+in `soci/odbc/soci-odbc.h`) can be added to this option value to indicate that
+the driver should remember the completed connection string for future connections
+which allows to avoid prompting the user again — albeit at the cost of storing
+the completed connection string, containing credentials in clear text, in
+memory, which may be problematic from security point of view, which is why this
+behaviour is not enabled by default. To enable it, you can do:
+
+```cpp
+connection_parameters parameters("odbc", "DSN=mydb");
+parameters.set_option(odbc_option_driver_complete,
+    std::to_string(SQL_DRIVER_COMPLETE | soci::odbc_option_remember_completed));
+session sql(parameters);
+```
+
+or, equivalently:
+
+```cpp
+session sql("odbc", "DSN=mydb;odbc.driver_complete=257");
+```
+
+Note that using `odbc_option_remember_completed` with `SQL_DRIVER_NOPROMPT`
+doesn't make sense, as the connection string is never completed in this case.
