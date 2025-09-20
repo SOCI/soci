@@ -10,8 +10,11 @@
 #include "soci/session.h"
 
 #include "soci-autostatement.h"
+#include "soci-mutex.h"
+#include "soci-ssize.h"
 
 #include <cstdio>
+#include <unordered_map>
 
 using namespace soci;
 using namespace soci::details;
@@ -20,6 +23,16 @@ char const * soci::odbc_option_driver_complete = "odbc.driver_complete";
 
 namespace
 {
+
+// Map from the connection strings to their completed version, i.e. with the
+// missing credentials filled in by the user. This is used when the
+// odbc_option_remember_completed option is specified to avoid prompting the
+// user for the same connection string again.
+std::unordered_map<std::string, std::string> completed_connection_strings;
+
+// Mutex protecting the map above from concurrent access.
+soci_mutex_t completed_connection_strings_mutex;
+
 
 // Helper function checking of odbc_option_driver_complete is specified in the
 // connection string and returning its value while removing this SOCI-specific
@@ -116,6 +129,14 @@ odbc_session_backend::odbc_session_backend(
     SQLHWND hwnd_for_prompt = NULL;
     unsigned completion = SQL_DRIVER_COMPLETE;
 
+    // Additionally, when completion is enabled, we may remember the completed
+    // connection string returned by SQLDriverConnect() and use it for the
+    // connections to the same database again, but as this involves storing
+    // passwords in clear text in memory, we only do this when the application
+    // explicitly requested it by setting the special bit in the completion
+    // mode value.
+    bool remember_completed = false;
+
     if (parameters.is_option_on(option_reconnect))
     {
       completion = SQL_DRIVER_NOPROMPT;
@@ -140,6 +161,21 @@ odbc_session_backend::odbc_session_backend(
         {
           throw soci_error("Invalid non-numeric driver completion option value \"" +
                             completionString + "\".");
+        }
+
+        if ( completion & odbc_option_remember_completed )
+        {
+          remember_completed = true;
+          completion &= ~odbc_option_remember_completed;
+
+          // Check if we already have a completed connection string for this
+          // connection string and use it if we do.
+          soci_scoped_lock lock(&completed_connection_strings_mutex);
+          auto const it = completed_connection_strings.find(connectString);
+          if (it != completed_connection_strings.end())
+          {
+            connectString = it->second;
+          }
         }
       }
     }
@@ -205,6 +241,17 @@ odbc_session_backend::odbc_session_backend(
     // and while using truncated string is bad, reading beyond the end of the
     // buffer would be even worse.
     connection_string_ = (const char*)outConnString;
+
+    // Also check that the string is not truncated before remembering it.
+    if (remember_completed
+          && connection_string_ != connectString
+            && strLength < ssize(outConnString))
+    {
+      // Remember the completed connection string for next time.
+      soci_scoped_lock lock(&completed_connection_strings_mutex);
+
+      completed_connection_strings[connectString] = connection_string_;
+    }
 
     reset_transaction();
 

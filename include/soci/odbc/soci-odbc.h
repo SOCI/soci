@@ -57,8 +57,11 @@ namespace details
 // Option allowing to specify the "driver completion" parameter of
 // SQLDriverConnect(). Its possible values are the same as the allowed values
 // for this parameter in the official ODBC, i.e. one of SQL_DRIVER_XXX (in
-// string form as all options are strings currently).
+// string form as all options are strings currently), possible "OR"ed with
+// the special odbc_option_remember_completed value.
 extern SOCI_ODBC_DECL char const * odbc_option_driver_complete;
+
+constexpr int odbc_option_remember_completed = 0x100;
 
 struct odbc_statement_backend;
 
