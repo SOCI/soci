@@ -29,17 +29,11 @@ struct connection_pool_base_impl
         sessions_.resize(size);
         for (std::size_t i = 0; i != size; ++i)
         {
-            sessions_[i] = std::make_pair(true, new session());
+            sessions_[i] = std::make_pair(true, std::make_unique<session>());
         }
     }
 
-    ~connection_pool_base_impl()
-    {
-        for (std::size_t i = 0; i != sessions_.size(); ++i)
-        {
-            delete sessions_[i].second;
-        }
-    }
+    ~connection_pool_base_impl() = default;
 
     bool find_free(std::size_t & pos)
     {
@@ -57,7 +51,7 @@ struct connection_pool_base_impl
 
 
     // by convention, first == true means the entry is free (not used)
-    std::vector<std::pair<bool, session *> > sessions_;
+    std::vector<std::pair<bool, std::unique_ptr<session>> > sessions_;
 };
 
 } // anonymous namespace
