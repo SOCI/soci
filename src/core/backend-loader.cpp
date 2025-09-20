@@ -15,6 +15,8 @@
 #include <string>
 #include <vector>
 
+#include "soci-mutex.h"
+
 using namespace soci;
 using namespace soci::dynamic_backends;
 
@@ -26,22 +28,6 @@ extern "C" IMAGE_DOS_HEADER __ImageBase;
 
 namespace
 {
-
-class soci_mutex_t
-{
-public:
-    soci_mutex_t() { ::InitializeCriticalSection(&cs_); }
-    ~soci_mutex_t() { ::DeleteCriticalSection(&cs_); }
-
-    void lock() { ::EnterCriticalSection(&cs_); }
-    void unlock() { ::LeaveCriticalSection(&cs_); }
-
-    soci_mutex_t(soci_mutex_t const &) = delete;
-    soci_mutex_t& operator=(soci_mutex_t const &) = delete;
-
-private:
-    CRITICAL_SECTION cs_;
-};
 
 typedef HMODULE soci_dynlib_handle_t;
 
@@ -126,27 +112,10 @@ private:
 
 #else
 
-#include <pthread.h>
 #include <dlfcn.h>
 
 namespace
 {
-
-class soci_mutex_t
-{
-public:
-    soci_mutex_t() { pthread_mutex_init(&m_, NULL); }
-    soci_mutex_t(soci_mutex_t const &) = delete;
-    soci_mutex_t& operator=(soci_mutex_t const &) = delete;
-
-    ~soci_mutex_t() { pthread_mutex_destroy(&m_); }
-
-    void lock() { pthread_mutex_lock(&m_); }
-    void unlock() { pthread_mutex_unlock(&m_); }
-
-private:
-    pthread_mutex_t m_;
-};
 
 typedef void * soci_dynlib_handle_t;
 
@@ -293,19 +262,6 @@ struct static_state_mgr
     }
 } static_state_mgr_;
 
-class scoped_lock
-{
-public:
-    explicit scoped_lock(soci_mutex_t * m) : m_(m) { m_->lock(); };
-    ~scoped_lock() { m_->unlock(); };
-
-    scoped_lock(scoped_lock const &) = delete;
-    scoped_lock& operator=(scoped_lock const &) = delete;
-
-private:
-    soci_mutex_t * const m_;
-};
-
 // non-synchronized helpers for the other functions
 factory_map::iterator do_unload(factory_map::iterator i)
 {
@@ -439,7 +395,7 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
 
 backend_factory const& dynamic_backends::get(std::string const& name)
 {
-    scoped_lock lock(&mutex_);
+    soci_scoped_lock lock(&mutex_);
 
     factory_map::iterator i = factories_.find(name);
 
@@ -461,7 +417,7 @@ backend_factory const& dynamic_backends::get(std::string const& name)
 
 void dynamic_backends::unget(std::string const& name)
 {
-    scoped_lock lock(&mutex_);
+    soci_scoped_lock lock(&mutex_);
 
     factory_map::iterator i = factories_.find(name);
 
@@ -488,7 +444,7 @@ void dynamic_backends::unget(std::string const& name)
 
 SOCI_DECL std::vector<std::string>& dynamic_backends::search_paths()
 {
-    scoped_lock lock(&mutex_);
+    soci_scoped_lock lock(&mutex_);
 
     return get_default_search_paths();
 }
@@ -496,7 +452,7 @@ SOCI_DECL std::vector<std::string>& dynamic_backends::search_paths()
 SOCI_DECL void dynamic_backends::register_backend(
     std::string const& name, std::string const& shared_object)
 {
-    scoped_lock lock(&mutex_);
+    soci_scoped_lock lock(&mutex_);
 
     do_register_backend(name, shared_object);
 }
@@ -504,7 +460,7 @@ SOCI_DECL void dynamic_backends::register_backend(
 SOCI_DECL void dynamic_backends::register_backend(
     std::string const& name, backend_factory const& factory)
 {
-    scoped_lock lock(&mutex_);
+    soci_scoped_lock lock(&mutex_);
 
     do_unload_or_throw_if_in_use(name);
 
@@ -516,7 +472,7 @@ SOCI_DECL void dynamic_backends::register_backend(
 
 SOCI_DECL std::vector<std::string> dynamic_backends::list_all()
 {
-    scoped_lock lock(&mutex_);
+    soci_scoped_lock lock(&mutex_);
 
     std::vector<std::string> ret;
     ret.reserve(factories_.size());
@@ -532,7 +488,7 @@ SOCI_DECL std::vector<std::string> dynamic_backends::list_all()
 
 SOCI_DECL void dynamic_backends::unload(std::string const& name)
 {
-    scoped_lock lock(&mutex_);
+    soci_scoped_lock lock(&mutex_);
 
     factory_map::iterator i = factories_.find(name);
 
@@ -553,7 +509,7 @@ SOCI_DECL void dynamic_backends::unload(std::string const& name)
 
 SOCI_DECL void dynamic_backends::unload_all()
 {
-    scoped_lock lock(&mutex_);
+    soci_scoped_lock lock(&mutex_);
 
     for (factory_map::iterator i = factories_.begin(); i != factories_.end(); )
     {
