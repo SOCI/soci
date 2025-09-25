@@ -240,7 +240,7 @@ void oracle_blob_backend::ensure_initialized()
     }
 }
 
-details::session_backend &oracle_blob_backend::get_session_backend()
+details::session_backend &oracle_blob_backend::get_session_backend() const
 {
     return session_;
 }

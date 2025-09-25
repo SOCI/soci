@@ -78,7 +78,7 @@ public:
 
     const std::uint8_t *get_buffer() const { return buffer_.data(); }
 
-    details::session_backend &get_session_backend() override { return session_; }
+    details::session_backend &get_session_backend() const override { return session_; }
 
 protected:
     details::session_backend &session_;

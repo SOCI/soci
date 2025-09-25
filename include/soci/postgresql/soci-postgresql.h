@@ -373,7 +373,7 @@ public:
 
     void reset();
 
-    details::session_backend &get_session_backend() override;
+    details::session_backend &get_session_backend() const override;
 
 private:
     postgresql_session_backend & session_;

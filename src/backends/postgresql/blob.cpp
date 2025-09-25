@@ -320,7 +320,7 @@ void postgresql_blob_backend::clone()
     }
 }
 
-details::session_backend &postgresql_blob_backend::get_session_backend()
+details::session_backend &postgresql_blob_backend::get_session_backend() const
 {
     return session_;
 }

@@ -47,7 +47,7 @@ void odbc_blob_backend::trim(std::size_t /* newLen */)
     throw soci_error("BLOBs are not supported.");
 }
 
-details::session_backend &odbc_blob_backend::get_session_backend()
+details::session_backend &odbc_blob_backend::get_session_backend() const
 {
     return session_;
 }

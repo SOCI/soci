@@ -342,7 +342,7 @@ public:
 
     virtual void trim(std::size_t newLen) = 0;
 
-    virtual session_backend &get_session_backend() = 0;
+    virtual session_backend &get_session_backend() const = 0;
 
     // Deprecated functions with backend-specific semantics preserved only for
     // compatibility.

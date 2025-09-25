@@ -293,7 +293,7 @@ struct SOCI_ORACLE_DECL oracle_blob_backend : details::blob_backend
 
     void ensure_initialized();
 
-    details::session_backend &get_session_backend() override;
+    details::session_backend &get_session_backend() const override;
 
 private:
     std::size_t do_deprecated_read(std::size_t offset, void *buf, std::size_t toRead) override

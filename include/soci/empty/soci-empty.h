@@ -146,7 +146,7 @@ struct SOCI_EMPTY_DECL empty_blob_backend : details::blob_backend
     std::size_t append(const void* buf, std::size_t toWrite) override;
     void trim(std::size_t newLen) override;
 
-    details::session_backend &get_session_backend() override;
+    details::session_backend &get_session_backend() const override;
 
     empty_session_backend& session_;
 };

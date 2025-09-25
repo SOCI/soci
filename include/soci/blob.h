@@ -42,13 +42,13 @@ public:
     void initialize(session &s);
     void initialize(details::blob_backend *backend);
 
-    std::size_t get_len();
+    std::size_t get_len() const;
 
     // offset is backend-specific
 #ifndef SOCI_SOURCE
     [[deprecated("Use read_from_start instead")]]
 #endif
-    std::size_t read(std::size_t offset, void * buf, std::size_t toRead);
+    std::size_t read(std::size_t offset, void * buf, std::size_t toRead) const;
 
     // Extracts data from this blob into the given buffer.
     // At most toRead bytes are extracted (and copied into buf).
@@ -57,22 +57,22 @@ public:
     // Note: Using an offset > 0 on a blob whose size is less than
     // or equal to offset, will throw an exception.
     std::size_t read_from_start(void * buf, std::size_t toRead,
-        std::size_t offset = 0);
+        std::size_t offset = 0) const;
 
     // offset is backend-specific
 #ifndef SOCI_SOURCE
     [[deprecated("Use write_from_start instead")]]
 #endif
     std::size_t write(std::size_t offset, const void * buf,
-        std::size_t toWrite);
+        std::size_t toWrite) const;
 
     // offset starts from 0
     std::size_t write_from_start(const void * buf, std::size_t toWrite,
-        std::size_t offset = 0);
+        std::size_t offset = 0) const;
 
-    std::size_t append(const void * buf, std::size_t toWrite);
+    std::size_t append(const void * buf, std::size_t toWrite) const;
 
-    void trim(std::size_t newLen);
+    void trim(std::size_t newLen) const;
 
     details::blob_backend * get_backend() { return backEnd_.get(); }
 
@@ -81,7 +81,7 @@ private:
 
     std::unique_ptr<details::blob_backend> backEnd_;
 
-    void ensure_initialized();
+    void ensure_initialized() const;
 };
 
 } // namespace soci
