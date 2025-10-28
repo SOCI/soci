@@ -334,6 +334,10 @@ sqlite3_statement_backend::bind_and_execute(int number)
         rowsAffectedBulk_ += sqlite3_changes(session_.conn_);
     }
 
+    // Don't leave invalid (out of range) value in current_row_, this can't be
+    // useful and can cause problems when using multiple batch inserts.
+    current_row_ = -1;
+
     return retVal;
 }
 
