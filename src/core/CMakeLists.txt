@@ -31,6 +31,10 @@ add_library(soci_core
 # always define during compilation to control symbol visibility/export
 target_compile_definitions(soci_core PRIVATE SOCI_SOURCE)
 
+if(ABI_VERSION)
+  target_compile_definitions(soci_core PRIVATE SOCI_ABI_VERSION="${ABI_VERSION}")
+endif()
+
 add_library(SOCI::Core ALIAS soci_core)
 
 soci_build_library_name(soci_core_name "soci_core")
