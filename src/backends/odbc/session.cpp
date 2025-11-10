@@ -34,14 +34,16 @@ std::unordered_map<std::string, std::string> completed_connection_strings;
 soci_mutex_t completed_connection_strings_mutex;
 
 
-// Helper function checking of odbc_option_driver_complete is specified in the
-// connection string and returning its value while removing this SOCI-specific
-// option from the connection string.
+// Helper function checking if the given option is specified in the connection
+// string and returning its value while removing this option (which is supposed
+// to be SOCI-specific and not understood by ODBC) from the connection string.
 //
 // Returns empty string if the option is not specified in the connection string.
-std::string extract_driver_complete_option(std::string& connectString)
+std::string
+extract_soci_option(std::string& connectString,
+                    char const* optionName)
 {
-    auto start = connectString.find(soci::odbc_option_driver_complete);
+    auto start = connectString.find(optionName);
     if (start == std::string::npos)
     {
         // Not found at all.
@@ -50,7 +52,7 @@ std::string extract_driver_complete_option(std::string& connectString)
 
     // Must be followed by the equal sign, remember its position before
     // modifying start below.
-    auto const posEq = start + strlen(soci::odbc_option_driver_complete);
+    auto const posEq = start + strlen(optionName);
 
     if (start != 0)
     {
@@ -148,7 +150,8 @@ odbc_session_backend::odbc_session_backend(
       {
         // For convenience, also allow specifying this option as part of the
         // connection string itself.
-        completionString = extract_driver_complete_option(connectString);
+        completionString = extract_soci_option(connectString,
+                                               soci::odbc_option_driver_complete);
       }
 
       if (!completionString.empty())
