@@ -20,6 +20,7 @@ using namespace soci;
 using namespace soci::details;
 
 char const * soci::odbc_option_driver_complete = "odbc.driver_complete";
+char const * soci::odbc_option_parent_window = "odbc.parent_window";
 
 namespace
 {
@@ -181,10 +182,43 @@ odbc_session_backend::odbc_session_backend(
           }
         }
       }
+
+      // Check for odbc_option_parent_window in the same way.
+      std::string parentWindowString;
+      if (!parameters.get_option(odbc_option_parent_window, parentWindowString))
+      {
+        parentWindowString = extract_soci_option(connectString,
+                                                 soci::odbc_option_parent_window);
+      }
+
+      if (!parentWindowString.empty())
+      {
+        bool badFormat = false;
+
+        try
+        {
+          std::size_t count = 0;
+          hwnd_for_prompt = (SQLHWND)std::stoull(parentWindowString, &count, 0);
+
+          // Check that the whole string was converted.
+          if (count != parentWindowString.size())
+            badFormat = true;
+        }
+        catch (const std::exception &)
+        {
+          badFormat = true;
+        }
+
+        if (badFormat)
+        {
+          throw soci_error("Invalid non-numeric parent window handle \"" +
+                            parentWindowString + "\".");
+        }
+      }
     }
 
 #ifdef _WIN32
-    if (completion != SQL_DRIVER_NOPROMPT)
+    if (completion != SQL_DRIVER_NOPROMPT && hwnd_for_prompt == NULL)
       hwnd_for_prompt = ::GetDesktopWindow();
 #endif // _WIN32
 
