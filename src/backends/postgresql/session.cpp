@@ -316,7 +316,7 @@ void postgresql_session_backend::connect(
             mode = "w";
         }
 
-        traceFile_ = fopen(value.c_str(), mode);
+        traceFile_ = FilePtr{fopen(value.c_str(), mode), std::fclose};
         if (!traceFile_)
         {
             std::ostringstream oss;
@@ -363,7 +363,7 @@ void postgresql_session_backend::connect(
 
     if (traceFile_)
     {
-        PQtrace(conn, traceFile_);
+        PQtrace(conn, traceFile_.get());
     }
 
     if (!timeoutStr.empty())
@@ -455,12 +455,6 @@ void postgresql_session_backend::clean_up()
     {
         PQfinish(conn_);
         conn_ = 0;
-    }
-
-    if (traceFile_)
-    {
-        std::fclose(traceFile_);
-        traceFile_ = nullptr;
     }
 }
 
