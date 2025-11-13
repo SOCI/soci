@@ -234,13 +234,22 @@ schema_table_name& session::alloc_schema_table_name(const std::string & tableNam
 
 session::~session()
 {
-    if (isFromPool_)
+    try
     {
-        pool_->give_back(poolPosition_);
+        if (isFromPool_)
+        {
+            pool_->give_back(poolPosition_);
+        }
+        else
+        {
+            delete backEnd_;
+        }
     }
-    else
+    catch (...)
     {
-        delete backEnd_;
+        // Do not throw from a destructor and just ignore the exception
+        // because, while not ideal, it's still preferable to immediately
+        // terminating the program.
     }
 }
 

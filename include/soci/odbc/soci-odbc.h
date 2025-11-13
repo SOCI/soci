@@ -334,7 +334,7 @@ struct SOCI_ODBC_DECL odbc_session_backend : details::session_backend
 {
     odbc_session_backend(connection_parameters const & parameters);
 
-    ~odbc_session_backend() override;
+    ~odbc_session_backend() noexcept(false) override;
 
     bool is_connected() override;
 

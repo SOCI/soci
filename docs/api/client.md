@@ -104,6 +104,7 @@ session sql("postgresql://dbname=mydb");
 ```
 
 * The constructors that take backend name as string load the shared library (if not yet loaded) with name computed as `libsoci_ABC.so` (or `libsoci_ABC.dll` on Windows) where `ABC` is the given backend name.
+* Destructor closes the connection if it is open. Note that any errors occurring during the destruction are silently ignored, please call `close`, which may throw, explicitly before destroying the session object if you need to handle such errors.
 * `open`, `close` and `reconnect` functions for   reusing the same session object many times; the `reconnect` function attempts to establish the connection with the same parameters as most recently used with constructor or `open`. The arguments for `open` are treated in the same way as for constructors. `is_connected` can be used to check if there is an existing usable connection.
 * `begin`, `commit` and `rollback` functions for transaction control.
 * `once` member, which is used for performing *instant* queries that do not need to be separately prepared. Example:

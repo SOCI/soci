@@ -302,7 +302,7 @@ struct SOCI_FIREBIRD_DECL firebird_session_backend : details::session_backend
 {
     firebird_session_backend(connection_parameters const & parameters);
 
-    ~firebird_session_backend() override;
+    ~firebird_session_backend() noexcept(false) override;
 
     bool is_connected() override;
 
