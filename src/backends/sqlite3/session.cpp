@@ -68,9 +68,7 @@ void check_sqlite_err(sqlite_api::sqlite3* conn, int res,
         std::ostringstream ss;
         errCallback(ss);
 
-        sqlite3_soci_error const error(conn, ss.str());
-        sqlite3_close(conn); // connection must be closed here
-        throw error;
+        throw sqlite3_soci_error(conn, ss.str());
     }
 }
 
@@ -160,8 +158,14 @@ sqlite3_session_backend::sqlite3_session_backend(
         throw soci_error("Database name must be specified");
     }
 
-    int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, (vfs.empty()?NULL:vfs.c_str()));
-    check_sqlite_err(conn_, res,
+    sqlite_api::sqlite3* conn = nullptr;
+    int res = sqlite3_open_v2(dbname.c_str(), &conn, connection_flags, (vfs.empty()?NULL:vfs.c_str()));
+
+    // Ensure that the database connection is closed if any errors occur.
+    std::unique_ptr<sqlite_api::sqlite3, int(*)(sqlite_api::sqlite3*)>
+        conn_ptr(conn, sqlite3_close);
+
+    check_sqlite_err(conn, res,
         [&dbname](std::ostream& ostr)
         {
             ostr << "Cannot establish connection to \"" << dbname << "\"";
@@ -169,13 +173,13 @@ sqlite3_session_backend::sqlite3_session_backend(
     );
 
     // Set the timeout first to have effect on the following queries.
-    res = sqlite3_busy_timeout(conn_, timeout * 1000);
-    check_sqlite_err(conn_, res, "Failed to set busy timeout for connection. ");
+    res = sqlite3_busy_timeout(conn, timeout * 1000);
+    check_sqlite_err(conn, res, "Failed to set busy timeout for connection. ");
 
     if (!synchronous.empty())
     {
         std::string const query("pragma synchronous=" + synchronous);
-        execute_hardcoded(conn_, query.c_str(),
+        execute_hardcoded(conn, query.c_str(),
             [&synchronous](std::ostream& ostr)
             {
                 ostr << "Setting synchronous pragma to \"" << synchronous << "\" failed";
@@ -186,13 +190,15 @@ sqlite3_session_backend::sqlite3_session_backend(
     if (!foreignKeys.empty())
     {
         std::string const query("pragma foreign_keys=" + foreignKeys);
-        execute_hardcoded(conn_, query.c_str(),
+        execute_hardcoded(conn, query.c_str(),
             [&foreignKeys](std::ostream& ostr)
             {
                 ostr << "Setting foreign_keys pragma to \"" << foreignKeys << "\" failed";
             }
         );
     }
+
+    conn_ = conn_ptr.release();
 }
 
 sqlite3_session_backend::~sqlite3_session_backend()
