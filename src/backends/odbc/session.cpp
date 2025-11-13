@@ -91,12 +91,12 @@ std::string extract_driver_complete_option(std::string& connectString)
 
 odbc_session_backend::odbc_session_backend(
     connection_parameters const & parameters)
-    : henv_(0), hdbc_(0), product_(prod_uninitialized)
+    : product_(prod_uninitialized)
 {
     SQLRETURN rc;
 
     // Allocate environment handle
-    rc = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &henv_);
+    rc = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &henv_.h_);
     if (is_odbc_error(rc))
     {
         throw soci_error("Unable to get environment handle");
@@ -110,7 +110,7 @@ odbc_session_backend::odbc_session_backend(
     }
 
     // Allocate connection handle
-    rc = SQLAllocHandle(SQL_HANDLE_DBC, henv_, &hdbc_);
+    rc = SQLAllocHandle(SQL_HANDLE_DBC, henv_, &hdbc_.h_);
     if (is_odbc_error(rc))
     {
         throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
@@ -537,13 +537,13 @@ void odbc_session_backend::clean_up()
         throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "disconnecting");
     }
 
-    rc = SQLFreeHandle(SQL_HANDLE_DBC, hdbc_);
+    rc = hdbc_.reset();
     if (is_odbc_error(rc))
     {
         throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "freeing connection");
     }
 
-    rc = SQLFreeHandle(SQL_HANDLE_ENV, henv_);
+    rc = henv_.reset();
     if (is_odbc_error(rc))
     {
         throw odbc_soci_error(SQL_HANDLE_ENV, henv_, "freeing environment");

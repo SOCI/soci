@@ -379,8 +379,33 @@ struct SOCI_ODBC_DECL odbc_session_backend : details::session_backend
     // Return full ODBC connection string.
     std::string get_connection_string() const { return connection_string_; }
 
-    SQLHENV henv_;
-    SQLHDBC hdbc_;
+    // Simple RAII wrapper for ODBC handles.
+    template <int HANDLE_TYPE>
+    struct auto_handle
+    {
+        ~auto_handle()
+        {
+            if (h_ != 0)
+            {
+                // Ignore errors in destructor, we can't throw from here.
+                reset();
+            }
+        }
+
+        SQLRETURN reset()
+        {
+            SQLRETURN const rc = SQLFreeHandle(HANDLE_TYPE, h_);
+            h_ = 0;
+            return rc;
+        }
+
+        operator SQLHANDLE() const { return h_; }
+
+        SQLHANDLE h_ = 0;
+    };
+
+    auto_handle<SQL_HANDLE_ENV> henv_;
+    auto_handle<SQL_HANDLE_DBC> hdbc_;
 
     std::string connection_string_;
 
