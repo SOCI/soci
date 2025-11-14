@@ -20,6 +20,7 @@
 #include <soci/soci-backend.h>
 #include "soci/connection-parameters.h"
 
+#include <memory>
 #include <vector>
 #include <unordered_map>
 
@@ -441,8 +442,9 @@ struct SOCI_POSTGRESQL_DECL postgresql_session_backend : details::session_backen
     PGconn * conn_;
     connection_parameters connectionParameters_;
 
-    // File used for tracing or null if none.
-    FILE* traceFile_ = nullptr;
+    // File used for tracing or empty if none.
+    using FilePtr = std::unique_ptr<FILE, int(*)(FILE*)>;
+    FilePtr traceFile_{nullptr, nullptr};
 };
 
 
