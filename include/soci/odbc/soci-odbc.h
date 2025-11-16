@@ -63,6 +63,11 @@ extern SOCI_ODBC_DECL char const * odbc_option_driver_complete;
 
 constexpr int odbc_option_remember_completed = 0x100;
 
+// Option allowing to specify the parent HWND for ODBC dialogs on Windows.
+// The value of this option is supposed to be a string representation of
+// a pointer to HWND, either in decimal or hexadecimal form (with "0x" prefix).
+extern SOCI_ODBC_DECL char const * odbc_option_parent_window;
+
 struct odbc_statement_backend;
 
 // Helper of into and use backends.
