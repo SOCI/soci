@@ -156,6 +156,11 @@ odbc_session_backend::odbc_session_backend(
     if (parameters.is_option_on(option_reconnect))
     {
       completion = SQL_DRIVER_NOPROMPT;
+
+      // Use the previously completed connection string if we have one,
+      // otherwise reconnecting would always fail when using a connection
+      // string without credentials.
+      complete_connection_string(connectString);
     }
     else
     {
