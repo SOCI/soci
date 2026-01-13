@@ -255,7 +255,7 @@ void statement_impl::define_and_bind()
     }
     catch (...)
     {
-        rethrow_current_exception_with_context("context");
+        rethrow_current_exception_with_context(context);
     }
 }
 
