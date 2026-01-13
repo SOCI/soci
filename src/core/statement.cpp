@@ -235,7 +235,7 @@ void statement_impl::define_and_bind()
         intos_[i]->define(*this, definePosition);
     }
 
-    // if there are some implicite into elements
+    // if there are some implicit into elements
     // injected by the row description process,
     // they should be defined in the later phase,
     // starting at the position where the above loop finished

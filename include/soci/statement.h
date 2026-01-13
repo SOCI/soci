@@ -109,7 +109,7 @@ private:
     std::string query_;
 
     into_type_vector intosForRow_;
-    int definePositionForRow_;
+    int definePositionForRow_ = 1;
 
     template <typename Into>
     void exchange_for_rowset_(Into const &i)
