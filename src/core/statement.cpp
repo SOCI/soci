@@ -228,24 +228,34 @@ void statement_impl::prepare(std::string const & query,
 
 void statement_impl::define_and_bind()
 {
-    int definePosition = 1;
-    std::size_t const isize = intos_.size();
-    for (std::size_t i = 0; i != isize; ++i)
+    const char* context = "defining output parameters";
+    try
     {
-        intos_[i]->define(*this, definePosition);
+      int definePosition = 1;
+      std::size_t const isize = intos_.size();
+      for (std::size_t i = 0; i != isize; ++i)
+      {
+          intos_[i]->define(*this, definePosition);
+      }
+
+      // if there are some implicit into elements
+      // injected by the row description process,
+      // they should be defined in the later phase,
+      // starting at the position where the above loop finished
+      definePositionForRow_ = definePosition;
+
+      context = "binding input parameters";
+
+      int bindPosition = 1;
+      std::size_t const usize = uses_.size();
+      for (std::size_t i = 0; i != usize; ++i)
+      {
+          uses_[i]->bind(*this, bindPosition);
+      }
     }
-
-    // if there are some implicit into elements
-    // injected by the row description process,
-    // they should be defined in the later phase,
-    // starting at the position where the above loop finished
-    definePositionForRow_ = definePosition;
-
-    int bindPosition = 1;
-    std::size_t const usize = uses_.size();
-    for (std::size_t i = 0; i != usize; ++i)
+    catch (...)
     {
-        uses_[i]->bind(*this, bindPosition);
+        rethrow_current_exception_with_context("context");
     }
 }
 
