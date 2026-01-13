@@ -34,6 +34,19 @@ std::unordered_map<std::string, std::string> completed_connection_strings;
 // Mutex protecting the map above from concurrent access.
 soci_mutex_t completed_connection_strings_mutex;
 
+// Helper function replacing the given connection string with the previously
+// completed version if we have one.
+void
+complete_connection_string(std::string& connectString)
+{
+  soci_scoped_lock lock(&completed_connection_strings_mutex);
+  auto const it = completed_connection_strings.find(connectString);
+  if (it != completed_connection_strings.end())
+  {
+    connectString = it->second;
+  }
+}
+
 
 // Helper function checking if the given option is specified in the connection
 // string and returning its value while removing this option (which is supposed
@@ -143,6 +156,11 @@ odbc_session_backend::odbc_session_backend(
     if (parameters.is_option_on(option_reconnect))
     {
       completion = SQL_DRIVER_NOPROMPT;
+
+      // Use the previously completed connection string if we have one,
+      // otherwise reconnecting would always fail when using a connection
+      // string without credentials.
+      complete_connection_string(connectString);
     }
     else
     {
@@ -174,12 +192,7 @@ odbc_session_backend::odbc_session_backend(
 
           // Check if we already have a completed connection string for this
           // connection string and use it if we do.
-          soci_scoped_lock lock(&completed_connection_strings_mutex);
-          auto const it = completed_connection_strings.find(connectString);
-          if (it != completed_connection_strings.end())
-          {
-            connectString = it->second;
-          }
+          complete_connection_string(connectString);
         }
       }
 
