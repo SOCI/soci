@@ -298,15 +298,16 @@ void session::open(std::string const & connectString)
 
 void session::close()
 {
+    auto* const backEnd = backEnd_;
+    backEnd_ = NULL;
+
     if (isFromPool_)
     {
         pool_->at(poolPosition_).close();
-        backEnd_ = NULL;
     }
     else
     {
-        delete backEnd_;
-        backEnd_ = NULL;
+        delete backEnd;
     }
 }
 
