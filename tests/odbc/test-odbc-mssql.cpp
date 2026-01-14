@@ -8,7 +8,6 @@
 #include "soci/soci.h"
 #include "soci/odbc/soci-odbc.h"
 #include "test-context.h"
-#include <iostream>
 #include <string>
 #include <ctime>
 #include <cmath>

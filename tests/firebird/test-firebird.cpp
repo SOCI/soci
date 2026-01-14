@@ -13,7 +13,6 @@
 #include "firebird/common.h"
 #include "test-assert.h"
 #include "test-context.h"
-#include <iostream>
 #include <string>
 #include <ctime>
 #include <cstring>

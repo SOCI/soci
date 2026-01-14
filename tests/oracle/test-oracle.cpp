@@ -11,13 +11,14 @@
 #include "test-context.h"
 #include "test-myint.h"
 #include <iomanip>
-#include <iostream>
 #include <string>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
 
 #include <catch.hpp>
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::tests;
@@ -1546,7 +1547,7 @@ public:
     {
         if (!soci::getenv("ORACLE_HOME"))
         {
-            std::cerr << "ORACLE_HOME environment variable must be defined for Oracle tests.\n";
+            fmt::println(stderr, "ORACLE_HOME environment variable must be defined for Oracle tests.");
             return false;
         }
 

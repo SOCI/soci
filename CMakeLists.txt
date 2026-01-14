@@ -121,6 +121,8 @@ endfunction()
 include(soci_compiler_options)
 include(soci_install_dirs)
 
+add_subdirectory(3rdparty/fmt)
+
 add_subdirectory(src)
 
 include(soci_compat)

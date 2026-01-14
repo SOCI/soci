@@ -8,13 +8,14 @@
 #include "soci/soci.h"
 #include "soci/odbc/soci-odbc.h"
 #include "test-context.h"
-#include <iostream>
 #include <string>
 #include <cstdio>
 #include <ctime>
 #include <cmath>
 
 #include <catch.hpp>
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::tests;
@@ -78,12 +79,6 @@ private:
     unsigned major_, minor_, release_;
     bool initialized_;
 };
-
-std::ostream& operator<<(std::ostream& os, odbc_version const& v)
-{
-    os << v.as_string();
-    return os;
-}
 
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_odbc();
@@ -165,7 +160,7 @@ public:
 
         m_verDriver = get_driver_version();
 
-        std::cout << "Using ODBC driver version " << m_verDriver << "\n";
+        fmt::println("Using ODBC driver version {}", m_verDriver.as_string());
 
         return true;
     }
@@ -282,7 +277,7 @@ private:
                 odbc_session = static_cast<odbc_session_backend*>(sql.get_backend());
             if (!odbc_session)
             {
-                std::cerr << "Failed to get odbc_session_backend?\n";
+                fmt::println(stderr, "Failed to get odbc_session_backend?");
                 return odbc_version();
             }
 
@@ -292,16 +287,16 @@ private:
                                       driver_ver, len, &len);
             if (soci::is_odbc_error(rc))
             {
-                std::cerr << "Retrieving ODBC driver version failed: "
-                          << rc << "\n";
+                fmt::println(stderr, "Retrieving ODBC driver version failed: {}",
+                             rc);
                 return odbc_version();
             }
 
             odbc_version v;
             if (!v.init_from_string(driver_ver))
             {
-                std::cerr << "Unknown ODBC driver version format: \""
-                          << driver_ver << "\"\n";
+                fmt::println(stderr, "Unknown ODBC driver version format: \"{}\"",
+                             driver_ver);
             }
 
             return v;

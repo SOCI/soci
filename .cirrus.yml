@@ -3,6 +3,7 @@
 # This is currently used for testing under FreeBSD, which is not available at
 # the other CI providers already used by SOCI.
 env:
+  CIRRUS_CLONE_SUBMODULES: true
   SOCI_CI: true
   SOCI_CI_BRANCH: ${CIRRUS_BRANCH}
   SOCI_SOURCE_DIR: /tmp/cirrus-ci-build
