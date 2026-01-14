@@ -122,10 +122,8 @@ private:
         intos_.exchange(i);
 
         int definePosition = 1;
-        for(into_type_vector::iterator iter = intos_.begin(),
-                                       end = intos_.end();
-            iter != end; iter++)
-        { (*iter)->define(*this, definePosition); }
+        for(auto & into : intos_)
+        { into->define(*this, definePosition); }
         definePositionForRow_ = definePosition;
     }
 

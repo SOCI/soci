@@ -542,12 +542,12 @@ TEST_CASE("PostgreSQL insert into ... returning", "[postgresql]")
     table_creator_for_test12 tableCreator(sql);
 
     std::vector<long> ids(10);
-    for (std::size_t i = 0; i != ids.size(); i++)
+    for (long & id : ids)
     {
         long sid(0);
         std::string txt("abc");
         sql << "insert into soci_test(txt) values(:txt) returning sid", use(txt, "txt"), into(sid);
-        ids[i] = sid;
+        id = sid;
     }
 
     std::vector<long> ids2(ids.size());

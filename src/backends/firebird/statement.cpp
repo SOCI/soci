@@ -88,48 +88,47 @@ void firebird_statement_backend::rewriteParameters(
     std::string name;
     int position = 0;
 
-    for (std::string::const_iterator it = src.begin(), end = src.end();
-        it != end; ++it)
+    for (char it : src)
     {
         switch (state)
         {
         case eNormal:
-            if (*it == '\'')
+            if (it == '\'')
             {
-                *dst_it++ = *it;
+                *dst_it++ = it;
                 state = eInQuotes;
             }
-            else if (*it == ':')
+            else if (it == ':')
             {
                 state = eInName;
             }
             else // regular character, stay in the same state
             {
-                *dst_it++ = *it;
+                *dst_it++ = it;
             }
             break;
         case eInQuotes:
-            if (*it == '\'')
+            if (it == '\'')
             {
-                *dst_it++ = *it;
+                *dst_it++ = it;
                 state = eNormal;
             }
             else // regular quoted character
             {
-                *dst_it++ = *it;
+                *dst_it++ = it;
             }
             break;
         case eInName:
-            if (std::isalnum(*it) || *it == '_')
+            if (std::isalnum(it) || it == '_')
             {
-                name += *it;
+                name += it;
             }
             else // end of name
             {
                 names_.insert(std::pair<std::string, int>(name, position++));
                 name.clear();
                 *dst_it++ = '?';
-                *dst_it++ = *it;
+                *dst_it++ = it;
                 state = eNormal;
             }
             break;

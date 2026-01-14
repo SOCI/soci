@@ -256,12 +256,12 @@ public:
 
         std::string s2;
         s2.reserve(s.size());
-        for (std::size_t i = 0; i < s.size(); ++i)
+        for (char i : s)
         {
-            if (s[i] == '\r')
+            if (i == '\r')
                 continue;
 
-            s2 += s[i];
+            s2 += i;
         }
 
         return s2;

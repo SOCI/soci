@@ -324,9 +324,9 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                for (std::size_t i = 0; i != vec.size(); ++i)
+                for (char i : vec)
                 {
-                    CHECK(c2 == vec[i]);
+                    CHECK(c2 == i);
                     ++c2;
                 }
 
@@ -394,11 +394,11 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                for (std::size_t j = 0; j != vec.size(); ++j)
+                for (const auto & j : vec)
                 {
                     std::ostringstream ss;
                     ss << "Hello_" << i;
-                    CHECK(ss.str() == vec[j]);
+                    CHECK(ss.str() == j);
                     ++i;
                 }
 
@@ -444,9 +444,9 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                for (std::size_t i = 0; i != vec.size(); ++i)
+                for (short i : vec)
                 {
-                    CHECK(sh2 == vec[i]);
+                    CHECK(sh2 == i);
                     ++sh2;
                 }
 
@@ -510,9 +510,9 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                for (std::size_t n = 0; n != vec.size(); ++n)
+                for (int n : vec)
                 {
-                    CHECK(i2 == vec[n]);
+                    CHECK(i2 == n);
                     ++i2;
                 }
 
@@ -558,9 +558,9 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                for (std::size_t i = 0; i != vec.size(); ++i)
+                for (unsigned int i : vec)
                 {
-                    CHECK(ul2 == vec[i]);
+                    CHECK(ul2 == i);
                     ++ul2;
                 }
 
@@ -606,9 +606,9 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                for (std::size_t i = 0; i != vec.size(); ++i)
+                for (unsigned long long i : vec)
                 {
-                    CHECK(ul2 == vec[i]);
+                    CHECK(ul2 == i);
                     ++ul2;
                 }
 
@@ -721,14 +721,14 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                for (std::size_t j = 0; j != vec.size(); ++j)
+                for (auto & j : vec)
                 {
-                    CHECK(vec[j].tm_year == 2000 - 1900 + i);
-                    CHECK(vec[j].tm_mon == i);
-                    CHECK(vec[j].tm_mday == 20 - i);
-                    CHECK(vec[j].tm_hour == 15 + i);
-                    CHECK(vec[j].tm_min == 50 - i);
-                    CHECK(vec[j].tm_sec == 40 + i);
+                    CHECK(j.tm_year == 2000 - 1900 + i);
+                    CHECK(j.tm_mon == i);
+                    CHECK(j.tm_mday == 20 - i);
+                    CHECK(j.tm_hour == 15 + i);
+                    CHECK(j.tm_min == 50 - i);
+                    CHECK(j.tm_sec == 40 + i);
 
                     ++i;
                 }

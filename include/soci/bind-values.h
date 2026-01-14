@@ -33,9 +33,8 @@ class use_type_vector: public std::vector<use_type_base *>
 public:
     ~use_type_vector()
     {
-        for(iterator iter = begin(), _end = end();
-            iter != _end; iter++)
-            delete *iter;
+        for(auto & iter : *this)
+            delete iter;
     }
 
     void exchange(use_type_ptr const& u) { push_back(u.get()); u.release(); }
@@ -129,9 +128,8 @@ class into_type_vector: public std::vector<details::into_type_base *>
 public:
     ~into_type_vector()
     {
-        for(iterator iter = begin(), _end = end();
-            iter != _end; iter++)
-            delete *iter;
+        for(auto & iter : *this)
+            delete iter;
     }
 
     void exchange(into_type_ptr const& i) { push_back(i.get()); i.release(); }

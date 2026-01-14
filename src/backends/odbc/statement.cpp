@@ -56,65 +56,64 @@ void odbc_statement_backend::prepare(std::string const & query,
     std::string name;
     query_.reserve(query.length());
 
-    for (std::string::const_iterator it = query.begin(), end = query.end();
-         it != end; ++it)
+    for (char it : query)
     {
         switch (state)
         {
         case eNormal:
-            if (*it == '\'')
+            if (it == '\'')
             {
-                query_ += *it;
+                query_ += it;
                 state = eInQuotes;
             }
-            else if (*it == '#')
+            else if (it == '#')
             {
-                query_ += *it;
+                query_ += it;
                 state = eInAccessDate;
             }
-            else if (*it == ':')
+            else if (it == ':')
             {
                 state = eInName;
             }
             else // regular character, stay in the same state
             {
-                query_ += *it;
+                query_ += it;
             }
             break;
         case eInQuotes:
-            if (*it == '\'')
+            if (it == '\'')
             {
-                query_ += *it;
+                query_ += it;
                 state = eNormal;
             }
             else // regular quoted character
             {
-                query_ += *it;
+                query_ += it;
             }
             break;
         case eInName:
-            if (std::isalnum(*it) || *it == '_')
+            if (std::isalnum(it) || it == '_')
             {
-                name += *it;
+                name += it;
             }
             else // end of name
             {
                 names_.push_back(name);
                 name.clear();
                 query_ += "?";
-                query_ += *it;
+                query_ += it;
                 state = eNormal;
             }
             break;
         case eInAccessDate:
-            if (*it == '#')
+            if (it == '#')
             {
-                query_ += *it;
+                query_ += it;
                 state = eNormal;
             }
             else // regular quoted character
             {
-                query_ += *it;
+                query_ += it;
             }
             break;
         }
@@ -269,9 +268,9 @@ odbc_statement_backend::do_fetch(int beginRow, int endRow)
         throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, "fetching data");
     }
 
-    for (std::size_t j = 0; j != intos_.size(); ++j)
+    for (auto & into : intos_)
     {
-        intos_[j]->do_post_fetch_rows(beginRow, endRow);
+        into->do_post_fetch_rows(beginRow, endRow);
     }
 
     return ef_success;
@@ -282,9 +281,9 @@ odbc_statement_backend::fetch(int number)
 {
     numRowsFetched_ = 0;
 
-    for (std::size_t i = 0; i != intos_.size(); ++i)
+    for (auto & into : intos_)
     {
-        intos_[i]->resize(number);
+        into->resize(number);
     }
 
     SQLSetStmtAttr(hstmt_, SQL_ATTR_ROW_BIND_TYPE, SQL_BIND_BY_COLUMN, 0);
@@ -319,9 +318,9 @@ odbc_statement_backend::fetch(int number)
             // Note that we need to do it even for row == 0 as this might not
             // be the first call to fetch() and so the current bindings might
             // not be the same as initial ones.
-            for (std::size_t j = 0; j != intos_.size(); ++j)
+            for (auto & into : intos_)
             {
-                intos_[j]->rebind_row(row);
+                into->rebind_row(row);
             }
 
             res = do_fetch(row, row + 1);

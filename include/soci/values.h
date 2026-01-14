@@ -332,16 +332,15 @@ private:
         // delete any uses and indicators which were created  by set() but
         // were not bound by the Statement
         // (bound uses and indicators are deleted in Statement::clean_up())
-        for (std::map<details::use_type_base *, indicator *>::iterator pos =
-            unused_.begin(); pos != unused_.end(); ++pos)
+        for (auto & pos : unused_)
         {
-            delete pos->first;
-            delete pos->second;
+            delete pos.first;
+            delete pos.second;
         }
 
-        for (std::size_t i = 0; i != deepCopies_.size(); ++i)
+        for (auto & deepCopie : deepCopies_)
         {
-            delete deepCopies_[i];
+            delete deepCopie;
         }
     }
 };

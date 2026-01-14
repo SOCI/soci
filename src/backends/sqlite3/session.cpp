@@ -248,11 +248,11 @@ static std::string sanitize_table_name(std::string const& table)
 {
     std::string ret;
     ret.reserve(table.length());
-    for (std::string::size_type pos = 0; pos < table.size(); ++pos)
+    for (char pos : table)
     {
-        if (isspace(table[pos]))
+        if (isspace(pos))
             throw soci_error("Table name must not contain whitespace");
-        const char c = table[pos];
+        const char c = pos;
         ret += c;
         if (c == '\'')
             ret += '\'';
