@@ -18,7 +18,6 @@
 
 #include <vector>
 #include <soci/soci-backend.h>
-#include <sstream>
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #include <windows.h>
 #endif

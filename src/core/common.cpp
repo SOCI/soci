@@ -7,10 +7,13 @@
 //
 
 #include "soci/error.h"
+#include "soci/fmt.h"
 #include "soci-mktime.h"
 #include <climits>
 #include <cstdlib>
 #include <ctime>
+
+#include <fmt/format.h>
 
 namespace // anonymous
 {
@@ -138,3 +141,17 @@ time_t soci::details::timegm_impl_soci ( struct tm* tb )
     return since_epoch;
 }
 
+std::string soci::format(const char* fmt, std::string const& arg)
+{
+    return fmt::format(fmt, arg);
+}
+
+std::string soci::format(const char* fmt, int arg)
+{
+    return fmt::format(fmt, arg);
+}
+
+std::string soci::format(const char* fmt, size_t arg)
+{
+    return fmt::format(fmt, arg);
+}

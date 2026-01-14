@@ -13,9 +13,9 @@
 #include <cstddef>
 #include <cstring>
 #include <cstdio>
-#include <sstream>
 #include <iostream>
 #include <string>
+#include <fmt/format.h>
 
 namespace soci
 {
@@ -63,9 +63,7 @@ void tmEncode(short type, std::tm * src, void * dst)
         isc_encode_sql_date(src, static_cast<ISC_DATE*>(dst));
         break;
     default:
-        std::ostringstream msg;
-        msg << "Unexpected type of date/time field (" << type << ")";
-        throw soci_error(msg.str());
+        throw soci_error(fmt::format("Unexpected type of date/time field ({})", type));
     }
 }
 
@@ -83,9 +81,7 @@ void tmDecode(short type, void * src, std::tm * dst)
         isc_decode_sql_date(static_cast<ISC_DATE*>(src), dst);
         break;
     default:
-        std::ostringstream msg;
-        msg << "Unexpected type of date/time field (" << type << ")";
-        throw soci_error(msg.str());
+        throw soci_error(fmt::format("Unexpected type of date/time field ({})", type));
     }
 }
 
@@ -98,11 +94,8 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
     {
         if (size > static_cast<std::size_t>(var->sqllen))
         {
-            std::ostringstream msg;
-            msg << "Value \"" << s << "\" is too long ("
-                << size << " bytes) to be stored in column of size "
-                << var->sqllen << " bytes";
-            throw soci_error(msg.str());
+            throw soci_error(fmt::format("Value \"{}\" is too long ({} bytes) to be stored in column of size {} bytes",
+                s, size, var->sqllen));
         }
 
         short const sz = static_cast<short>(size);
@@ -236,10 +229,8 @@ void copy_from_blob(firebird_statement_backend &st, char *buf, std::string &out)
     std::size_t const len_read = blob.read_from_start(&out[0], len_total);
     if (len_read != len_total)
     {
-        std::ostringstream os;
-        os << "Read " << len_read << " bytes instead of expected "
-           << len_total << " from Firebird text blob object";
-        throw soci_error(os.str());
+        throw soci_error(fmt::format("Read {} bytes instead of expected {} from Firebird text blob object",
+            len_read, len_total));
     }
 }
 

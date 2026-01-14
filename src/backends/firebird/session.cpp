@@ -9,7 +9,6 @@
 #include "firebird/error-firebird.h"
 #include "soci/session.h"
 #include <map>
-#include <sstream>
 #include <string>
 
 using namespace soci;

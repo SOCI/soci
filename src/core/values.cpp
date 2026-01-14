@@ -10,8 +10,8 @@
 
 #include <cstddef>
 #include <map>
-#include <sstream>
 #include <string>
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -39,9 +39,7 @@ indicator values::get_indicator(std::string const& name) const
         std::map<std::string, std::size_t>::const_iterator it = index_.find(name);
         if (it == index_.end())
         {
-            std::ostringstream msg;
-            msg << "Column '" << name << "' not found";
-            throw soci_error(msg.str());
+            throw soci_error(fmt::format("Column '{}' not found", name));
         }
         return *indicators_[it->second];
     }

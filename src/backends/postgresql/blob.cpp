@@ -15,7 +15,6 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <sstream>
 #include <limits>
 
 using namespace soci;

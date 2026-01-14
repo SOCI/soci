@@ -22,8 +22,9 @@
 #include <cstdlib>
 #include <ctime>
 #include <string>
-#include <sstream>
 #include <vector>
+
+#include <fmt/format.h>
 
 namespace soci
 {
@@ -172,61 +173,29 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                         break;
 
                     case db_int8:
-                    {
-                        std::ostringstream ss;
-                        ss << col.int8_;
-                        set_in_vector(data_, i, ss.str()[0]);
+                        set_in_vector(data_, i, fmt::format("{}", col.int8_)[0]);
                         break;
-                    }
                     case db_uint8:
-                    {
-                        std::ostringstream ss;
-                        ss << col.uint8_;
-                        set_in_vector(data_, i, ss.str()[0]);
+                        set_in_vector(data_, i, fmt::format("{}", col.uint8_)[0]);
                         break;
-                    }
                     case db_int16:
-                    {
-                        std::ostringstream ss;
-                        ss << col.int16_;
-                        set_in_vector(data_, i, ss.str()[0]);
+                        set_in_vector(data_, i, fmt::format("{}", col.int16_)[0]);
                         break;
-                    }
                     case db_uint16:
-                    {
-                        std::ostringstream ss;
-                        ss << col.uint16_;
-                        set_in_vector(data_, i, ss.str()[0]);
+                        set_in_vector(data_, i, fmt::format("{}", col.uint16_)[0]);
                         break;
-                    }
                     case db_int32:
-                    {
-                        std::ostringstream ss;
-                        ss << col.int32_;
-                        set_in_vector(data_, i, ss.str()[0]);
+                        set_in_vector(data_, i, fmt::format("{}", col.int32_)[0]);
                         break;
-                    }
                     case db_uint32:
-                    {
-                        std::ostringstream ss;
-                        ss << col.uint32_;
-                        set_in_vector(data_, i, ss.str()[0]);
+                        set_in_vector(data_, i, fmt::format("{}", col.uint32_)[0]);
                         break;
-                    }
                     case db_int64:
-                    {
-                        std::ostringstream ss;
-                        ss << col.int64_;
-                        set_in_vector(data_, i, ss.str()[0]);
+                        set_in_vector(data_, i, fmt::format("{}", col.int64_)[0]);
                         break;
-                    }
                     case db_uint64:
-                    {
-                        std::ostringstream ss;
-                        ss << col.uint64_;
-                        set_in_vector(data_, i, ss.str()[0]);
+                        set_in_vector(data_, i, fmt::format("{}", col.uint64_)[0]);
                         break;
-                    }
 
                     case db_xml:
                         throw soci_error("XML data type is not supported");
@@ -251,61 +220,29 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                         break;
 
                     case db_int8:
-                    {
-                        std::ostringstream ss;
-                        ss << col.int8_;
-                        set_in_vector(data_, i, ss.str());
+                        set_in_vector(data_, i, fmt::format("{}", col.int8_));
                         break;
-                    }
                     case db_uint8:
-                    {
-                        std::ostringstream ss;
-                        ss << col.uint8_;
-                        set_in_vector(data_, i, ss.str());
+                        set_in_vector(data_, i, fmt::format("{}", col.uint8_));
                         break;
-                    }
                     case db_int16:
-                    {
-                        std::ostringstream ss;
-                        ss << col.int16_;
-                        set_in_vector(data_, i, ss.str());
+                        set_in_vector(data_, i, fmt::format("{}", col.int16_));
                         break;
-                    }
                     case db_uint16:
-                    {
-                        std::ostringstream ss;
-                        ss << col.uint16_;
-                        set_in_vector(data_, i, ss.str());
+                        set_in_vector(data_, i, fmt::format("{}", col.uint16_));
                         break;
-                    }
                     case db_int32:
-                    {
-                        std::ostringstream ss;
-                        ss << col.int32_;
-                        set_in_vector(data_, i, ss.str());
+                        set_in_vector(data_, i, fmt::format("{}", col.int32_));
                         break;
-                    }
                     case db_uint32:
-                    {
-                        std::ostringstream ss;
-                        ss << col.uint32_;
-                        set_in_vector(data_, i, ss.str());
+                        set_in_vector(data_, i, fmt::format("{}", col.uint32_));
                         break;
-                    }
                     case db_int64:
-                    {
-                        std::ostringstream ss;
-                        ss << col.int64_;
-                        set_in_vector(data_, i, ss.str());
+                        set_in_vector(data_, i, fmt::format("{}", col.int64_));
                         break;
-                    }
                     case db_uint64:
-                    {
-                        std::ostringstream ss;
-                        ss << col.uint64_;
-                        set_in_vector(data_, i, ss.str());
+                        set_in_vector(data_, i, fmt::format("{}", col.uint64_));
                         break;
-                    }
 
                     case db_xml:
                     {

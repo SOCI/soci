@@ -9,6 +9,8 @@
 
 #include <catch.hpp>
 
+#include <fmt/format.h>
+
 #include "test-context.h"
 
 #include <vector>
@@ -32,18 +34,16 @@ static std::string make_long_xml_string(int approximateSize = 5000)
     const int patternSize = 26;
     const int patternsCount = approximateSize / patternSize + 1;
 
-    std::string s;
+    std::string s = fmt::format(R"(<test size="{}">)", approximateSize);
     s.reserve(tagsSize + patternsCount * patternSize);
 
-    std::ostringstream ss;
-    ss << "<test size=\"" << approximateSize << "\">";
     for (int i = 0; i != patternsCount; ++i)
     {
-       ss << "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+       s += "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     }
-    ss << "</test>";
+    s += "</test>";
 
-    return ss.str();
+    return s;
 }
 
 // The helper function to remove trailing \n from a given string.

@@ -8,7 +8,6 @@
 #include "soci/oracle/soci-oracle.h"
 #include "error.h"
 #include <limits>
-#include <sstream>
 
 using namespace soci;
 using namespace soci::details;

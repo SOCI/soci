@@ -12,6 +12,8 @@
 #include "soci/query_transformation.h"
 #include "soci/log-context.h"
 
+#include <fmt/format.h>
+
 using namespace soci;
 using namespace soci::details;
 
@@ -754,4 +756,14 @@ blob_backend * session::make_blob_backend()
     ensureConnected(backEnd_);
 
     return backEnd_->make_blob_backend();
+}
+
+std::string soci::details::make_varchar_type(int precision)
+{
+    return fmt::format("varchar({})", precision);
+}
+
+std::string soci::details::make_number_type(const char* name, int precision, int scale)
+{
+    return fmt::format("{}({}, {})", name, precision, scale);
 }

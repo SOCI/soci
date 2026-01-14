@@ -8,7 +8,6 @@
 
 #include "soci/error.h"
 
-#include <sstream>
 #include <vector>
 
 namespace soci

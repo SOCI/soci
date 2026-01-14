@@ -18,7 +18,6 @@
 
 #include <soci/soci-backend.h>
 #include <oci.h> // OCI
-#include <sstream>
 #include <vector>
 
 namespace soci
@@ -362,19 +361,13 @@ struct SOCI_ORACLE_DECL oracle_session_backend : details::session_backend
         switch (dt)
         {
         case db_string:
+            if (precision == 0)
             {
-                std::ostringstream oss;
-
-                if (precision == 0)
-                {
-                    oss << "clob";
-                }
-                else
-                {
-                    oss << "varchar(" << precision << ")";
-                }
-
-                res += oss.str();
+                res = "clob";
+            }
+            else
+            {
+                res = details::make_varchar_type(precision);
             }
             break;
 
@@ -383,18 +376,13 @@ struct SOCI_ORACLE_DECL oracle_session_backend : details::session_backend
             break;
 
         case db_double:
+            if (precision == 0)
             {
-                std::ostringstream oss;
-                if (precision == 0)
-                {
-                    oss << "number";
-                }
-                else
-                {
-                    oss << "number(" << precision << ", " << scale << ")";
-                }
-
-                res += oss.str();
+                res = "number";
+            }
+            else
+            {
+                res = details::make_number_type("number", precision, scale);
             }
             break;
 

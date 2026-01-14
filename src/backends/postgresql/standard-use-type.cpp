@@ -22,7 +22,6 @@
 #include <cstring>
 #include <ctime>
 #include <limits>
-#include <sstream>
 
 using namespace soci;
 using namespace soci::details;

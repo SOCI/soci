@@ -24,7 +24,6 @@
 #include <cstring>
 #include <cstdlib>
 #include <ctime>
-#include <sstream>
 
 using namespace soci;
 using namespace soci::details;

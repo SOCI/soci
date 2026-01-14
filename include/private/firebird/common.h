@@ -16,11 +16,12 @@
 #include <cstring>
 #include <ctime>
 #include <limits>
-#include <sstream>
 #include <iomanip>
 #include <string>
 #include <vector>
 #include <algorithm>
+
+#include <fmt/format.h>
 
 namespace soci
 {
@@ -215,10 +216,7 @@ template<bool cond> struct cond_from_isc {};
 template<> struct cond_from_isc<true> {
     static void checkInteger(short scale)
     {
-        std::ostringstream msg;
-        msg << "Can't convert value with scale " << -scale
-            << " to integral type";
-        throw soci_error(msg.str());
+        throw soci_error(fmt::format("Can't convert value with scale {} to integral type", -scale));
     }
 };
 template<> struct cond_from_isc<false>

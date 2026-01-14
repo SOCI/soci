@@ -6,6 +6,7 @@
 //
 
 #include "soci/odbc/soci-odbc.h"
+#include <fmt/format.h>
 
 using namespace soci;
 
@@ -78,21 +79,21 @@ odbc_soci_error::interpret_odbc_error(SQLSMALLINT htype,
         break;
     }
 
+    auto* const message = reinterpret_cast<char*>(message_);
+    auto* const sqlstate = reinterpret_cast<char*>(sqlstate_);
+
     if (socierror)
     {
         // Use our own error message if we failed to retrieve the ODBC one.
-        strncpy(reinterpret_cast<char*>(message_), socierror, sizeof(message_));
+        strncpy(message, socierror, sizeof(message_));
 
         // Use "General warning" SQLSTATE code.
-        strncpy(reinterpret_cast<char*>(sqlstate_), "01000", sizeof(sqlstate_));
+        strncpy(sqlstate, "01000", sizeof(sqlstate_));
 
         sqlcode_ = 0;
     }
 
-    std::ostringstream ss;
-    ss << "Error " << msg << ": " << message_ << " (SQL state " << sqlstate_ << ")";
-
-    return ss.str();
+    return fmt::format("Error {}: {} (SQL state {})", msg, message, sqlstate);
 }
 
 odbc_soci_error::odbc_soci_error(SQLSMALLINT htype,

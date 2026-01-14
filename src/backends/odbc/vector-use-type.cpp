@@ -15,7 +15,8 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <sstream>
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -328,9 +329,7 @@ void odbc_vector_use_type_backend::bind_by_name(
 
     if (position == -1)
     {
-        std::ostringstream ss;
-        ss << "Unable to find name '" << name << "' to bind to";
-        throw soci_error(ss.str());
+        throw soci_error(fmt::format("Unable to find name '{}' to bind to", name));
     }
 
     position_ = position;
@@ -497,9 +496,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
 
     if (is_odbc_error(rc))
     {
-        std::ostringstream ss;
-        ss << "binding input vector parameter #" << position_;
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, ss.str());
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, fmt::format("binding input vector parameter #{}", position_));
     }
 }
 

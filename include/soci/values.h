@@ -11,10 +11,10 @@
 #include "soci/statement.h"
 #include "soci/into-type.h"
 #include "soci/use-type.h"
+#include "soci/fmt.h"
 // std
 #include <cstddef>
 #include <map>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -67,11 +67,7 @@ public:
         }
         else
         {
-            std::ostringstream msg;
-            msg << "Column at position "
-                << static_cast<unsigned long>(pos)
-                << " contains NULL value and no default was provided";
-            throw soci_error(msg.str());
+            throw soci_error(format("Column at position {} contains NULL value and no default was provided", pos));
         }
     }
 
@@ -128,11 +124,7 @@ public:
         }
         else
         {
-            std::ostringstream msg;
-            msg << "Column at position "
-                << static_cast<unsigned long>(currentPos_)
-                << " contains NULL value and no default was provided";
-            throw soci_error(msg.str());
+            throw soci_error(format("Column at position {} contains NULL value and no default was provided", currentPos_));
         }
 
         return *this;
@@ -298,12 +290,7 @@ private:
         }
         else
         {
-            std::ostringstream msg;
-            msg << "Value at position "
-                << static_cast<unsigned long>(pos)
-                << " was set using a different type"
-                   " than the one passed to get()";
-            throw soci_error(msg.str());
+            throw soci_error(format("Value at position {} was set using a different type than the one passed to get()", pos));
         }
     }
 

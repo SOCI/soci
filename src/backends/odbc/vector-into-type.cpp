@@ -19,7 +19,8 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <sstream>
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -242,10 +243,7 @@ void odbc_vector_into_type_backend::rebind_row(std::size_t rowInd)
             static_cast<SQLPOINTER>(elementPtr), size, &indHolderVec_[rowInd]);
     if (is_odbc_error(rc))
     {
-        std::ostringstream ss;
-        ss << "binding output vector item at index " << rowInd
-           << " of column #" << pos;
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, ss.str());
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, fmt::format("binding output vector item at index {} of column #{}", rowInd, pos));
     }
 }
 

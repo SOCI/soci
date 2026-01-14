@@ -19,7 +19,9 @@
 #include <cstring>
 #include <ctime>
 #include <memory>
-#include <sstream>
+
+#include <fmt/format.h>
+#include <fmt/ranges.h>
 
 // We have 3 cases of handling tcp_user_timeout option:
 //
@@ -77,11 +79,7 @@ void set_tcp_user_timeout(int sock, std::string const& timeoutStr)
     int timeoutMs = 0;
     if (!cstring_to_integer(timeoutMs, timeoutStr.c_str()))
     {
-        std::ostringstream oss;
-        oss << "Invalid value for tcp_user_timeout connection option: \""
-            << timeoutStr << "\".";
-
-        throw soci_error(oss.str());
+        throw soci_error(fmt::format("Invalid value for tcp_user_timeout connection option: \"{}\".", timeoutStr));
     }
 
     // Zero timeout means system default and so can be just ignored.
@@ -110,11 +108,7 @@ void set_tcp_user_timeout(int sock, std::string const& timeoutStr)
                    reinterpret_cast<char const*>(&timeoutSec),
                    sizeof(timeoutSec)) != 0)
     {
-        std::ostringstream oss;
-        oss << "Failed to set TCP_MAXRT option on the socket: WinSock error "
-            << WSAGetLastError() << ".";
-
-        throw soci_error(oss.str());
+        throw soci_error(fmt::format("Failed to set TCP_MAXRT option on the socket: WinSock error {}.", WSAGetLastError()));
     }
 #elif defined(TCP_USER_TIMEOUT)
     // We can only set this option for an AF_INET, not AF_UNIX, socket.
@@ -122,10 +116,7 @@ void set_tcp_user_timeout(int sock, std::string const& timeoutStr)
     socklen_t saLen = sizeof(sa);
     if (getsockname(sock, reinterpret_cast<sockaddr*>(&sa), &saLen) != 0)
     {
-        std::ostringstream oss;
-        oss << "Failed to get socket address: " << strerror(errno) << ".";
-
-        throw soci_error(oss.str());
+        throw soci_error(fmt::format("Failed to get socket address: {}.", strerror(errno)));
     }
 
     if (sa.ss_family == AF_UNIX)
@@ -134,11 +125,7 @@ void set_tcp_user_timeout(int sock, std::string const& timeoutStr)
     if (setsockopt(sock, IPPROTO_TCP, TCP_USER_TIMEOUT,
                    &timeoutMs, sizeof(timeoutMs)) != 0)
     {
-        std::ostringstream oss;
-        oss << "Failed to set TCP_USER_TIMEOUT option on the socket: "
-            << strerror(errno) << ".";
-
-        throw soci_error(oss.str());
+        throw soci_error(fmt::format("Failed to set TCP_USER_TIMEOUT option on the socket: {}.", strerror(errno)));
     }
 #else
     // Don't do anything and silently ignore this option. This is not great,
@@ -240,28 +227,17 @@ std::vector<std::string> get_schema_names(postgresql_session_backend & session, 
 // helper function to create a comma separated list of strings
 std::string create_list_of_strings(const std::vector<std::string>& strings)
 {
-    std::ostringstream oss;
-    bool first = true;
-    for ( const auto& s: strings )
-    {
-        if ( first )
-            first = false;
-        else
-            oss << ", ";
-
-        oss << s;
-    }
-    return oss.str();
+    return fmt::format("{}", fmt::join(strings, ", "));
 }
 
 // helper function to create a case list for strings
 std::string create_case_list_of_strings(const std::vector<std::string>& list)
 {
-    std::ostringstream oss;
+    std::string res;
     for (size_t i = 0; i < list.size(); ++i) {
-        oss << " WHEN " << list[i] << " THEN " << i;
+        res += fmt::format(" WHEN {} THEN {}", list[i], i);
     }
-    return oss.str();
+    return res;
 }
 
 } // namespace unnamed
@@ -319,9 +295,7 @@ void postgresql_session_backend::connect(
         traceFile_ = FilePtr{fopen(value.c_str(), mode), std::fclose};
         if (!traceFile_)
         {
-            std::ostringstream oss;
-            oss << "Cannot open database trace file: \"" << value << "\".";
-            throw soci_error(oss.str());
+            throw soci_error(fmt::format("Cannot open database trace file: \"{}\".", value));
         }
     }
 

@@ -9,7 +9,6 @@
 #include "soci/postgresql/soci-postgresql.h"
 #include "test-context.h"
 #include "test-myint.h"
-#include <sstream>
 #include <string>
 #include <cmath>
 #include <cstring>

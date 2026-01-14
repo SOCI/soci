@@ -13,7 +13,7 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <sstream>
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -264,9 +264,7 @@ void db2_vector_use_type_backend::bind_by_name(
 
     if (position == -1)
     {
-        std::ostringstream ss;
-        ss << "Unable to find name '" << name << "' to bind to";
-        throw soci_error(ss.str());
+        throw soci_error(fmt::format("Unable to find name '{}' to bind to", name));
     }
 
     this->position = position;

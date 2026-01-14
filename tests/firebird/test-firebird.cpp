@@ -20,6 +20,8 @@
 
 #include <catch.hpp>
 
+#include <fmt/format.h>
+
 using namespace soci;
 
 std::string connectString;
@@ -439,10 +441,7 @@ TEST_CASE("Firebird bulk operations", "[firebird][bulk]")
     int const rowsToTest = 10;
     for (int i = 0; i != rowsToTest; ++i)
     {
-        std::ostringstream ss;
-        ss << "Hello_" << i;
-
-        std::string const &x = ss.str();
+        std::string const &x = fmt::format("Hello_{}", i);
 
         sql << "insert into test6(p1, p2) values(\'"
         << x << "\', \'" << x << "\')";
@@ -461,13 +460,10 @@ TEST_CASE("Firebird bulk operations", "[firebird][bulk]")
         st.execute();
         while (st.fetch())
         {
-            std::ostringstream ss;
-            ss << "Hello_" << i;
-            std::string const &x = ss.str();
+            std::string const &x = fmt::format("Hello_{}", i);
 
             // Note: CHAR fields are always padded with whitespaces
-            ss << "   ";
-            CHECK(s1 == ss.str());
+            CHECK(s1 == x +  "   ");
             CHECK(s2 == x);
             ++i;
         }
@@ -485,14 +481,11 @@ TEST_CASE("Firebird bulk operations", "[firebird][bulk]")
         {
             for (std::size_t j = 0; j != s1.size(); ++j)
             {
-                std::ostringstream ss;
-                ss << "Hello_" << i;
-                std::string const &x = ss.str();
+                std::string const &x = fmt::format("Hello_{}", i);
 
                 // Note: CHAR fields are always padded with whitespaces
-                ss << "   ";
-                CHECK(ss.str() == s1[j]);
-                CHECK(x == s2[j]);
+                CHECK(s1[j] == x +  "   ");
+                CHECK(s2[j] == x);
                 ++i;
             }
         }

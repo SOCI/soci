@@ -10,8 +10,8 @@
 #include "soci/type-holder.h"
 
 #include <cctype>
-#include <sstream>
 #include <cstring>
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -128,9 +128,7 @@ void odbc_statement_backend::prepare(std::string const & query,
     SQLRETURN rc = SQLPrepare(hstmt_, sqlchar_cast(query_), (SQLINTEGER)query_.size());
     if (is_odbc_error(rc))
     {
-        std::ostringstream ss;
-        ss << "preparing query \"" << query_ << "\"";
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, ss.str());
+        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, fmt::format("preparing query \"{}\"", query_));
     }
 
     // reset any old into buffers, they will be added later if they're used
@@ -384,9 +382,7 @@ void odbc_statement_backend::describe_column(int colNum,
 
     if (is_odbc_error(rc))
     {
-        std::ostringstream ss;
-        ss << "getting description of column at position " << colNum;
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, ss.str());
+        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, fmt::format("getting description of column at position {}", colNum));
     }
 
     char const *name = reinterpret_cast<char const *>(colNameBuffer);
@@ -398,9 +394,7 @@ void odbc_statement_backend::describe_column(int colNum,
 
     if (is_odbc_error(rc_colattr))
     {
-        std::ostringstream ss;
-        ss << "getting \"unsigned\" column attribute of the column at position " << colNum;
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, ss.str());
+        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, fmt::format("getting \"unsigned\" column attribute of the column at position {}", colNum));
     }
 
     switch (dataType)
@@ -471,9 +465,7 @@ std::size_t odbc_statement_backend::column_size(int colNum)
 
     if (is_odbc_error(rc))
     {
-        std::ostringstream ss;
-        ss << "getting size of column at position " << colNum;
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, ss.str());
+        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, fmt::format("getting size of column at position {}", colNum));
     }
 
     return colSize;
