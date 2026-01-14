@@ -3,6 +3,12 @@ This file contains the history of changes in the SOCI library.
 Please read at least the following section when upgrading from
 a previous version of the library.
 
+INCOMPATIBLE CHANGES IN SOCI 4.2 SINCE 4.1
+==========================================
+
+- SOCI 4.2 requires MSVS 2017 or later.
+
+
 INCOMPATIBLE CHANGES IN SOCI 4.1 SINCE 4.0
 ==========================================
 

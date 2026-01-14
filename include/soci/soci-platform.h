@@ -41,7 +41,7 @@ namespace std {
 
 #ifdef _WIN32
 # ifndef _WIN32_WINNT
-#   define _WIN32_WINNT 0x0502 //_WIN32_WINNT_WS03, VS2015 support: https://msdn.microsoft.com/de-de/library/6sehtctf.aspx
+#   define _WIN32_WINNT 0x0A00 // _WIN32_WINNT_WIN10
 # endif
 // SOCI_DLL should be defined when SOCI is used as a DLL/DSO
 # ifdef SOCI_DLL
@@ -77,8 +77,8 @@ namespace std {
 // (see https://msdn.microsoft.com/en-us/library/hh567368.aspx).
 
 #ifdef _MSC_VER
-    #if _MSC_VER < 1900
-        #error This version of SOCI requires MSVS 2015 or later.
+    #if _MSC_VER < 1910
+        #error This version of SOCI requires MSVS 2017 or later.
     #endif
     #if _MSVC_LANG >= 201703L
         #define SOCI_HAVE_CXX17

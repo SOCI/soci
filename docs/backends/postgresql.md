@@ -17,8 +17,7 @@ The SOCI PostgreSQL backend is supported for use with PostgreSQL >= 9.0, althoug
 | 13|Windows Server 2019|MSVS 2022|
 | 12|Windows Server 2019|MSVS 2019|
 | 11|Windows Server 2016|MSVS 2017|
-| 10|Windows Server 2012 R2|MSVS 2015|
-|9.4|Windows Server 2012 R2|MinGW-w64/GCC 8.1|
+|9.5|Windows Server 2016|MSVS 2017|
 
 ### Required Client Libraries
 
