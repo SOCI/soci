@@ -91,7 +91,7 @@ void firebird_session_backend::begin()
     if (trhp_ == 0)
     {
         ISC_STATUS stat[ISC_STATUS_LENGTH];
-        if (isc_start_transaction(stat, &trhp_, 1, &dbhp_, 0, NULL))
+        if (isc_start_transaction(stat, &trhp_, 1, &dbhp_, 0, nullptr))
         {
             throw_iscerror(stat);
         }

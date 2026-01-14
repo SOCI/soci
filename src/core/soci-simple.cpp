@@ -35,14 +35,14 @@ struct session_wrapper
 
 SOCI_DECL session_handle soci_create_session(char const * connection_string)
 {
-    session_wrapper * wrapper = NULL;
+    session_wrapper * wrapper = nullptr;
     try
     {
         wrapper = new session_wrapper();
     }
     catch (...)
     {
-        return NULL;
+        return nullptr;
     }
 
     try
@@ -146,7 +146,7 @@ struct blob_wrapper
 
 blob_wrapper *soci_create_blob_session(soci::session &sql)
 {
-    blob_wrapper *bw = NULL;
+    blob_wrapper *bw = nullptr;
     try
     {
         bw = new blob_wrapper(sql);
@@ -154,7 +154,7 @@ blob_wrapper *soci_create_blob_session(soci::session &sql)
     catch (...)
     {
         delete bw;
-        return NULL;
+        return nullptr;
     }
 
     return bw;
@@ -164,7 +164,7 @@ SOCI_DECL blob_handle soci_create_blob(session_handle s)
 {
     session_wrapper * session = static_cast<session_wrapper *>(s);
     if (!session->is_ok)
-        return NULL;
+        return nullptr;
 
     return soci_create_blob_session(session->sql);
 }
@@ -431,7 +431,7 @@ statement_wrapper::~statement_wrapper()
     {
         soci::indicator &ind = use_indicators[kv.first];
         blob_wrapper *&blob = kv.second;
-        if (ind == i_null && blob != NULL)
+        if (ind == i_null && blob != nullptr)
             soci_destroy_blob(blob);
     }
 }
@@ -931,7 +931,7 @@ SOCI_DECL statement_handle soci_create_statement(session_handle s)
     {
         session_w->is_ok = false;
         session_w->error_message = e.what();
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -1564,7 +1564,7 @@ SOCI_DECL blob_handle soci_get_into_blob(statement_handle st, int position)
             statement_wrapper::single, position, db_blob, "blob") ||
         not_null_check_failed(*wrapper, position))
     {
-        return NULL;
+        return nullptr;
     }
 
     return wrapper->into_blob[position];
@@ -2515,7 +2515,7 @@ SOCI_DECL void soci_set_use_blob(statement_handle st, char const * name, blob_ha
 
     soci::indicator &ind = wrapper->use_indicators[name];
     blob_wrapper *&blob = wrapper->use_blob[name];
-    if (ind == i_null && blob != NULL)
+    if (ind == i_null && blob != nullptr)
         soci_destroy_blob(blob);
 
     ind = i_ok;
@@ -3034,7 +3034,7 @@ SOCI_DECL blob_handle soci_get_use_blob(statement_handle st, char const * name)
     if (name_exists_check_failed(*wrapper,
             name, db_blob, statement_wrapper::bulk, "blob"))
     {
-        return NULL;
+        return nullptr;
     }
 
     return wrapper->use_blob[name];

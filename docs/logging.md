@@ -13,7 +13,7 @@ The following members of the `session` class support the basic logging functiona
 * `std::string get_last_query_context() const;`
 
 The first two functions allow to set the user-provided output stream object for logging.
-The `NULL` value, which is the default, means that there is no logging.
+The `nullptr` value, which is the default, means that there is no logging.
 
 An example use might be:
 

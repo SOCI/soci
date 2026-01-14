@@ -17,14 +17,14 @@ using namespace soci::details;
 using namespace soci::details::firebird;
 
 firebird_statement_backend::firebird_statement_backend(firebird_session_backend &session)
-    : session_(session), stmtp_(0), sqldap_(NULL), sqlda2p_(NULL),
+    : session_(session), stmtp_(0), sqldap_(nullptr), sqlda2p_(nullptr),
         boundByName_(false), boundByPos_(false), rowsFetched_(0), endOfRowSet_(false), rowsAffectedBulk_(-1LL),
             intoType_(eStandard), useType_(eStandard), procedure_(false)
 {}
 
 void firebird_statement_backend::prepareSQLDA(XSQLDA ** sqldap, short size)
 {
-    if (*sqldap != NULL)
+    if (*sqldap != nullptr)
     {
         *sqldap = reinterpret_cast<XSQLDA*>(realloc(*sqldap, XSQLDA_LENGTH(size)));
     }
@@ -62,16 +62,16 @@ void firebird_statement_backend::clean_up()
         stmtp_ = 0;
     }
 
-    if (sqldap_ != NULL)
+    if (sqldap_ != nullptr)
     {
         free(sqldap_);
-        sqldap_ = NULL;
+        sqldap_ = nullptr;
     }
 
-    if (sqlda2p_ != NULL)
+    if (sqlda2p_ != nullptr)
     {
         free(sqlda2p_);
-        sqlda2p_ = NULL;
+        sqlda2p_ = nullptr;
     }
 }
 
@@ -211,7 +211,7 @@ void firebird_statement_backend::rewriteQuery(
     std::copy(rewQuery.begin(), rewQuery.end(), qItr);
 
     // preparing buffers for output parameters
-    if (sqldap_ == NULL)
+    if (sqldap_ == nullptr)
     {
         prepareSQLDA(&sqldap_);
     }
@@ -320,7 +320,7 @@ void firebird_statement_backend::prepare(std::string const & query,
     }
 
     // preparing input parameters
-    if (sqlda2p_ == NULL)
+    if (sqlda2p_ == nullptr)
     {
         prepareSQLDA(&sqlda2p_);
     }
@@ -374,7 +374,7 @@ statement_backend::exec_fetch_result
 firebird_statement_backend::execute(int number)
 {
     ISC_STATUS stat[ISC_STATUS_LENGTH];
-    XSQLDA *t = NULL;
+    XSQLDA *t = nullptr;
 
     std::size_t usize = uses_.size();
 

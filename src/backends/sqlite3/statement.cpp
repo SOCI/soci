@@ -24,7 +24,7 @@ using namespace sqlite_api;
 sqlite3_statement_backend::sqlite3_statement_backend(
     sqlite3_session_backend &session)
     : session_(session)
-    , stmt_(0)
+    , stmt_(nullptr)
     , dataCache_()
     , useData_(0)
     , databaseReady_(false)
@@ -46,7 +46,7 @@ void sqlite3_statement_backend::clean_up()
     if (stmt_)
     {
         sqlite3_finalize(stmt_);
-        stmt_ = 0;
+        stmt_ = nullptr;
         databaseReady_ = false;
     }
 }
@@ -56,7 +56,7 @@ void sqlite3_statement_backend::prepare(std::string const & query,
 {
     clean_up();
 
-    char const* tail = 0; // unused;
+    char const* tail = nullptr; // unused;
     int const res = sqlite3_prepare_v2(session_.conn_,
                               query.c_str(),
                               isize(query),
@@ -191,7 +191,7 @@ sqlite3_statement_backend::load_rowset(int totalRows)
 
                         case db_blob:
                             col.buffer_.size_ = sqlite3_column_bytes(stmt_, c);
-                            col.buffer_.data_ = (col.buffer_.size_ > 0 ? new char[col.buffer_.size_] : NULL);
+                            col.buffer_.data_ = (col.buffer_.size_ > 0 ? new char[col.buffer_.size_] : nullptr);
                             memcpy(col.buffer_.data_, sqlite3_column_blob(stmt_, c), col.buffer_.size_);
                             break;
 
@@ -267,7 +267,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
                 switch (col.dataType_)
                 {
                     case db_string:
-                        bindRes = sqlite3_bind_text(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), NULL);
+                        bindRes = sqlite3_bind_text(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), nullptr);
                         break;
 
                     case db_date:
@@ -344,7 +344,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
 statement_backend::exec_fetch_result
 sqlite3_statement_backend::execute(int number)
 {
-    if (stmt_ == NULL)
+    if (stmt_ == nullptr)
     {
         throw soci_error("SQLite statement wasn't created");
     }
@@ -512,7 +512,7 @@ void sqlite3_statement_backend::describe_column(int colNum,
     // used in the create table statement
     char const* declType = sqlite3_column_decltype(stmt_, colNum-1);
 
-    if ( declType == NULL )
+    if ( declType == nullptr )
     {
         static char const* s_char = "char";
         declType = s_char;

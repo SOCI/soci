@@ -55,9 +55,9 @@ void mysql_standard_into_type_backend::post_fetch(
         mysql_row_seek(statement_.result_,
             statement_.resultRowOffsets_[statement_.currentRow_]);
         MYSQL_ROW row = mysql_fetch_row(statement_.result_);
-        if (row[pos] == NULL)
+        if (row[pos] == nullptr)
         {
-            if (ind == NULL)
+            if (ind == nullptr)
             {
                 throw soci_error(
                     "Null value fetched and no indicator defined.");
@@ -67,12 +67,12 @@ void mysql_standard_into_type_backend::post_fetch(
         }
         else
         {
-            if (ind != NULL)
+            if (ind != nullptr)
             {
                 *ind = i_ok;
             }
         }
-        const char *buf = row[pos] != NULL ? row[pos] : "";
+        const char *buf = row[pos] != nullptr ? row[pos] : "";
         switch (type_)
         {
         case x_char:

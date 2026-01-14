@@ -250,7 +250,7 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
 
     prepare_for_bind(dataBuf, elementSize, oracleType);
 
-    ub2 *sizesP = 0; // used only for std::string
+    ub2 *sizesP = nullptr; // used only for std::string
     if (type_ == x_stdstring)
     {
         sizesP = &sizes_[0];
@@ -323,7 +323,7 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
         {
             if (ind && ind[begin_ + i] == i_null)
             {
-                lobps[i] = NULL;
+                lobps[i] = nullptr;
             }
             else
             {
@@ -335,7 +335,7 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
     }
 
     // then handle indicators
-    if (ind != NULL)
+    if (ind != nullptr)
     {
         std::size_t const vecSize = size();
         for (std::size_t i = 0; i != vecSize; ++i)
@@ -366,7 +366,7 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
         res = OCIBindByPos(statement_.stmtp_, &bindp_,
             statement_.session_.errhp_,
             bind_position_, dataBuf, elementSize, oracleType,
-            &indOCIHolderVec_[0], sizesP, 0, 0, 0, OCI_DEFAULT);
+            &indOCIHolderVec_[0], sizesP, nullptr, 0, nullptr, OCI_DEFAULT);
     }
     else
     {
@@ -375,7 +375,7 @@ void oracle_vector_use_type_backend::pre_use(indicator const *ind)
             reinterpret_cast<text*>(const_cast<char*>(bind_name_.c_str())),
             static_cast<sb4>(bind_name_.size()),
             dataBuf, elementSize, oracleType,
-            &indOCIHolderVec_[0], sizesP, 0, 0, 0, OCI_DEFAULT);
+            &indOCIHolderVec_[0], sizesP, nullptr, 0, nullptr, OCI_DEFAULT);
     }
 
     if (res != OCI_SUCCESS)
@@ -395,7 +395,7 @@ std::size_t oracle_vector_use_type_backend::size() const
         return actual_size;
     }
 
-    if (end_ != NULL && *end_ != 0)
+    if (end_ != nullptr && *end_ != 0)
     {
         return *end_ - begin_;
     }
@@ -418,22 +418,22 @@ void oracle_vector_use_type_backend::clean_up()
         std::size_t const vecSize = size();
         for (std::size_t i = 0; i != vecSize; ++i)
         {
-            if (lobps[i] != NULL)
+            if (lobps[i] != nullptr)
             {
                 free_temp_lob(statement_.session_, lobps[i]);
             }
         }
     }
 
-    if (buf_ != NULL)
+    if (buf_ != nullptr)
     {
         delete [] buf_;
-        buf_ = NULL;
+        buf_ = nullptr;
     }
 
-    if (bindp_ != NULL)
+    if (bindp_ != nullptr)
     {
         OCIHandleFree(bindp_, OCI_HTYPE_DEFINE);
-        bindp_ = NULL;
+        bindp_ = nullptr;
     }
 }

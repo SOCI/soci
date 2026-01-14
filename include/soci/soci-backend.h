@@ -361,7 +361,7 @@ private:
 class session_backend
 {
 public:
-    session_backend() : failoverCallback_(NULL), session_(NULL) {}
+    session_backend() : failoverCallback_(nullptr), session_(nullptr) {}
     virtual ~session_backend() noexcept(false) {}
 
     virtual bool is_connected() = 0;

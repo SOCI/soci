@@ -279,7 +279,7 @@ void db2_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
         }
 
         // then - deal with indicators
-        if (ind != NULL)
+        if (ind != nullptr)
         {
             std::size_t const indSize = statement_.get_number_of_rows();
             for (std::size_t i = 0; i != indSize; ++i)
@@ -502,9 +502,9 @@ std::size_t db2_vector_into_type_backend::size() const
 
 void db2_vector_into_type_backend::clean_up()
 {
-    if (buf != NULL)
+    if (buf != nullptr)
     {
         delete [] buf;
-        buf = NULL;
+        buf = nullptr;
     }
 }

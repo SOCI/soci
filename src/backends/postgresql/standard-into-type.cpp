@@ -62,7 +62,7 @@ void postgresql_standard_into_type_backend::post_fetch(
         // first, deal with indicators
         if (PQgetisnull(statement_.result_, statement_.currentRow_, pos) != 0)
         {
-            if (ind == NULL)
+            if (ind == nullptr)
             {
                 throw soci_error(
                     "Null value fetched and no indicator defined.");
@@ -75,7 +75,7 @@ void postgresql_standard_into_type_backend::post_fetch(
         }
         else
         {
-            if (ind != NULL)
+            if (ind != nullptr)
             {
                 *ind = i_ok;
             }

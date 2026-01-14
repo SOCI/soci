@@ -64,15 +64,15 @@ void* get_vector_element(exchange_type e, void* data, int index)
             // There is no vector of statements, but this is fine because we
             // don't use this value in do_dump_value anyhow, so we may just
             // return null.
-            return NULL;
+            return nullptr;
         case x_rowid:
             // Same as for x_statement above.
-            return NULL;
+            return nullptr;
         case x_blob:
             return &exchange_vector_type_cast<x_blob>(data).at(index);
     }
 
-    return NULL;
+    return nullptr;
 }
 
 // Common part of scalar and vector use types.
@@ -185,7 +185,7 @@ standard_use_type::~standard_use_type()
 
 void standard_use_type::bind(statement_impl & st, int & position)
 {
-    if (backEnd_ == NULL)
+    if (backEnd_ == nullptr)
     {
         backEnd_ = st.make_use_type_backend();
     }
@@ -234,7 +234,7 @@ void standard_use_type::post_use(bool gotData)
 
 void standard_use_type::clean_up()
 {
-    if (backEnd_ != NULL)
+    if (backEnd_ != nullptr)
     {
         backEnd_->clean_up();
     }
@@ -247,14 +247,14 @@ vector_use_type::~vector_use_type()
 
 void vector_use_type::bind(statement_impl & st, int & position)
 {
-    if (backEnd_ == NULL)
+    if (backEnd_ == nullptr)
     {
         backEnd_ = st.make_vector_use_type_backend();
     }
 
     if (name_.empty())
     {
-        if (end_ != NULL)
+        if (end_ != nullptr)
         {
             backEnd_->bind_by_pos_bulk(position, data_, type_, begin_, end_);
         }
@@ -265,7 +265,7 @@ void vector_use_type::bind(statement_impl & st, int & position)
     }
     else
     {
-        if (end_ != NULL)
+        if (end_ != nullptr)
         {
             backEnd_->bind_by_name_bulk(name_, data_, type_, begin_, end_);
         }
@@ -284,7 +284,7 @@ void vector_use_type::dump_value(std::ostream& os, int index) const
             os,
             type_,
             get_vector_element(type_, data_, index),
-            ind_ ? &ind_->at(index) : NULL
+            ind_ ? &ind_->at(index) : nullptr
         );
     }
     else
@@ -306,7 +306,7 @@ void vector_use_type::pre_use()
 {
     convert_to_base();
 
-    backEnd_->pre_use(ind_ ? &ind_->at(0) : NULL);
+    backEnd_->pre_use(ind_ ? &ind_->at(0) : nullptr);
 }
 
 std::size_t vector_use_type::size() const
@@ -316,7 +316,7 @@ std::size_t vector_use_type::size() const
 
 void vector_use_type::clean_up()
 {
-    if (backEnd_ != NULL)
+    if (backEnd_ != nullptr)
     {
         backEnd_->clean_up();
     }

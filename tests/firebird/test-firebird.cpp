@@ -176,7 +176,7 @@ TEST_CASE("Firebird date and time", "[firebird][datetime]")
     std::tm t1 = std::tm();
     std::tm t2 = std::tm();
     std::tm t3 = std::tm();
-    std::time_t now = std::time(NULL);
+    std::time_t now = std::time(nullptr);
     std::tm t = *std::localtime(&now);
     sql << "insert into test3(p1, p2, p3) "
     << "values (?,?,?)", use(t), use(t), use(t);

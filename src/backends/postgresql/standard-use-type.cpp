@@ -51,9 +51,9 @@ void postgresql_standard_use_type_backend::bind_by_name(
 
 void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
 {
-    if (ind != NULL && *ind == i_null)
+    if (ind != nullptr && *ind == i_null)
     {
-        // leave the working buffer as NULL
+        // leave the working buffer null
     }
     else
     {
@@ -233,10 +233,10 @@ void postgresql_standard_use_type_backend::post_use(
 
 void postgresql_standard_use_type_backend::clean_up()
 {
-    if (buf_ != NULL)
+    if (buf_ != nullptr)
     {
         delete [] buf_;
-        buf_ = NULL;
+        buf_ = nullptr;
     }
 }
 

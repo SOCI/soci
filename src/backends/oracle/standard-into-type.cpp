@@ -142,7 +142,7 @@ void oracle_standard_into_type_backend::define_by_pos(
             // queries would override a previous locator (which might belong
             // to an independent Blob object by now).
             sword res = OCIDescriptorAlloc(statement_.session_.envhp_,
-                reinterpret_cast<dvoid**>(&ociData_), OCI_DTYPE_LOB, 0, 0);
+                reinterpret_cast<dvoid**>(&ociData_), OCI_DTYPE_LOB, 0, nullptr);
             if (res != OCI_SUCCESS)
             {
                 throw soci_error("Cannot allocate the LOB locator");
@@ -163,7 +163,7 @@ void oracle_standard_into_type_backend::define_by_pos(
             // actual creation of this object is in pre_exec, which
             // is called right before statement's execute
 
-            OCILobLocator * lobp = NULL;
+            OCILobLocator * lobp = nullptr;
 
             size = sizeof(lobp);
             data = &ociData_;
@@ -178,7 +178,7 @@ void oracle_standard_into_type_backend::define_by_pos(
     sword res = OCIDefineByPos(statement_.stmtp_, &defnp_,
             statement_.session_.errhp_,
             position++, data, size, oracleType,
-            &indOCIHolder_, 0, &rCode_, OCI_DEFAULT);
+            &indOCIHolder_, nullptr, &rCode_, OCI_DEFAULT);
 
     if (res != OCI_SUCCESS)
     {
@@ -239,7 +239,7 @@ void oracle::read_from_lob(oracle_session_backend& session,
                          &lenChunk,
                          1, // Only used for the first chunk, ignored later.
                          const_cast<char*>(value.data()) + prevSize, len,
-                         0, 0, 0, 0);
+                         nullptr, nullptr, 0, 0);
 
         switch (res)
         {
@@ -281,14 +281,14 @@ void oracle_standard_into_type_backend::post_fetch(
         {
             if (indOCIHolder_ != -1)
             {
-                exchange_type_cast<x_int64>(data_) = std::strtoll(buf_, NULL, 10);
+                exchange_type_cast<x_int64>(data_) = std::strtoll(buf_, nullptr, 10);
             }
         }
         else if (type_ == x_uint64)
         {
             if (indOCIHolder_ != -1)
             {
-                exchange_type_cast<x_uint64>(data_) = std::strtoull(buf_, NULL, 10);
+                exchange_type_cast<x_uint64>(data_) = std::strtoull(buf_, nullptr, 10);
             }
         }
         else if (type_ == x_stdtm)
@@ -352,7 +352,7 @@ void oracle_standard_into_type_backend::post_fetch(
         // no need to set anything (fetch() will return false)
         return;
     }
-    if (ind != NULL)
+    if (ind != nullptr)
     {
         if (gotData)
         {
@@ -399,18 +399,18 @@ void oracle_standard_into_type_backend::clean_up()
                 throw soci_error("Internal error: OCI data used for unexpected type");
         }
 
-        ociData_ = NULL;
+        ociData_ = nullptr;
     }
 
-    if (defnp_ != NULL)
+    if (defnp_ != nullptr)
     {
         OCIHandleFree(defnp_, OCI_HTYPE_DEFINE);
-        defnp_ = NULL;
+        defnp_ = nullptr;
     }
 
-    if (buf_ != NULL)
+    if (buf_ != nullptr)
     {
         delete [] buf_;
-        buf_ = NULL;
+        buf_ = nullptr;
     }
 }

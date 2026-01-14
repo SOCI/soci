@@ -33,10 +33,10 @@ using error_callback = std::function<void (std::ostream& ostr)>;
 // sqlite3_exec() which throws an exception on error.
 void execute_hardcoded(sqlite_api::sqlite3* conn, char const* const query,
                        error_callback const& errCallback,
-                       int (*callback)(void*, int, char**, char**) = NULL,
-                       void* callback_arg = NULL)
+                       int (*callback)(void*, int, char**, char**) = nullptr,
+                       void* callback_arg = nullptr)
 {
-    char *zErrMsg = 0;
+    char *zErrMsg = nullptr;
     int const res = sqlite3_exec(conn, query, callback, callback_arg, &zErrMsg);
 
     std::unique_ptr<char, void(*)(void*)> zErrMsgPtr(zErrMsg, sqlite3_free);
@@ -51,8 +51,8 @@ void execute_hardcoded(sqlite_api::sqlite3* conn, char const* const query,
 
 // Simpler to use overload which uses a hard coded error message.
 void execute_hardcoded(sqlite_api::sqlite3* conn, char const* const query, char const* const errMsg,
-                       int (*callback)(void*, int, char**, char**) = NULL,
-                       void* callback_arg = NULL)
+                       int (*callback)(void*, int, char**, char**) = nullptr,
+                       void* callback_arg = nullptr)
 {
     return execute_hardcoded(conn, query,
         [errMsg](std::ostream& ostr) { ostr << errMsg; },
@@ -159,7 +159,7 @@ sqlite3_session_backend::sqlite3_session_backend(
     }
 
     sqlite_api::sqlite3* conn = nullptr;
-    int res = sqlite3_open_v2(dbname.c_str(), &conn, connection_flags, (vfs.empty()?NULL:vfs.c_str()));
+    int res = sqlite3_open_v2(dbname.c_str(), &conn, connection_flags, (vfs.empty()?nullptr:vfs.c_str()));
 
     // Ensure that the database connection is closed if any errors occur.
     std::unique_ptr<sqlite_api::sqlite3, int(*)(sqlite_api::sqlite3*)>

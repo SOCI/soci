@@ -18,7 +18,7 @@ standard_into_type::~standard_into_type()
 
 void standard_into_type::define(statement_impl & st, int & position)
 {
-    if (backEnd_ == NULL)
+    if (backEnd_ == nullptr)
     {
         backEnd_ = st.make_into_type_backend();
     }
@@ -48,8 +48,8 @@ void standard_into_type::post_fetch(bool gotData, bool calledFromFetch)
 
 void standard_into_type::clean_up()
 {
-    // backEnd_ might be NULL if IntoType<Row> was used
-    if (backEnd_ != NULL)
+    // backEnd_ might be nullptr if IntoType<Row> was used
+    if (backEnd_ != nullptr)
     {
         backEnd_->clean_up();
     }
@@ -62,12 +62,12 @@ vector_into_type::~vector_into_type()
 
 void vector_into_type::define(statement_impl & st, int & position)
 {
-    if (backEnd_ == NULL)
+    if (backEnd_ == nullptr)
     {
         backEnd_ = st.make_vector_into_type_backend();
     }
 
-    if (end_ != NULL)
+    if (end_ != nullptr)
     {
         backEnd_->define_by_pos_bulk(position, data_, type_, begin_, end_);
     }
@@ -89,13 +89,13 @@ void vector_into_type::pre_fetch()
 
 void vector_into_type::post_fetch(bool gotData, bool /* calledFromFetch */)
 {
-    if (indVec_ != NULL && indVec_->empty() == false)
+    if (indVec_ != nullptr && indVec_->empty() == false)
     {
         backEnd_->post_fetch(gotData, &(*indVec_)[0]);
     }
     else
     {
-        backEnd_->post_fetch(gotData, NULL);
+        backEnd_->post_fetch(gotData, nullptr);
     }
 
     if (gotData)
@@ -106,7 +106,7 @@ void vector_into_type::post_fetch(bool gotData, bool /* calledFromFetch */)
 
 void vector_into_type::resize(std::size_t sz)
 {
-    if (indVec_ != NULL && end_ == NULL)
+    if (indVec_ != nullptr && end_ == nullptr)
     {
         indVec_->resize(sz);
     }
@@ -121,7 +121,7 @@ std::size_t vector_into_type::size() const
 
 void vector_into_type::clean_up()
 {
-    if (backEnd_ != NULL)
+    if (backEnd_ != nullptr)
     {
         backEnd_->clean_up();
     }

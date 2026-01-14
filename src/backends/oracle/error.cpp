@@ -87,7 +87,7 @@ void soci::details::oracle::get_error_details(sword res, OCIError *errhp,
         break;
     case OCI_ERROR:
     case OCI_SUCCESS_WITH_INFO:
-        OCIErrorGet(errhp, 1, 0, &errcode,
+        OCIErrorGet(errhp, 1, nullptr, &errcode,
              errbuf, sizeof(errbuf), OCI_HTYPE_ERROR);
         msg = reinterpret_cast<char*>(errbuf);
         errNum = static_cast<int>(errcode);

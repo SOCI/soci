@@ -140,7 +140,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
 
         if (col.isNull_)
         {
-            if (ind == NULL)
+            if (ind == nullptr)
             {
                 throw soci_error(
                     "Null value fetched and no indicator defined.");
@@ -151,7 +151,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
             continue;
         }
 
-        if (ind != NULL)
+        if (ind != nullptr)
             ind[i] = i_ok;
 
         // conversion
@@ -421,7 +421,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
             case db_string:
             case db_blob:
                 delete[] col.buffer_.data_;
-                col.buffer_.data_ = NULL;
+                col.buffer_.data_ = nullptr;
                 break;
 
             case db_double:

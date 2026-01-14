@@ -27,7 +27,7 @@ namespace soci
 
 void ensureConnected(session_backend * backEnd)
 {
-    if (backEnd == NULL)
+    if (backEnd == nullptr)
     {
         throw soci_error("Session is not connected.");
     }
@@ -39,14 +39,14 @@ class standard_logger_impl : public logger_impl
 public:
     standard_logger_impl()
     {
-        logStream_ = NULL;
+        logStream_ = nullptr;
     }
 
     virtual void start_query(std::string const & query) override
     {
         logger_impl::start_query(query);
 
-        if (logStream_ != NULL)
+        if (logStream_ != nullptr)
         {
             *logStream_ << query << '\n';
         }
@@ -263,13 +263,13 @@ void session::open(connection_parameters const & parameters)
     }
     else
     {
-        if (backEnd_ != NULL)
+        if (backEnd_ != nullptr)
         {
             throw soci_error("Cannot open already connected session.");
         }
 
         backend_factory const * const factory = parameters.get_factory();
-        if (factory == NULL)
+        if (factory == nullptr)
         {
             throw soci_error("Cannot connect without a valid backend.");
         }
@@ -299,7 +299,7 @@ void session::open(std::string const & connectString)
 void session::close()
 {
     auto* const backEnd = backEnd_;
-    backEnd_ = NULL;
+    backEnd_ = nullptr;
 
     if (isFromPool_)
     {
@@ -322,12 +322,12 @@ void session::reconnect()
     else
     {
         backend_factory const * const lastFactory = lastConnectParameters_.get_factory();
-        if (lastFactory == NULL)
+        if (lastFactory == nullptr)
         {
             throw soci_error("Cannot reconnect without previous connection.");
         }
 
-        if (backEnd_ != NULL)
+        if (backEnd_ != nullptr)
         {
             close();
         }

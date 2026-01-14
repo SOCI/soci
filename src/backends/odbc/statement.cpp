@@ -18,7 +18,7 @@ using namespace soci::details;
 
 
 odbc_statement_backend::odbc_statement_backend(odbc_session_backend &session)
-    : session_(session), hstmt_(0), numRowsFetched_(0), fetchVectorByRows_(false),
+    : session_(session), hstmt_(nullptr), numRowsFetched_(0), fetchVectorByRows_(false),
       boundByName_(false), boundByPos_(false),
       rowsAffected_(-1LL)
 {
@@ -395,7 +395,7 @@ void odbc_statement_backend::describe_column(int colNum,
 
     SQLLEN is_unsigned = 0;
     SQLRETURN rc_colattr = SQLColAttribute(hstmt_, static_cast<SQLUSMALLINT>(colNum),
-                                           SQL_DESC_UNSIGNED, 0, 0, 0, &is_unsigned);
+                                           SQL_DESC_UNSIGNED, nullptr, 0, nullptr, &is_unsigned);
 
     if (is_odbc_error(rc_colattr))
     {

@@ -44,8 +44,8 @@ struct oracle_statement_backend;
 struct oracle_standard_into_type_backend : details::standard_into_type_backend
 {
     oracle_standard_into_type_backend(oracle_statement_backend &st)
-        : statement_(st), defnp_(NULL), indOCIHolder_(0),
-          data_(NULL), buf_(NULL) {}
+        : statement_(st), defnp_(nullptr), indOCIHolder_(0),
+          data_(nullptr), buf_(nullptr) {}
 
     void define_by_pos(int &position,
         void *data, details::exchange_type type) override;
@@ -62,7 +62,7 @@ struct oracle_standard_into_type_backend : details::standard_into_type_backend
     OCIDefine *defnp_;
     sb2 indOCIHolder_;
     void *data_;
-    void *ociData_ = NULL;
+    void *ociData_ = nullptr;
     char *buf_;        // generic buffer
     details::exchange_type type_;
 
@@ -72,8 +72,8 @@ struct oracle_standard_into_type_backend : details::standard_into_type_backend
 struct oracle_vector_into_type_backend : details::vector_into_type_backend
 {
     oracle_vector_into_type_backend(oracle_statement_backend &st)
-        : statement_(st), defnp_(NULL),
-        data_(NULL), buf_(NULL), user_ranges_(true) {}
+        : statement_(st), defnp_(nullptr),
+        data_(nullptr), buf_(nullptr), user_ranges_(true) {}
 
     void define_by_pos(int &position,
         void *data, details::exchange_type type) override
@@ -120,8 +120,8 @@ struct oracle_vector_into_type_backend : details::vector_into_type_backend
 struct oracle_standard_use_type_backend : details::standard_use_type_backend
 {
     oracle_standard_use_type_backend(oracle_statement_backend &st)
-        : statement_(st), bindp_(NULL), indOCIHolder_(0),
-          data_(NULL), buf_(NULL) {}
+        : statement_(st), bindp_(nullptr), indOCIHolder_(0),
+          data_(nullptr), buf_(nullptr) {}
 
     void bind_by_pos(int &position,
         void *data, details::exchange_type type, bool readOnly) override;
@@ -142,7 +142,7 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
     OCIBind *bindp_;
     sb2 indOCIHolder_;
     void *data_;
-    void *ociData_ = NULL;
+    void *ociData_ = nullptr;
     bool readOnly_;
     char *buf_;        // generic buffer
     details::exchange_type type_;
@@ -151,8 +151,8 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
 struct oracle_vector_use_type_backend : details::vector_use_type_backend
 {
     oracle_vector_use_type_backend(oracle_statement_backend &st)
-        : statement_(st), bindp_(NULL),
-          data_(NULL), buf_(NULL), bind_position_(0) {}
+        : statement_(st), bindp_(nullptr),
+          data_(nullptr), buf_(nullptr), bind_position_(0) {}
 
     void bind_by_pos(int & position,
         void * data, details::exchange_type type) override

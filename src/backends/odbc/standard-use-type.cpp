@@ -293,7 +293,7 @@ void odbc_standard_use_type_backend::pre_use(indicator const *ind)
 
 void odbc_standard_use_type_backend::post_use(bool gotData, indicator *ind)
 {
-    if (ind != NULL)
+    if (ind != nullptr)
     {
         if (gotData)
         {
@@ -317,9 +317,9 @@ void odbc_standard_use_type_backend::post_use(bool gotData, indicator *ind)
 
 void odbc_standard_use_type_backend::clean_up()
 {
-    if (buf_ != NULL)
+    if (buf_ != nullptr)
     {
         delete [] buf_;
-        buf_ = NULL;
+        buf_ = nullptr;
     }
 }

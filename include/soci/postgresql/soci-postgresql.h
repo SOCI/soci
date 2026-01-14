@@ -58,7 +58,7 @@ namespace details
 class postgresql_result
 {
 public:
-    // Creates a wrapper for the given, possibly NULL, result. The wrapper
+    // Creates a wrapper for the given, possibly null, result. The wrapper
     // object takes ownership of the result object and will call PQclear() on it.
     explicit postgresql_result(
         postgresql_session_backend & sessionBackend,
@@ -70,7 +70,7 @@ public:
 
     // Frees any currently stored result pointer and takes ownership of the
     // given one.
-    void reset(PGresult* result = NULL)
+    void reset(PGresult* result = nullptr)
     {
         clear();
         init(result);
@@ -98,7 +98,7 @@ public:
     // provide.
     operator const PGresult*() const { return result_; }
 
-    // Get the associated result (which may be NULL). Unlike the implicit
+    // Get the associated result (which may be null). Unlike the implicit
     // conversion above, this one returns a non-const pointer, so you should be
     // careful to avoid really modifying it.
     PGresult* get_result() const { return result_; }
@@ -184,7 +184,7 @@ struct postgresql_vector_into_type_backend : details::vector_into_type_backend
 struct postgresql_standard_use_type_backend : details::standard_use_type_backend
 {
     postgresql_standard_use_type_backend(postgresql_statement_backend & st)
-        : statement_(st), position_(0), buf_(NULL) {}
+        : statement_(st), position_(0), buf_(nullptr) {}
 
     void bind_by_pos(int & position,
         void * data, details::exchange_type type, bool readOnly) override;

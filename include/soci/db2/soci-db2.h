@@ -81,7 +81,7 @@ struct db2_statement_backend;
 struct SOCI_DB2_DECL db2_standard_into_type_backend : details::standard_into_type_backend
 {
     db2_standard_into_type_backend(db2_statement_backend &st)
-        : statement_(st),buf(NULL)
+        : statement_(st),buf(nullptr)
     {}
 
     void define_by_pos(int& position, void* data, details::exchange_type type) override;
@@ -104,7 +104,7 @@ struct SOCI_DB2_DECL db2_standard_into_type_backend : details::standard_into_typ
 struct SOCI_DB2_DECL db2_vector_into_type_backend : details::vector_into_type_backend
 {
     db2_vector_into_type_backend(db2_statement_backend &st)
-        : statement_(st),buf(NULL)
+        : statement_(st),buf(nullptr)
     {}
 
     void define_by_pos(int& position, void* data, details::exchange_type type) override;
@@ -133,7 +133,7 @@ struct SOCI_DB2_DECL db2_vector_into_type_backend : details::vector_into_type_ba
 struct SOCI_DB2_DECL db2_standard_use_type_backend : details::standard_use_type_backend
 {
     db2_standard_use_type_backend(db2_statement_backend &st)
-        : statement_(st),buf(NULL),ind(0)
+        : statement_(st),buf(nullptr),ind(0)
     {}
 
     void bind_by_pos(int& position, void* data, details::exchange_type type, bool readOnly) override;
@@ -159,7 +159,7 @@ struct SOCI_DB2_DECL db2_standard_use_type_backend : details::standard_use_type_
 struct SOCI_DB2_DECL db2_vector_use_type_backend : details::vector_use_type_backend
 {
     db2_vector_use_type_backend(db2_statement_backend &st)
-        : statement_(st),buf(NULL) {}
+        : statement_(st),buf(nullptr) {}
 
     void bind_by_pos(int& position, void* data, details::exchange_type type) override;
     void bind_by_name(std::string const& name, void* data, details::exchange_type type) override;

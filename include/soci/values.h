@@ -49,7 +49,7 @@ class SOCI_DECL values
 
 public:
 
-    values() : row_(NULL), currentPos_(0), uppercaseColumnNames_(false) {}
+    values() : row_(nullptr), currentPos_(0), uppercaseColumnNames_(false) {}
 
     indicator get_indicator(std::size_t pos) const;
     indicator get_indicator(std::string const & name) const;
@@ -57,7 +57,7 @@ public:
     template <typename T>
     T get(std::size_t pos) const
     {
-        if (row_ != NULL)
+        if (row_ != nullptr)
         {
             return row_->get<T>(pos);
         }
@@ -78,7 +78,7 @@ public:
     template <typename T>
     T get(std::size_t pos, T const & nullValue) const
     {
-        if (row_ != NULL)
+        if (row_ != nullptr)
         {
             return row_->get<T>(pos, nullValue);
         }
@@ -95,13 +95,13 @@ public:
     template <typename T>
     T get(std::string const & name) const
     {
-        return row_ != NULL ? row_->get<T>(name) : get_from_uses<T>(name);
+        return row_ != nullptr ? row_->get<T>(name) : get_from_uses<T>(name);
     }
 
     template <typename T>
     T get(std::string const & name, T const & nullValue) const
     {
-        return row_ != NULL
+        return row_ != nullptr
             ? row_->get<T>(name, nullValue)
             : get_from_uses<T>(name, nullValue);
     }
@@ -109,7 +109,7 @@ public:
     template <typename T>
     values const & operator>>(T & value) const
     {
-        if (row_ != NULL)
+        if (row_ != nullptr)
         {
             // row maintains its own position counter
             // which is automatically reset when needed
@@ -140,7 +140,7 @@ public:
 
     void skip(std::size_t num = 1) const
     {
-        if (row_ != NULL)
+        if (row_ != nullptr)
         {
             row_->skip(num);
         }
@@ -152,7 +152,7 @@ public:
 
     void reset_get_counter() const
     {
-        if (row_ != NULL)
+        if (row_ != nullptr)
         {
             row_->reset_get_counter();
         }
@@ -327,7 +327,7 @@ private:
     void clean_up()
     {
         delete row_;
-        row_ = NULL;
+        row_ = nullptr;
 
         // delete any uses and indicators which were created  by set() but
         // were not bound by the Statement

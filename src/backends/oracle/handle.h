@@ -41,7 +41,7 @@ public:
     static constexpr ub4 HandleType = oci_traits<OCIHandle>::type;
 
     explicit handle(OCIEnv *envhp)
-        : handle_(NULL)
+        : handle_(nullptr)
     {
         sword res = OCIHandleAlloc(envhp,
             reinterpret_cast<dvoid**>(&handle_),

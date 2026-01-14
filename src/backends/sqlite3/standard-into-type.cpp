@@ -54,7 +54,7 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
         // first, deal with indicators
         if (sqlite3_column_type(statement_.stmt_, pos) == SQLITE_NULL)
         {
-            if (ind == NULL)
+            if (ind == nullptr)
             {
                 throw soci_error(
                     "Null value fetched and no indicator defined.");
@@ -65,7 +65,7 @@ void sqlite3_standard_into_type_backend::post_fetch(bool gotData,
         }
         else
         {
-            if (ind != NULL)
+            if (ind != nullptr)
             {
                 *ind = i_ok;
             }

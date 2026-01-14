@@ -65,9 +65,9 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
         {
             MYSQL_ROW row = mysql_fetch_row(statement_.result_);
             // first, deal with indicators
-            if (row[pos] == NULL)
+            if (row[pos] == nullptr)
             {
-                if (ind == NULL)
+                if (ind == nullptr)
                 {
                     throw soci_error(
                         "Null value fetched and no indicator defined.");
@@ -80,14 +80,14 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             }
             else
             {
-                if (ind != NULL)
+                if (ind != nullptr)
                 {
                     ind[i] = i_ok;
                 }
             }
 
             // buffer with data retrieved from server, in text format
-            const char *buf = row[pos] != NULL ? row[pos] : "";
+            const char *buf = row[pos] != nullptr ? row[pos] : "";
 
             switch (type_)
             {

@@ -17,7 +17,7 @@ namespace soci
 firebird_soci_error::firebird_soci_error(std::string const & msg, ISC_STATUS const * status)
     : soci_error(msg)
 {
-    if (status != 0)
+    if (status != nullptr)
     {
         std::size_t i = 0;
         while (i < ISC_STATUS_LENGTH && status[i] != isc_arg_end)

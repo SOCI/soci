@@ -107,7 +107,7 @@ struct odbc_standard_into_type_backend : details::standard_into_type_backend,
                                          private odbc_standard_type_backend_base
 {
     odbc_standard_into_type_backend(odbc_statement_backend &st)
-        : odbc_standard_type_backend_base(st), buf_(0)
+        : odbc_standard_type_backend_base(st), buf_(nullptr)
     {}
 
     void define_by_pos(int &position,
@@ -134,7 +134,7 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
 {
     odbc_vector_into_type_backend(odbc_statement_backend &st)
         : odbc_standard_type_backend_base(st),
-          data_(NULL), buf_(NULL), position_(0) {}
+          data_(nullptr), buf_(nullptr), position_(0) {}
 
     void define_by_pos(int &position,
         void *data, details::exchange_type type) override;
@@ -175,7 +175,7 @@ struct odbc_standard_use_type_backend : details::standard_use_type_backend,
 {
     odbc_standard_use_type_backend(odbc_statement_backend &st)
         : odbc_standard_type_backend_base(st),
-          position_(-1), data_(0), buf_(0), indHolder_(0) {}
+          position_(-1), data_(nullptr), buf_(nullptr), indHolder_(0) {}
 
     void bind_by_pos(int &position,
         void *data, details::exchange_type type, bool readOnly) override;
@@ -220,7 +220,7 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
 {
     odbc_vector_use_type_backend(odbc_statement_backend &st)
         : odbc_standard_type_backend_base(st),
-          data_(NULL), buf_(NULL) {}
+          data_(nullptr), buf_(nullptr) {}
 
     // helper function for preparing indicators
     // (as part of the define_by_pos)
@@ -390,7 +390,7 @@ struct SOCI_ODBC_DECL odbc_session_backend : details::session_backend
     {
         ~auto_handle()
         {
-            if (h_ != 0)
+            if (h_ != nullptr)
             {
                 // Ignore errors in destructor, we can't throw from here.
                 reset();
@@ -400,13 +400,13 @@ struct SOCI_ODBC_DECL odbc_session_backend : details::session_backend
         SQLRETURN reset()
         {
             SQLRETURN const rc = SQLFreeHandle(HANDLE_TYPE, h_);
-            h_ = 0;
+            h_ = nullptr;
             return rc;
         }
 
         operator SQLHANDLE() const { return h_; }
 
-        SQLHANDLE h_ = 0;
+        SQLHANDLE h_ = nullptr;
     };
 
     auto_handle<SQL_HANDLE_ENV> henv_;

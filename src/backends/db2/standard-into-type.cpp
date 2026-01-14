@@ -125,7 +125,7 @@ void db2_standard_into_type_backend::post_fetch(
         // first, deal with indicators
         if (SQL_NULL_DATA == valueLen)
         {
-            if (ind == NULL)
+            if (ind == nullptr)
             {
                 throw soci_error(
                     "Null value fetched and no indicator defined.");
@@ -136,7 +136,7 @@ void db2_standard_into_type_backend::post_fetch(
         }
         else
         {
-            if (ind != NULL)
+            if (ind != nullptr)
             {
                 *ind = i_ok;
             }

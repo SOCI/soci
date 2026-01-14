@@ -31,7 +31,7 @@ void db2_vector_use_type_backend::prepare_indicators(std::size_t size)
 void *db2_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
     SQLSMALLINT &sqlType, SQLSMALLINT &cType)
 {
-    void* sqlData = NULL;
+    void* sqlData = nullptr;
     switch (type)
     {    // simple cases
     case x_int8:
@@ -309,7 +309,7 @@ void db2_vector_use_type_backend::pre_use(indicator const *ind)
     }
 
     // then handle indicators
-    if (ind != NULL)
+    if (ind != nullptr)
     {
         std::size_t const vsize = this->size();
         for (std::size_t i = 0; i != vsize; ++i, ++ind)
@@ -451,9 +451,9 @@ std::size_t db2_vector_use_type_backend::size() const
 
 void db2_vector_use_type_backend::clean_up()
 {
-    if (buf != NULL)
+    if (buf != nullptr)
     {
         delete [] buf;
-        buf = NULL;
+        buf = nullptr;
     }
 }

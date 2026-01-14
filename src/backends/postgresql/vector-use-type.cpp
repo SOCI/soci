@@ -57,7 +57,7 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
 {
     std::size_t vend;
 
-    if (end_ != NULL && *end_ != 0)
+    if (end_ != nullptr && *end_ != 0)
     {
         vend = *end_;
     }
@@ -71,9 +71,9 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
         char * buf;
 
         // the data in vector can be either i_ok or i_null
-        if (ind != NULL && ind[i] == i_null)
+        if (ind != nullptr && ind[i] == i_null)
         {
-            buf = NULL;
+            buf = nullptr;
         }
         else
         {
@@ -276,7 +276,7 @@ std::size_t postgresql_vector_use_type_backend::size() const
         return actual_size;
     }
 
-    if (end_ != NULL && *end_ != 0)
+    if (end_ != nullptr && *end_ != 0)
     {
         return *end_ - begin_;
     }

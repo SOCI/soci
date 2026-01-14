@@ -46,7 +46,7 @@ odbc_soci_error::interpret_odbc_error(SQLSMALLINT htype,
                                       SQLHANDLE hndl,
                                       std::string const& msg)
 {
-    const char* socierror = NULL;
+    const char* socierror = nullptr;
 
     SQLSMALLINT length, i = 1;
     switch ( SQLGetDiagRecA(htype, hndl, i, sqlstate_, &sqlcode_,

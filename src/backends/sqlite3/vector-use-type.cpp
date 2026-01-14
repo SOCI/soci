@@ -86,10 +86,10 @@ void sqlite3_vector_use_type_backend::pre_use(indicator const * ind)
         sqlite3_column &col = statement_.useData_[i][pos];
 
         // the data in vector can be either i_ok or i_null
-        if (ind != NULL && ind[i] == i_null)
+        if (ind != nullptr && ind[i] == i_null)
         {
             col.isNull_ = true;
-            col.buffer_.data_ = NULL;
+            col.buffer_.data_ = nullptr;
             continue;
         }
 

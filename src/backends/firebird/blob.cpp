@@ -136,7 +136,7 @@ void firebird_blob_backend::open()
     ISC_STATUS stat[20];
 
     if (isc_open_blob2(stat, &session_.dbhp_, session_.current_transaction(),
-                       &blob_handle_, &blob_id_, 0, NULL))
+                       &blob_handle_, &blob_id_, 0, nullptr))
     {
         blob_handle_ = 0L;
         throw_iscerror(stat);
@@ -237,7 +237,7 @@ ISC_QUAD firebird_blob_backend::save_to_db()
 
     // create new blob object
     if (isc_create_blob2(stat, &session_.dbhp_, session_.current_transaction(),
-                        &blob_handle_, &blob_id_, 0, NULL))
+                        &blob_handle_, &blob_id_, 0, nullptr))
     {
         throw_iscerror(stat);
     }

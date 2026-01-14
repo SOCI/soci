@@ -207,7 +207,7 @@ public:
         > base_type;
 
     conversion_into_type(std::vector<T> & value,
-        std::size_t begin = 0, std::size_t * end = NULL)
+        std::size_t begin = 0, std::size_t * end = nullptr)
         : base_vector_holder<T>(value.size()),
         into_type<base_type>(
             base_vector_holder<T>::vec_, ownInd_, begin, end),
@@ -217,11 +217,11 @@ public:
         begin_(begin),
         end_(end)
     {
-        user_ranges_ = end != NULL;
+        user_ranges_ = end != nullptr;
     }
 
     conversion_into_type(std::vector<T> & value, std::vector<indicator> & ind,
-        std::size_t begin = 0, std::size_t * end = NULL)
+        std::size_t begin = 0, std::size_t * end = nullptr)
         : base_vector_holder<T>(value.size()),
         into_type<base_type>(
             base_vector_holder<T>::vec_, ind, begin, end),
@@ -230,7 +230,7 @@ public:
         begin_(begin),
         end_(end)
     {
-        user_ranges_ = end != NULL;
+        user_ranges_ = end != nullptr;
     }
 
     std::size_t size() const override
@@ -310,12 +310,12 @@ public:
         std::string const & name=std::string())
         : base_vector_holder<T>(value.size()),
         use_type<base_type>(
-            base_vector_holder<T>::vec_, ownInd_, 0, NULL, name),
+            base_vector_holder<T>::vec_, ownInd_, 0, nullptr, name),
         value_(value),
         ownInd_(),
         ind_(ownInd_),
         begin_(0),
-        end_(NULL),
+        end_(nullptr),
         user_ranges_(false)
     {
     }
@@ -332,7 +332,7 @@ public:
         begin_(begin),
         end_(end)
     {
-        user_ranges_ = end != NULL;
+        user_ranges_ = end != nullptr;
     }
 
     conversion_use_type(const std::vector<T> & value,
@@ -340,11 +340,11 @@ public:
         std::string const & name = std::string())
         : base_vector_holder<T>(value.size()),
         use_type<base_type>(
-            base_vector_holder<T>::vec_, ind, 0, NULL, name),
+            base_vector_holder<T>::vec_, ind, 0, nullptr, name),
         value_(value),
         ind_(ind),
         begin_(0),
-        end_(NULL),
+        end_(nullptr),
         user_ranges_(false)
     {
     }
@@ -361,7 +361,7 @@ public:
         begin_(begin),
         end_(end)
     {
-        user_ranges_ = end != NULL;
+        user_ranges_ = end != nullptr;
     }
 
 private:

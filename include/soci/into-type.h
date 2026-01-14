@@ -53,9 +53,9 @@ class SOCI_DECL standard_into_type : public into_type_base
 {
 public:
     standard_into_type(void * data, exchange_type type)
-        : data_(data), type_(type), ind_(NULL), backEnd_(NULL) {}
+        : data_(data), type_(type), ind_(nullptr), backEnd_(nullptr) {}
     standard_into_type(void * data, exchange_type type, indicator & ind)
-        : data_(data), type_(type), ind_(&ind), backEnd_(NULL)
+        : data_(data), type_(type), ind_(&ind), backEnd_(nullptr)
     {
         // Backends won't initialize the indicator if no data is retrieved, so
         // do it here, like this we can be sure it has a defined value even if
@@ -91,24 +91,24 @@ class SOCI_DECL vector_into_type : public into_type_base
 {
 public:
     vector_into_type(void * data, exchange_type type)
-        : data_(data), type_(type), indVec_(NULL),
-        begin_(0), end_(NULL), backEnd_(NULL) {}
+        : data_(data), type_(type), indVec_(nullptr),
+        begin_(0), end_(nullptr), backEnd_(nullptr) {}
 
     vector_into_type(void * data, exchange_type type,
         std::size_t begin, std::size_t * end)
-        : data_(data), type_(type), indVec_(NULL),
-        begin_(begin), end_(end), backEnd_(NULL) {}
+        : data_(data), type_(type), indVec_(nullptr),
+        begin_(begin), end_(end), backEnd_(nullptr) {}
 
     vector_into_type(void * data, exchange_type type,
         std::vector<indicator> & ind)
         : data_(data), type_(type), indVec_(&ind),
-        begin_(0), end_(NULL), backEnd_(NULL) {}
+        begin_(0), end_(nullptr), backEnd_(nullptr) {}
 
     vector_into_type(void * data, exchange_type type,
         std::vector<indicator> & ind,
         std::size_t begin, std::size_t * end)
         : data_(data), type_(type), indVec_(&ind),
-        begin_(begin), end_(end), backEnd_(NULL) {}
+        begin_(begin), end_(end), backEnd_(nullptr) {}
 
     ~vector_into_type() override;
 

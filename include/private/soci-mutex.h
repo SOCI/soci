@@ -35,7 +35,7 @@ private:
 class soci_mutex_t
 {
 public:
-    soci_mutex_t() { pthread_mutex_init(&m_, NULL); }
+    soci_mutex_t() { pthread_mutex_init(&m_, nullptr); }
     soci_mutex_t(soci_mutex_t const &) = delete;
     soci_mutex_t& operator=(soci_mutex_t const &) = delete;
 

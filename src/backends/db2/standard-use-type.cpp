@@ -214,9 +214,9 @@ void db2_standard_use_type_backend::post_use(bool /*gotData*/, indicator* /*ind*
 
 void db2_standard_use_type_backend::clean_up()
 {
-    if (buf != NULL)
+    if (buf != nullptr)
     {
         delete [] buf;
-        buf = NULL;
+        buf = nullptr;
     }
 }

@@ -2324,7 +2324,7 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
     CHECK(sql.get_last_query() == "drop table soci_test1");
     CHECK(sql.get_last_query_context() == "");
 
-    sql.set_log_stream(NULL);
+    sql.set_log_stream(nullptr);
 
     {
         auto_table_creator tableCreator(tc_.table_creator_1(sql));
@@ -3404,7 +3404,7 @@ namespace {
         explicit tz_setter(const std::string& time_zone)
         {
             char* tz_value = getenv("TZ");
-            if (tz_value != NULL)
+            if (tz_value != nullptr)
             {
                 original_tz_value_ = tz_value;
             }
@@ -3514,7 +3514,7 @@ TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
 
     SECTION("SQL queries parameters appear in the error message")
     {
-        char const* const names[] = { "John", "Paul", "George", "John", NULL };
+        char const* const names[] = { "John", "Paul", "George", "John", nullptr };
         int const ages[] = { 74, 72, 72, 74, 0 };
 
         std::string name;

@@ -44,9 +44,9 @@ public:
     void exchange(use_container<T, Indicator> const &uc)
     {
 #ifdef SOCI_HAVE_BOOST
-        exchange_(uc, (typename boost::fusion::traits::is_sequence<T>::type *)NULL);
+        exchange_(uc, (typename boost::fusion::traits::is_sequence<T>::type *)nullptr);
 #else
-        exchange_(uc, NULL);
+        exchange_(uc, nullptr);
 #endif // SOCI_HAVE_BOOST
     }
 
@@ -140,9 +140,9 @@ public:
     void exchange(into_container<T, Indicator> const &ic)
     {
 #ifdef SOCI_HAVE_BOOST
-        exchange_(ic, (typename boost::fusion::traits::is_sequence<T>::type *)NULL);
+        exchange_(ic, (typename boost::fusion::traits::is_sequence<T>::type *)nullptr);
 #else
-        exchange_(ic, NULL);
+        exchange_(ic, nullptr);
 #endif // SOCI_HAVE_BOOST
     }
 

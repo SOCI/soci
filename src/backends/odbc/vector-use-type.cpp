@@ -33,7 +33,7 @@ void odbc_vector_use_type_backend::prepare_indicators(std::size_t size)
 void* odbc_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
     SQLSMALLINT &sqlType, SQLSMALLINT &cType)
 {
-    void* data = NULL;
+    void* data = nullptr;
     switch (type_)
     {    // simple cases
     case x_int8:
@@ -456,7 +456,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
     }
 
     // then handle indicators
-    if (ind != NULL)
+    if (ind != nullptr)
     {
         for (std::size_t i = 0; i != indHolderVec_.size(); ++i, ++ind)
         {
@@ -510,9 +510,9 @@ std::size_t odbc_vector_use_type_backend::size() const
 
 void odbc_vector_use_type_backend::clean_up()
 {
-    if (buf_ != NULL)
+    if (buf_ != nullptr)
     {
         delete [] buf_;
-        buf_ = NULL;
+        buf_ = nullptr;
     }
 }

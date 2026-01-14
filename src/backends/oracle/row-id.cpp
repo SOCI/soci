@@ -14,7 +14,7 @@ using namespace soci::details;
 oracle_rowid_backend::oracle_rowid_backend(oracle_session_backend &session)
 {
     sword res = OCIDescriptorAlloc(session.envhp_,
-        reinterpret_cast<dvoid**>(&rowidp_), OCI_DTYPE_ROWID, 0, 0);
+        reinterpret_cast<dvoid**>(&rowidp_), OCI_DTYPE_ROWID, 0, nullptr);
     if (res != OCI_SUCCESS)
     {
         throw soci_error("Cannot allocate the ROWID descriptor");

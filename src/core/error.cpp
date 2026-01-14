@@ -80,14 +80,14 @@ soci_error_extra_info *make_safe_copy(soci_error_extra_info* info)
 {
     try
     {
-        return info ? new soci_error_extra_info(*info) : NULL;
+        return info ? new soci_error_extra_info(*info) : nullptr;
     }
     catch (...)
     {
         // Copy ctor of an exception class shouldn't throw to avoid program
         // termination, so it's better to lose the extra information than allow
         // an exception to except from here.
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -96,7 +96,7 @@ soci_error_extra_info *make_safe_copy(soci_error_extra_info* info)
 soci_error::soci_error(std::string const & msg)
      : std::runtime_error(msg)
 {
-    info_ = NULL;
+    info_ = nullptr;
 }
 
 soci_error::soci_error(soci_error const& e) noexcept

@@ -40,7 +40,7 @@ std::string get_name(const details::use_type_base &param, std::size_t position,
 
 
 statement_impl::statement_impl(session & s)
-    : session_(s), refCount_(1), row_(0),
+    : session_(s), refCount_(1), row_(nullptr),
       fetchSize_(1), initialFetchSize_(1),
       alreadyDescribed_(false)
 {
@@ -49,7 +49,7 @@ statement_impl::statement_impl(session & s)
 
 statement_impl::statement_impl(prepare_temp_type const & prep)
     : session_(prep.get_prepare_info()->session_),
-      refCount_(1), row_(0), fetchSize_(1), alreadyDescribed_(false)
+      refCount_(1), row_(nullptr), fetchSize_(1), alreadyDescribed_(false)
 {
     backEnd_ = session_.make_statement_backend();
 
@@ -191,22 +191,22 @@ void statement_impl::bind_clean_up()
     for (std::size_t i = 0; i != indsize; ++i)
     {
         delete indicators_[i];
-        indicators_[i] = NULL;
+        indicators_[i] = nullptr;
     }
     indicators_.clear();
 
-    row_ = NULL;
+    row_ = nullptr;
     alreadyDescribed_ = false;
 }
 
 void statement_impl::clean_up()
 {
     bind_clean_up();
-    if (backEnd_ != NULL)
+    if (backEnd_ != nullptr)
     {
         backEnd_->clean_up();
         delete backEnd_;
-        backEnd_ = NULL;
+        backEnd_ = nullptr;
     }
 }
 
@@ -313,7 +313,7 @@ bool statement_impl::execute(bool withDataExchange)
         // and *before* the into elements are touched, so that the row
         // description process can inject more into elements for
         // implicit data exchange
-        if (row_ != NULL && alreadyDescribed_ == false)
+        if (row_ != nullptr && alreadyDescribed_ == false)
         {
             describe();
         }
@@ -344,7 +344,7 @@ bool statement_impl::execute(bool withDataExchange)
         // number of columns before calling execute() as happens with at least
         // the ODBC backend for some complex queries (see #1151), so call it
         // again in this case
-        if (row_ != NULL && alreadyDescribed_ == false)
+        if (row_ != nullptr && alreadyDescribed_ == false)
         {
             describe();
         }
@@ -846,7 +846,7 @@ void statement_impl::describe()
 
 void statement_impl::set_row(row * r)
 {
-    if (row_ != NULL)
+    if (row_ != nullptr)
     {
         throw soci_error(
             "Only one Row element allowed in a single statement.");

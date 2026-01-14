@@ -206,16 +206,16 @@ void firebird_standard_use_type_backend::post_use(
 
 void firebird_standard_use_type_backend::clean_up()
 {
-    if (buf_ != NULL)
+    if (buf_ != nullptr)
     {
         delete [] buf_;
-        buf_ = NULL;
+        buf_ = nullptr;
     }
 
     if (blob_)
     {
         delete blob_;
-        blob_ = NULL;
+        blob_ = nullptr;
     }
 
     std::vector<void*>::iterator it =

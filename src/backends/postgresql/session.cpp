@@ -57,7 +57,7 @@ using namespace soci::details;
 // separate source file just for it.
 void postgresql_result::clear()
 {
-    // Notice that it is safe to call PQclear() with NULL pointer, it
+    // Notice that it is safe to call PQclear() with null pointer, it
     // simply does nothing in this case.
     PQclear(result_);
 }
@@ -268,7 +268,7 @@ std::string create_case_list_of_strings(const std::vector<std::string>& list)
 
 postgresql_session_backend::postgresql_session_backend(
     connection_parameters const& parameters)
-    : statementCount_(0), conn_(0)
+    : statementCount_(0), conn_(nullptr)
 {
     single_row_mode_ = false;
 
@@ -349,10 +349,10 @@ void postgresql_session_backend::connect(
     // Ensure that the connection pointer is freed if we return early.
     std::unique_ptr<PGconn, void(*)(PGconn*)> connPtr(conn, PQfinish);
 
-    if (0 == conn || CONNECTION_OK != PQstatus(conn))
+    if (nullptr == conn || CONNECTION_OK != PQstatus(conn))
     {
         std::string msg = "Cannot establish connection to the database.";
-        if (0 != conn)
+        if (nullptr != conn)
         {
             msg += '\n';
             msg += PQerrorMessage(conn);
@@ -451,10 +451,10 @@ bool postgresql_session_backend::get_next_sequence_value(
 
 void postgresql_session_backend::clean_up()
 {
-    if (0 != conn_)
+    if (nullptr != conn_)
     {
         PQfinish(conn_);
-        conn_ = 0;
+        conn_ = nullptr;
     }
 }
 

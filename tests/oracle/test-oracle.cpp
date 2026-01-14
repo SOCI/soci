@@ -107,7 +107,7 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
     soci::session sql(backEnd, connectString);
 
     {
-        std::time_t now = std::time(NULL);
+        std::time_t now = std::time(nullptr);
         std::tm t1, t2;
         t2 = *std::localtime(&now);
 
@@ -138,7 +138,7 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
 
     {
         // date and time - before year 2000
-        std::time_t then = std::time(NULL) - 17*365*24*60*60;
+        std::time_t then = std::time(nullptr) - 17*365*24*60*60;
         std::tm t1, t2;
         t2 = *std::localtime(&then);
 

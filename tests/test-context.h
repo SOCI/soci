@@ -159,25 +159,25 @@ public:
     // an integer "id" column and CLOB "s" one.
     //
     // Returns null by default to indicate that CLOB is not supported.
-    virtual table_creator_base* table_creator_clob(session&) const { return NULL; }
+    virtual table_creator_base* table_creator_clob(session&) const { return nullptr; }
 
     // Override this to return the table creator for a simple table containing
     // an integer "id" column and BLOB "b" one.
     //
     // Returns null by default to indicate that BLOB is not supported.
-    virtual table_creator_base* table_creator_blob(session&) const { return NULL; }
+    virtual table_creator_base* table_creator_blob(session&) const { return nullptr; }
 
     // Override this to return the table creator for a simple table containing
     // an integer "id" column and XML "x" one.
     //
     // Returns null by default to indicate that XML is not supported.
-    virtual table_creator_base* table_creator_xml(session&) const { return NULL; }
+    virtual table_creator_base* table_creator_xml(session&) const { return nullptr; }
 
     // Override this to return the table creator for a simple table containing
     // an identity integer "id" and a simple integer "val" columns.
     //
     // Returns null by default to indicate that identity is not supported.
-    virtual table_creator_base* table_creator_get_last_insert_id(session&) const { return NULL; }
+    virtual table_creator_base* table_creator_get_last_insert_id(session&) const { return nullptr; }
 
     // Return the casts that must be used to convert the between the database
     // XML type and the query parameters.
@@ -246,7 +246,7 @@ public:
 
     virtual ~test_context_base()
     {
-        the_test_context_ = NULL;
+        the_test_context_ = nullptr;
     }
 
 private:

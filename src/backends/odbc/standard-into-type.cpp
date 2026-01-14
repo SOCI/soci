@@ -162,7 +162,7 @@ void odbc_standard_into_type_backend::post_fetch(
         // first, deal with indicators
         if (SQL_NULL_DATA == get_sqllen_from_value(valueLen_))
         {
-            if (ind == NULL)
+            if (ind == nullptr)
             {
                 throw soci_error(
                     "Null value fetched and no indicator defined.");
@@ -173,7 +173,7 @@ void odbc_standard_into_type_backend::post_fetch(
         }
         else
         {
-            if (ind != NULL)
+            if (ind != nullptr)
             {
                 *ind = i_ok;
             }
@@ -251,6 +251,6 @@ void odbc_standard_into_type_backend::clean_up()
     if (buf_)
     {
         delete [] buf_;
-        buf_ = 0;
+        buf_ = nullptr;
     }
 }

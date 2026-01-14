@@ -49,10 +49,10 @@ public:
         bool readOnly, std::string const& name = std::string())
         : data_(data)
         , type_(type)
-        , ind_(NULL)
+        , ind_(nullptr)
         , readOnly_(readOnly)
         , name_(name)
-        , backEnd_(NULL)
+        , backEnd_(nullptr)
     {
         // FIXME: This was added with Ilia's patch
         // https://github.com/SOCI/soci/commit/c166625a28f7c907318134f625ff5acea7d9a1f8
@@ -67,7 +67,7 @@ public:
         , ind_(&ind)
         , readOnly_(readOnly)
         , name_(name)
-        , backEnd_(NULL)
+        , backEnd_(nullptr)
     {
         // FIXME
         //convert_to_base();
@@ -108,11 +108,11 @@ public:
         std::string const& name = std::string())
         : data_(data)
         , type_(type)
-        , ind_(NULL)
+        , ind_(nullptr)
         , begin_(0)
-        , end_(NULL)
+        , end_(nullptr)
         , name_(name)
-        , backEnd_(NULL)
+        , backEnd_(nullptr)
     {}
 
     vector_use_type(void* data, exchange_type type,
@@ -120,11 +120,11 @@ public:
         std::string const& name = std::string())
         : data_(data)
         , type_(type)
-        , ind_(NULL)
+        , ind_(nullptr)
         , begin_(begin)
         , end_(end)
         , name_(name)
-        , backEnd_(NULL)
+        , backEnd_(nullptr)
     {}
 
     vector_use_type(void* data, exchange_type type,
@@ -134,9 +134,9 @@ public:
         , type_(type)
         , ind_(&ind)
         , begin_(0)
-        , end_(NULL)
+        , end_(nullptr)
         , name_(name)
-        , backEnd_(NULL)
+        , backEnd_(nullptr)
     {}
 
     vector_use_type(void* data, exchange_type type,
@@ -149,7 +149,7 @@ public:
         , begin_(begin)
         , end_(end)
         , name_(name)
-        , backEnd_(NULL)
+        , backEnd_(nullptr)
     {}
 
     ~vector_use_type() override;

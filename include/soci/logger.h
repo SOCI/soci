@@ -73,14 +73,14 @@ private:
 // A wrapper class representing a logger.
 //
 // Unlike logger_impl, this class has value semantics and can be manipulated
-// easily without any danger of memory leaks or dereferencing a NULL pointer.
+// easily without any danger of memory leaks or dereferencing a null pointer.
 class SOCI_DECL logger
 {
 public:
     // No default constructor, must always have an associated logger_impl.
 
-    // Create a logger using the provided non-NULL implementation (an exception
-    // is thrown if the pointer is NULL). The logger object takes ownership of
+    // Create a logger using the provided non-null implementation (an exception
+    // is thrown if the pointer is null). The logger object takes ownership of
     // the pointer and will delete it.
     logger(logger_impl * impl);
     logger(logger const & other);

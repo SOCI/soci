@@ -166,7 +166,7 @@ void odbc_vector_into_type_backend::define_by_pos(
 
 void odbc_vector_into_type_backend::rebind_row(std::size_t rowInd)
 {
-    void* elementPtr = NULL;
+    void* elementPtr = nullptr;
     SQLLEN size = 0;
     switch (type_)
     {
@@ -229,7 +229,7 @@ void odbc_vector_into_type_backend::rebind_row(std::size_t rowInd)
         throw soci_error("Into element used with non-supported type.");
     }
 
-    if (elementPtr == NULL)
+    if (elementPtr == nullptr)
     {
         // It's one of the types for which we use fixed buffer.
         elementPtr = buf_;
@@ -405,14 +405,14 @@ void odbc_vector_into_type_backend::post_fetch(bool gotData, indicator* ind)
             SQLLEN const val = get_sqllen_from_vector_at(i);
             if (val == SQL_NULL_DATA)
             {
-                if (ind == NULL)
+                if (ind == nullptr)
                 {
                     throw soci_error("Null value fetched and no indicator defined.");
                 }
 
                 ind[i] = i_null;
             }
-            else if (ind != NULL)
+            else if (ind != nullptr)
             {
                 ind[i] = i_ok;
             }
@@ -434,10 +434,10 @@ std::size_t odbc_vector_into_type_backend::size() const
 
 void odbc_vector_into_type_backend::clean_up()
 {
-    if (buf_ != NULL)
+    if (buf_ != nullptr)
     {
         delete [] buf_;
-        buf_ = NULL;
+        buf_ = nullptr;
     }
     std::vector<odbc_vector_into_type_backend*>::iterator it
         = std::find(statement_.intos_.begin(), statement_.intos_.end(), this);

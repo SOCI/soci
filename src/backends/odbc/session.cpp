@@ -142,7 +142,7 @@ odbc_session_backend::odbc_session_backend(
     // connection string by default but allow overriding this using a special
     // option and also suppress prompts when reconnecting, see the comment in
     // soci::session::reconnect().
-    SQLHWND hwnd_for_prompt = NULL;
+    SQLHWND hwnd_for_prompt = nullptr;
     unsigned completion = SQL_DRIVER_COMPLETE;
 
     // Additionally, when completion is enabled, we may remember the completed
@@ -231,7 +231,7 @@ odbc_session_backend::odbc_session_backend(
     }
 
 #ifdef _WIN32
-    if (completion != SQL_DRIVER_NOPROMPT && hwnd_for_prompt == NULL)
+    if (completion != SQL_DRIVER_NOPROMPT && hwnd_for_prompt == nullptr)
       hwnd_for_prompt = ::GetDesktopWindow();
 #endif // _WIN32
 
@@ -385,10 +385,10 @@ bool odbc_session_backend::is_connected()
     // The name of the table we check for is irrelevant, as long as we have a
     // working connection, it should still find (or, hopefully, not) something.
     return !is_odbc_error(SQLTables(st.hstmt_,
-                                    NULL, SQL_NTS,
-                                    NULL, SQL_NTS,
+                                    nullptr, SQL_NTS,
+                                    nullptr, SQL_NTS,
                                     sqlchar_cast("bloordyblop"), SQL_NTS,
-                                    NULL, SQL_NTS));
+                                    nullptr, SQL_NTS));
 }
 
 void odbc_session_backend::begin()

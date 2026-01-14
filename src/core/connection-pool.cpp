@@ -65,7 +65,7 @@ struct connection_pool::connection_pool_impl : soci_connection_pool_base_impl
     explicit connection_pool_impl(std::size_t size)
         : soci_connection_pool_base_impl(size)
     {
-        if (pthread_cond_init(&cond_, NULL) != 0)
+        if (pthread_cond_init(&cond_, nullptr) != 0)
         {
             throw soci_error("Synchronization error");
         }
@@ -91,7 +91,7 @@ bool connection_pool::try_lease(std::size_t & pos, int timeout)
         // timeout is relative in milliseconds
 
         struct timeval tmv;
-        gettimeofday(&tmv, NULL);
+        gettimeofday(&tmv, nullptr);
 
         tm.tv_sec = tmv.tv_sec + timeout / 1000;
         tm.tv_nsec = tmv.tv_usec * 1000 + (timeout % 1000) * 1000 * 1000;
@@ -186,9 +186,9 @@ struct connection_pool::connection_pool_impl : soci_connection_pool_base_impl
         : soci_connection_pool_base_impl(size)
     {
         // initially all entries are available
-        sem_ = CreateSemaphore(NULL,
-            static_cast<LONG>(size), static_cast<LONG>(size), NULL);
-        if (sem_ == NULL)
+        sem_ = CreateSemaphore(nullptr,
+            static_cast<LONG>(size), static_cast<LONG>(size), nullptr);
+        if (sem_ == nullptr)
         {
             throw soci_error("Synchronization error");
         }
@@ -249,7 +249,7 @@ void connection_pool::give_back(std::size_t pos)
 
     pimpl_->sessions_[pos].first = true;
 
-    ReleaseSemaphore(pimpl_->sem_, 1, NULL);
+    ReleaseSemaphore(pimpl_->sem_, 1, nullptr);
 }
 
 #endif // _WIN32

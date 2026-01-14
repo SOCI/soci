@@ -74,7 +74,7 @@ inline soci_dynlib_handle_t DLOPEN(std::string const& path)
   }
   //else: If the conversion failed, fall back on LoadLibrary() behaviour.
 
-  return LoadLibraryExA(realpath, NULL, flags);
+  return LoadLibraryExA(realpath, nullptr, flags);
 }
 
 } // unnamed namespace
@@ -191,7 +191,7 @@ struct info
     // use count drops to 0.
     bool unload_requested_;
 
-    info() : handle_(0), factory_(0), use_count_(0), unload_requested_(false) {}
+    info() : handle_(nullptr), factory_(nullptr), use_count_(0), unload_requested_(false) {}
 };
 
 typedef std::map<std::string, info> factory_map;
@@ -266,7 +266,7 @@ struct static_state_mgr
 factory_map::iterator do_unload(factory_map::iterator i)
 {
     soci_dynlib_handle_t h = i->second.handle_;
-    if (h != NULL)
+    if (h != nullptr)
     {
         DLCLOSE(h);
     }
@@ -304,7 +304,7 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
     MSWErrorMessageBoxDisabler no_message_boxes;
 #endif
 
-    soci_dynlib_handle_t h = 0;
+    soci_dynlib_handle_t h = nullptr;
     std::string fullFileName;
     if (shared_object.empty() == false)
     {
@@ -315,14 +315,14 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
     {
         // try system paths
         h = DLOPEN(LIBNAME(name));
-        if (0 == h)
+        if (nullptr == h)
         {
             // try all search paths
             for (auto const& path : get_default_search_paths())
             {
                 fullFileName = path + "/" + LIBNAME(name);
                 h = DLOPEN(fullFileName);
-                if (0 != h)
+                if (nullptr != h)
                 {
                     // already found
                     break;
@@ -331,7 +331,7 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
          }
     }
 
-    if (0 == h)
+    if (nullptr == h)
     {
         std::ostringstream msg;
         if (shared_object.empty() == false)
@@ -372,7 +372,7 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
     entry = reinterpret_cast<get_t>(
             reinterpret_cast<uintptr_t>(DLSYM(h, symbol.c_str())));
 
-    if (0 == entry)
+    if (nullptr == entry)
     {
         DLCLOSE(h);
 

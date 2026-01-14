@@ -80,13 +80,13 @@ private:
 } // namespace details
 
 connection_parameters::connection_parameters()
-    : factory_(NULL), backendRef_(NULL)
+    : factory_(nullptr), backendRef_(nullptr)
 {
 }
 
 connection_parameters::connection_parameters(backend_factory const & factory,
     std::string const & connectString)
-    : factory_(&factory), connectString_(connectString), backendRef_(NULL)
+    : factory_(&factory), connectString_(connectString), backendRef_(nullptr)
 {
 }
 

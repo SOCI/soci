@@ -113,7 +113,7 @@ db2_session_backend::db2_session_backend(
     // Prompt the user for any missing information (typically UID/PWD) in the
     // connection string by default but allow overriding this using "prompt"
     // option.
-    SQLHWND hwnd_for_prompt = NULL;
+    SQLHWND hwnd_for_prompt = nullptr;
     unsigned completion = SQL_DRIVER_COMPLETE;
     std::string completionString;
     if (parameters.get_option(db2_option_driver_complete, completionString))

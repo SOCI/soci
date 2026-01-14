@@ -31,7 +31,7 @@ void wait_until_operation_complete(postgresql_session_backend & session)
     for (;;)
     {
         PGresult * result = PQgetResult(session.conn_);
-        if (result == NULL)
+        if (result == nullptr)
         {
             break;
         }
@@ -57,7 +57,7 @@ void throw_soci_error(PGconn * conn, const char * msg)
 postgresql_statement_backend::postgresql_statement_backend(
     postgresql_session_backend &session, bool single_row_mode)
     : session_(session), single_row_mode_(single_row_mode),
-      result_(session, NULL),
+      result_(session, nullptr),
       rowsAffectedBulk_(-1LL), justDescribed_(false)
 {
 }
@@ -229,7 +229,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
             // prepare for single-row retrieval
 
             int result = PQsendPrepare(session_.conn_, statementName.c_str(),
-                query_.c_str(), isize(names_), NULL);
+                query_.c_str(), isize(names_), nullptr);
             if (result != 1)
             {
                 throw_soci_error(session_.conn_,
@@ -244,7 +244,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
 
             postgresql_result result(session_,
                 PQprepare(session_.conn_, statementName.c_str(),
-                    query_.c_str(), isize(names_), NULL));
+                    query_.c_str(), isize(names_), nullptr));
             result.check_for_errors("Cannot prepare statement.");
         }
 
@@ -357,7 +357,7 @@ postgresql_statement_backend::execute(int number)
                         int result = PQsendQueryPrepared(session_.conn_,
                             statementName_.c_str(),
                             isize(paramValues),
-                            &paramValues[0], NULL, NULL, 0);
+                            &paramValues[0], nullptr, nullptr, 0);
                         if (result != 1)
                         {
                             throw_soci_error(session_.conn_,
@@ -378,7 +378,7 @@ postgresql_statement_backend::execute(int number)
                         result_.reset(PQexecPrepared(session_.conn_,
                                 statementName_.c_str(),
                                 isize(paramValues),
-                                &paramValues[0], NULL, NULL, 0));
+                                &paramValues[0], nullptr, nullptr, 0));
                     }
                 }
                 else // stType_ == st_one_time_query
@@ -390,7 +390,7 @@ postgresql_statement_backend::execute(int number)
                     {
                         int result = PQsendQueryParams(session_.conn_, query_.c_str(),
                             isize(paramValues),
-                            NULL, &paramValues[0], NULL, NULL, 0);
+                            nullptr, &paramValues[0], nullptr, nullptr, 0);
                         if (result != 1)
                         {
                             throw_soci_error(session_.conn_,
@@ -410,7 +410,7 @@ postgresql_statement_backend::execute(int number)
 
                         result_.reset(PQexecParams(session_.conn_, query_.c_str(),
                                 isize(paramValues),
-                                NULL, &paramValues[0], NULL, NULL, 0));
+                                nullptr, &paramValues[0], nullptr, nullptr, 0));
                     }
                 }
 
@@ -446,7 +446,7 @@ postgresql_statement_backend::execute(int number)
                 if (single_row_mode_)
                 {
                     int result = PQsendQueryPrepared(session_.conn_,
-                        statementName_.c_str(), 0, NULL, NULL, NULL, 0);
+                        statementName_.c_str(), 0, nullptr, nullptr, nullptr, 0);
                     if (result != 1)
                     {
                         throw_soci_error(session_.conn_,
@@ -465,7 +465,7 @@ postgresql_statement_backend::execute(int number)
                     // default multi-row execution
 
                     result_.reset(PQexecPrepared(session_.conn_,
-                            statementName_.c_str(), 0, NULL, NULL, NULL, 0));
+                            statementName_.c_str(), 0, nullptr, nullptr, nullptr, 0));
                 }
             }
             else // stType_ == st_one_time_query
@@ -577,7 +577,7 @@ postgresql_statement_backend::fetch(int number)
             PGresult* res = PQgetResult(session_.conn_);
             result_.reset(res);
 
-            if (res == NULL)
+            if (res == nullptr)
             {
                 return ef_no_data;
             }

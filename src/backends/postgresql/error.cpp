@@ -102,7 +102,7 @@ details::postgresql_result::check_for_data(char const* errMsg) const
                 // call the failover callback, if registered
 
                 failover_callback * callback = sessionBackend_.failoverCallback_;
-                if (callback != NULL)
+                if (callback != nullptr)
                 {
                     bool reconnected = false;
 

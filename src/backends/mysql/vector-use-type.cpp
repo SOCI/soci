@@ -51,7 +51,7 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind)
         char *buf;
 
         // the data in vector can be either i_ok or i_null
-        if (ind != NULL && ind[i] == i_null)
+        if (ind != nullptr && ind[i] == i_null)
         {
             buf = new char[5];
             strncpy(buf, "NULL", 5);

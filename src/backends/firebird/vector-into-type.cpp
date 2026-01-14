@@ -160,11 +160,11 @@ void firebird_vector_into_type_backend::post_fetch(
 
         for (std::size_t i = 0; i<rows; ++i)
         {
-            if (statement_.inds_[position_][i] == i_null && (ind == NULL))
+            if (statement_.inds_[position_][i] == i_null && (ind == nullptr))
             {
                 throw soci_error("Null value fetched and no indicator defined.");
             }
-            else if (ind != NULL)
+            else if (ind != nullptr)
             {
                 ind[i] = statement_.inds_[position_][i];
             }
@@ -184,10 +184,10 @@ std::size_t firebird_vector_into_type_backend::size() const
 
 void firebird_vector_into_type_backend::clean_up()
 {
-    if (buf_ != NULL)
+    if (buf_ != nullptr)
     {
         delete [] buf_;
-        buf_ = NULL;
+        buf_ = nullptr;
     }
     std::vector<void*>::iterator it =
         std::find(statement_.intos_.begin(), statement_.intos_.end(), this);

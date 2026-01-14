@@ -53,11 +53,11 @@ void firebird_standard_into_type_backend::post_fetch(
 
     if (gotData)
     {
-        if (i_null == statement_.inds_[position_][0] && NULL == ind)
+        if (i_null == statement_.inds_[position_][0] && nullptr == ind)
         {
             throw soci_error("Null value fetched and no indicator defined.");
         }
-        else if (NULL != ind)
+        else if (nullptr != ind)
         {
             *ind = statement_.inds_[position_][0];
         }
@@ -162,10 +162,10 @@ void firebird_standard_into_type_backend::exchangeData()
 
 void firebird_standard_into_type_backend::clean_up()
 {
-    if (buf_ != NULL)
+    if (buf_ != nullptr)
     {
         delete [] buf_;
-        buf_ = NULL;
+        buf_ = nullptr;
     }
     std::vector<void*>::iterator it =
         std::find(statement_.intos_.begin(), statement_.intos_.end(), this);

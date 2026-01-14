@@ -74,7 +74,7 @@ T* checked_ptr_cast(U* ptr)
 
     if (&ti_ptr != &ti_ret && std::strcmp(ti_ptr.name(), ti_ret.name()) != 0)
     {
-        return NULL;
+        return nullptr;
     }
 
     return static_cast<T*>(ptr);

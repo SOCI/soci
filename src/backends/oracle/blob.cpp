@@ -19,10 +19,10 @@ using namespace soci::details;
 using namespace soci::details::oracle;
 
 oracle_blob_backend::oracle_blob_backend(oracle_session_backend &session)
-    : session_(session), lobp_(NULL), initialized_(false)
+    : session_(session), lobp_(nullptr), initialized_(false)
 {
     sword res = OCIDescriptorAlloc(session.envhp_,
-        reinterpret_cast<dvoid**>(&lobp_), OCI_DTYPE_LOB, 0, 0);
+        reinterpret_cast<dvoid**>(&lobp_), OCI_DTYPE_LOB, 0, nullptr);
     if (res != OCI_SUCCESS)
     {
         throw soci_error("Cannot allocate the LOB locator");
@@ -102,7 +102,7 @@ std::size_t oracle_blob_backend::write_from_start(const void *buf, std::size_t t
 
     sword res = OCILobWrite2(session_.svchp_, session_.errhp_, lobp_, &amt, nullptr,
         static_cast<oraub8>(offset + 1),
-        const_cast<void*>(buf), amt, OCI_ONE_PIECE, 0, 0, 0, 0);
+        const_cast<void*>(buf), amt, OCI_ONE_PIECE, nullptr, nullptr, 0, 0);
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, session_.errhp_);
@@ -118,7 +118,7 @@ std::size_t oracle_blob_backend::append(const void *buf, std::size_t toWrite)
     auto amt = static_cast<oraub8>(toWrite);
 
     sword res = OCILobWriteAppend2(session_.svchp_, session_.errhp_, lobp_,
-        &amt, nullptr, const_cast<void*>(buf), amt, OCI_ONE_PIECE, 0, 0, 0, 0);
+        &amt, nullptr, const_cast<void*>(buf), amt, OCI_ONE_PIECE, nullptr, nullptr, 0, 0);
     if (res != OCI_SUCCESS)
     {
         throw_oracle_soci_error(res, session_.errhp_);

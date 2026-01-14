@@ -30,7 +30,7 @@ sb4 fo_callback(void * /* svchp */, void * /* envhp */, void * fo_ctx,
 
     failover_callback * callback = backend->failoverCallback_;
 
-    if (callback != NULL)
+    if (callback != nullptr)
     {
         session * sql = backend->session_;
 
@@ -120,7 +120,7 @@ sb4 fo_callback(void * /* svchp */, void * /* envhp */, void * fo_ctx,
 oracle_session_backend::oracle_session_backend(std::string const & serviceName,
     std::string const & userName, std::string const & password, int mode,
     bool decimals_as_strings, ub2 charset, ub2 ncharset)
-    : envhp_(NULL), srvhp_(NULL), errhp_(NULL), svchp_(NULL), usrhp_(NULL),
+    : envhp_(nullptr), srvhp_(nullptr), errhp_(nullptr), svchp_(nullptr), usrhp_(nullptr),
       decimals_as_strings_(decimals_as_strings)
 {
     // assume service/user/password are utf8-compatible already
@@ -147,7 +147,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
 
     // create the environment
     res = OCIEnvNlsCreate(&envhp_, OCI_THREADED | OCI_ENV_NO_MUTEX,
-        0, 0, 0, 0, 0, 0, charset, ncharset);
+        nullptr, nullptr, nullptr, nullptr, 0, nullptr, charset, ncharset);
     if (res != OCI_SUCCESS)
     {
         throw soci_error("Cannot create environment");
@@ -155,7 +155,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
 
     // create the server handle
     res = OCIHandleAlloc(envhp_, reinterpret_cast<dvoid**>(&srvhp_),
-        OCI_HTYPE_SERVER, 0, 0);
+        OCI_HTYPE_SERVER, 0, nullptr);
     if (res != OCI_SUCCESS)
     {
         clean_up();
@@ -164,7 +164,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
 
     // create the error handle
     res = OCIHandleAlloc(envhp_, reinterpret_cast<dvoid**>(&errhp_),
-        OCI_HTYPE_ERROR, 0, 0);
+        OCI_HTYPE_ERROR, 0, nullptr);
     if (res != OCI_SUCCESS)
     {
         clean_up();
@@ -277,7 +277,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
 
     // create service context handle
     res = OCIHandleAlloc(envhp_, reinterpret_cast<dvoid**>(&svchp_),
-        OCI_HTYPE_SVCCTX, 0, 0);
+        OCI_HTYPE_SVCCTX, 0, nullptr);
     if (res != OCI_SUCCESS)
     {
         clean_up();
@@ -298,7 +298,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
 
     // allocate user session handle
     res = OCIHandleAlloc(envhp_, reinterpret_cast<dvoid**>(&usrhp_),
-        OCI_HTYPE_SESSION, 0, 0);
+        OCI_HTYPE_SESSION, 0, nullptr);
     if (res != OCI_SUCCESS)
     {
         clean_up();
@@ -403,7 +403,7 @@ void oracle_session_backend::rollback()
 
 void oracle_session_backend::clean_up()
 {
-    if (svchp_ != NULL && errhp_ != NULL && usrhp_ != NULL)
+    if (svchp_ != nullptr && errhp_ != nullptr && usrhp_ != nullptr)
     {
         OCISessionEnd(svchp_, errhp_, usrhp_, OCI_DEFAULT);
     }

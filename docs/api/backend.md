@@ -133,7 +133,7 @@ management, `statement` is the master of this class.
 
 * `define_by_pos` - Called when the `into` element is bound, once and before the statement is executed. The `data` pointer points to the variable used for `into` element (or to the `cstring_descriptor` object, which is artificially created when the plain `char` buffer is used for data exchange). The `position` parameter is a "column number", assigned by the library. The backend should increase this parameter, according to the number of fields actually taken (usually 1).
 * `pre_fetch` - Called before each row is fetched.
-* `post_fetch` - Called after each row is fetched. The `gotData` parameter is `true` if the fetch operation really retrieved some data and `false` otherwise; `calledFromFetch` is `true` when the call is from the fetch operation and `false` if it is from the execute operation (this is also the case for simple, one-time queries). In particular, `(calledFromFetch && !gotData)` indicates that there is an end-of-rowset condition. `ind` points to the indicator provided by the user, or is `NULL`, if there is no indicator.
+* `post_fetch` - Called after each row is fetched. The `gotData` parameter is `true` if the fetch operation really retrieved some data and `false` otherwise; `calledFromFetch` is `true` when the call is from the fetch operation and `false` if it is from the execute operation (this is also the case for simple, one-time queries). In particular, `(calledFromFetch && !gotData)` indicates that there is an end-of-rowset condition. `ind` points to the indicator provided by the user, or is `nullptr`, if there is no indicator.
 * `clean_up` - Called once when the statement is destroyed.
 
 The intended use of `pre_fetch` and `post_fetch` functions is to manage any internal buffer and/or data conversion for each value retrieved from the database.
@@ -161,12 +161,12 @@ public:
 The `vector_into_type_back_end` has similar structure and purpose as the previous one, but is used for vectors (bulk data retrieval).
 
 The `data` pointer points to the variable of type `std::vector<T>;` (and *not* to its internal buffer), `resize` is supposed to really resize the user-provided vector and `size` is supposed to return the current size of this vector.
-The important difference with regard to the previous class is that `ind` points (if not `NULL`) to the beginning of the *array* of indicators.
+The important difference with regard to the previous class is that `ind` points (if not `nullptr`) to the beginning of the *array* of indicators.
 The backend should fill this array according to the actual state of the retrieved data.
 
 * `bind_by_pos` - Called for each `use` element, once and before the statement is executed - for those `use` elements that do not provide explicit names for parameter binding. The meaning of parameters is same as in previous classes.
 * `bind_by_name` - Called for those `use` elements that provide the explicit name.
-* `pre_use` - Called before the data is transmitted to the server (this means before the statement is executed, which can happen many times for the prepared statement). `ind` points to the indicator provided by the user (or is `NULL`).
+* `pre_use` - Called before the data is transmitted to the server (this means before the statement is executed, which can happen many times for the prepared statement). `ind` points to the indicator provided by the user (or is `nullptr`).
 * `post_use` - Called after statement execution. `gotData` and `ind` have the same meaning as in `standard_into_type_back_end::post_fetch`, and this can be used by those backends whose respective servers support two-way data exchange (like in/out parameters in stored procedures).
 
 The intended use for `pre_use` and `post_use` methods is to manage any internal buffers and/or data conversion.
@@ -192,7 +192,7 @@ public:
 ```
 
 Objects of this type (or rather of type derived from this one) are used to implement interactions with user-provided vector (bulk) `use` elements and are managed by the `statement` object.
-The `data` pointer points to the whole vector object provided by the user (and *not* to its internal buffer); `ind` points to the beginning of the array of indicators (or is `NULL`).
+The `data` pointer points to the whole vector object provided by the user (and *not* to its internal buffer); `ind` points to the beginning of the array of indicators (or is `nullptr`).
 The meaning of this interface is analogous to those presented above.
 
 ```cpp

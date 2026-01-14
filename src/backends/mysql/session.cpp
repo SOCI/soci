@@ -35,7 +35,7 @@ class mysql_library
 private:
     mysql_library()
     {
-        if (mysql_library_init(0, NULL, NULL))
+        if (mysql_library_init(0, nullptr, nullptr))
         {
             throw soci_error("Failed to initialize MySQL library.");
         }
@@ -394,8 +394,8 @@ mysql_session_backend::mysql_session_backend(
         &read_timeout, &read_timeout_p,
         &write_timeout, &write_timeout_p,
         &ssl_mode, &ssl_mode_p);
-    conn_ = mysql_init(NULL);
-    if (conn_ == NULL)
+    conn_ = mysql_init(nullptr);
+    if (conn_ == nullptr)
     {
         throw soci_error("mysql_init() failed.");
     }
@@ -446,7 +446,7 @@ mysql_session_backend::mysql_session_backend(
     }
     if (local_infile_p && local_infile == 1)
     {
-        if (0 != mysql_options(conn_, MYSQL_OPT_LOCAL_INFILE, NULL))
+        if (0 != mysql_options(conn_, MYSQL_OPT_LOCAL_INFILE, nullptr))
         {
             clean_up();
             throw soci_error(
@@ -488,17 +488,17 @@ mysql_session_backend::mysql_session_backend(
     }
 #endif
     if (mysql_real_connect(conn_,
-            host_p ? host.c_str() : NULL,
-            user_p ? user.c_str() : NULL,
-            password_p ? password.c_str() : NULL,
-            db_p ? db.c_str() : NULL,
+            host_p ? host.c_str() : nullptr,
+            user_p ? user.c_str() : nullptr,
+            password_p ? password.c_str() : nullptr,
+            db_p ? db.c_str() : nullptr,
             port_p ? port : 0,
-            unix_socket_p ? unix_socket.c_str() : NULL,
+            unix_socket_p ? unix_socket.c_str() : nullptr,
+            CLIENT_FOUND_ROWS
 #ifdef CLIENT_MULTI_RESULTS
-            CLIENT_FOUND_ROWS | CLIENT_MULTI_RESULTS) == NULL)
-#else
-            CLIENT_FOUND_ROWS) == NULL)
+            | CLIENT_MULTI_RESULTS
 #endif
+            ) == nullptr)
     {
         string errMsg = mysql_error(conn_);
         unsigned int errNum = mysql_errno(conn_);
@@ -571,10 +571,10 @@ bool mysql_session_backend::get_last_insert_id(
 
 void mysql_session_backend::clean_up()
 {
-    if (conn_ != NULL)
+    if (conn_ != nullptr)
     {
         mysql_close(conn_);
-        conn_ = NULL;
+        conn_ = nullptr;
     }
 }
 

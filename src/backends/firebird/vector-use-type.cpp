@@ -94,7 +94,7 @@ T* getUseVectorValue(void *v, std::size_t index)
 void firebird_vector_use_type_backend::exchangeData(std::size_t row)
 {
     // first prepare indicators
-    if (inds_ != NULL)
+    if (inds_ != nullptr)
     {
         switch (inds_[row])
         {
@@ -205,15 +205,15 @@ std::size_t firebird_vector_use_type_backend::size() const
 
 void firebird_vector_use_type_backend::clean_up()
 {
-    if (buf_ != NULL)
+    if (buf_ != nullptr)
     {
         delete [] buf_;
-        buf_ = NULL;
+        buf_ = nullptr;
     }
-    if (blob_ != NULL)
+    if (blob_ != nullptr)
     {
         delete blob_;
-        blob_ = NULL;
+        blob_ = nullptr;
     }
     std::vector<void*>::iterator it =
         std::find(statement_.uses_.begin(), statement_.uses_.end(), this);

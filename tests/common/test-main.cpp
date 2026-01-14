@@ -12,7 +12,7 @@
 
 using namespace soci;
 
-tests::test_context_base* tests::test_context_base::the_test_context_ = NULL;
+tests::test_context_base* tests::test_context_base::the_test_context_ = nullptr;
 
 int main(int argc, char** argv)
 {
