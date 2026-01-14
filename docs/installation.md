@@ -86,6 +86,12 @@ Some other build options:
 * `SOCI_UBSAN` - boolean - Build with undefined behaviour sanitizer (ASAN) support. Default is `OFF`.
 * `SOCI_LTO` - boolean - Build with link-time optimizations, if supported. This produces noticeably smaller libraries. Default is `OFF`, but turning it on is recommended for the production builds.
 * `SOCI_NAME_PREFIX` and `SOCI_NAME_SUFFIX` - strings - If specified, the former is prepended and the latter appended to the names of all SOCI libraries. Note that by default SOCI build system appends `_MAJOR_MINOR` suffix to the names of Windows DLLs (but not to the names of Unix shared libraries) to prevent mixing up ABI-incompatible builds from different SOCI versions. If you want to override this behaviour, you can set `SOCI_NAME_SUFFIX` to an empty string.
+* `SOCI_FMT_BUILTIN` - boolean or unset - By default, SOCI tries to find the
+installed [fmt](https://fmt.dev/) library to use it for string formatting and
+falls back to the copy of this library included with SOCI itself if it is not
+found. This option can be set to `ON` to always use the built-in copy of fmt or
+to `OFF`  to require using the installed fmt library (configuration will fail
+if it is not found).
 
 When it comes to enabling specific backends, SOCI supports three distinct options that can be used as `Enabler` type as used below:
 

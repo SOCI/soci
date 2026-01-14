@@ -110,10 +110,17 @@ else()
         "$<${soci_cxx_source}:-Wpointer-arith>"
         "$<${soci_cxx_source}:-Wcast-align>"
         "$<${soci_cxx_source}:-Wcast-qual>"
-        "$<${soci_cxx_source}:-Wfloat-equal>"
         "$<${soci_cxx_source}:-Woverloaded-virtual>"
         "$<${soci_cxx_source}:-Wredundant-decls>"
         "$<${soci_cxx_source}:-Wno-long-long>"
     )
+
+    # We can't use this when using header-only fmt as it gives this warning.
+    if(NOT soci_use_bundled_fmt)
+      target_compile_options(soci_compiler_interface
+        INTERFACE
+          "$<${soci_cxx_source}:-Wfloat-equal>"
+      )
+    endif()
   endif()
 endif()
