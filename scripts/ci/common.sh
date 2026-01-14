@@ -96,12 +96,16 @@ tmstamp()
     echo -n "[$(date '+%H:%M:%S')]" ;
 }
 
+# Disable some (but not all) output.
 SOCI_APT_OPTIONS='-q -y -o=Dpkg::Use-Pty=0 --no-install-recommends'
 
 run_apt()
 {
-    # Disable some (but not all) output.
-    sudo apt-get $SOCI_APT_OPTIONS "$@"
+    if ! sudo apt-get $SOCI_APT_OPTIONS "$@"; then
+        echo "apt-get "$@" failed, retrying once just in case it was spurious..."
+        sleep 30
+        sudo apt-get $SOCI_APT_OPTIONS "$@"
+    fi
 }
 
 run_make()
