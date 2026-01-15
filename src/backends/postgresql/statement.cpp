@@ -17,7 +17,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <sstream>
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -181,9 +182,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
             {
                 names_.push_back(name);
                 name.clear();
-                std::ostringstream ss;
-                ss << '$' << position++;
-                query_ += ss.str();
+                query_ += fmt::format("${}", position++);
                 query_ += *it;
                 state = normal;
 
@@ -208,9 +207,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
     if (state == in_name)
     {
         names_.push_back(name);
-        std::ostringstream ss;
-        ss << '$' << position++;
-        query_ += ss.str();
+        query_ += fmt::format("${}", position++);
     }
 
     if (stType == st_repeatable_query)
@@ -684,17 +681,14 @@ int postgresql_statement_backend::prepare_for_describe()
 
 void throw_soci_type_error(Oid typeOid, int colNum, char category, const char* typeName )
 {
-    std::stringstream message;
-    message << "unknown data type"
-        << " for column number: " << colNum
-        << " with type oid: " << (int)typeOid;
+    std::string message = fmt::format("unknown data type for column number: {} with type oid: {}", colNum, (int)typeOid);
     if( category != '\0' )
     {
-        message << " with category: " << category;
+        message += fmt::format(" with category: {}", category);
     }
-    message << " with name: " << typeName;
+    message += fmt::format(" with name: {}", typeName);
 
-    throw soci_error(message.str());
+    throw soci_error(message);
 }
 
 void postgresql_statement_backend::describe_column(int colNum,
@@ -772,10 +766,9 @@ void postgresql_statement_backend::describe_column(int colNum,
         auto typeCategoryIt = categoryByColumnOID_.find(typeOid);
         if ( typeCategoryIt == categoryByColumnOID_.end() )
         {
-            std::stringstream query;
-            query << "SELECT typcategory FROM pg_type WHERE oid=" << (int)typeOid;
+            std::string query = fmt::format("SELECT typcategory FROM pg_type WHERE oid={}", (int)typeOid);
 
-            soci::details::postgresql_result res(session_, PQexec(session_.conn_, query.str().c_str()));
+            soci::details::postgresql_result res(session_, PQexec(session_.conn_, query.c_str()));
             if ( PQresultStatus(res.get_result()) != PGRES_TUPLES_OK )
             {
                 throw_soci_type_error(typeOid, colNum, '\0', PQfname(result_, pos));

@@ -9,8 +9,9 @@
 #include "soci-ssize.h"
 #include "firebird/error-firebird.h"
 #include <cctype>
-#include <sstream>
 #include <iostream>
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -361,10 +362,7 @@ namespace
     {
         if (actual != expected)
         {
-            std::ostringstream msg;
-            msg << "Incorrect number of " << name << " variables. "
-                << "Expected " << expected << ", got " << actual;
-            throw soci_error(msg.str());
+            throw soci_error(fmt::format("Incorrect number of {} variables. Expected {}, got {}", name, expected, actual));
         }
     }
 }
@@ -739,10 +737,8 @@ void firebird_statement_backend::describe_column(int colNum,
         break;
         /* case SQL_ARRAY:*/
     default:
-        std::ostringstream msg;
-        msg << "Type of column ["<< colNum << "] \"" << columnName
-            << "\" is not supported for dynamic queries";
-        throw soci_error(msg.str());
+        throw soci_error(fmt::format("Type of column [{}] \"{}\" is not supported for dynamic queries",
+                                     colNum, columnName));
         break;
     }
 }

@@ -17,8 +17,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <limits>
-#include <sstream>
 
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -60,9 +60,7 @@ void sqlite3_vector_use_type_backend::bind_by_name(std::string const & name,
 
     if (0 == position_)
     {
-        std::ostringstream ss;
-        ss << "Cannot bind (by name) to " << name_;
-        throw soci_error(ss.str());
+        throw soci_error(fmt::format("Cannot bind to {} (by name)", name_));
     }
     statement_.boundByName_ = true;
 }

@@ -10,13 +10,13 @@
 
 #include "soci/blob.h"
 #include "soci/error.h"
+#include "soci/fmt.h"
 #include "soci/soci-backend.h"
 #include "soci/soci-types.h"
 
 #include <cstdint>
 #include <ctime>
 #include <limits>
-#include <sstream>
 #include <type_traits>
 #include <typeinfo>
 #include <vector>
@@ -486,9 +486,7 @@ private:
         }
 
         // This should be unreachable
-        std::ostringstream ss;
-        ss << "Created holder with unsupported type " << std::to_string(dt);
-        throw soci_error(ss.str());
+        throw soci_error(format("Created holder with unsupported type {}", static_cast<int>(dt)));
     }
 
     const db_type dt_;

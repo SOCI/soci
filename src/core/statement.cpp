@@ -19,7 +19,8 @@
 #include <cctype>
 #include <cstdint>
 #include <string>
-#include <sstream>
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -489,13 +490,8 @@ std::size_t statement_impl::intos_size()
         }
         else if (intos_size != intos_[i]->size())
         {
-            std::ostringstream msg;
-            msg << "Bind variable size mismatch (into["
-                << static_cast<unsigned long>(i) << "] has size "
-                << static_cast<unsigned long>(intos_[i]->size())
-                << ", into[0] has size "
-                << static_cast<unsigned long>(intos_size);
-            throw soci_error(msg.str());
+            throw soci_error(fmt::format("Bind variable size mismatch (into[{}] has size {}, into[0] has size {})",
+                                         i, intos_[i]->size(), intos_size));
         }
     }
     return intos_size;
@@ -518,13 +514,8 @@ std::size_t statement_impl::uses_size()
         }
         else if (usesSize != uses_[i]->size())
         {
-            std::ostringstream msg;
-            msg << "Bind variable size mismatch (use["
-                << static_cast<unsigned long>(i) << "] has size "
-                << static_cast<unsigned long>(uses_[i]->size())
-                << ", use[0] has size "
-                << static_cast<unsigned long>(usesSize);
-            throw soci_error(msg.str());
+            throw soci_error(fmt::format("Bind variable size mismatch (use[{}] has size {}, use[0] has size {})",
+                                         i, uses_[i]->size(), usesSize));
         }
     }
     return usesSize;
@@ -651,9 +642,7 @@ void statement_impl::post_fetch(bool gotData, bool calledFromFetch)
             // Provide the parameter number in the error message as the
             // exceptions thrown by the backend only say what went wrong, but
             // not where.
-            std::ostringstream oss;
-            oss << "for the parameter number " << i + 1;
-            e.add_context(oss.str());
+            e.add_context(fmt::format("for the parameter number {}", i + 1));
 
             throw;
         }
@@ -822,10 +811,8 @@ void statement_impl::describe()
             bind_into<db_date>();
             break;
         default:
-            std::ostringstream msg;
-            msg << "db column type " << dbtype
-                <<" not supported for dynamic selects"<<std::endl;
-            throw soci_error(msg.str());
+            throw soci_error(fmt::format("db column type {} not supported for dynamic selects\n",
+                             fmt::underlying(dbtype)));
         }
         row_->add_properties(props);
     }
@@ -918,8 +905,7 @@ statement_impl::rethrow_current_exception_with_context(char const* operation)
     {
         if (!query_.empty())
         {
-            std::ostringstream oss;
-            oss << "while " << operation << " \"" << query_ << "\"";
+            std::string ctx = fmt::format("while {} \"{}\"", operation, query_);
 
             if (!uses_.empty() && session_.get_query_context_logging_mode() != log_context::never)
             {
@@ -931,10 +917,10 @@ statement_impl::rethrow_current_exception_with_context(char const* operation)
 
                 do_add_query_parameters();
 
-                oss << " with " << session_.get_last_query_context();
+                ctx += fmt::format(" with {}", session_.get_last_query_context());
             }
 
-            e.add_context(oss.str());
+            e.add_context(ctx);
         }
 
         throw;

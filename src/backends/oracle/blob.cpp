@@ -9,7 +9,6 @@
 #include "error.h"
 #include "soci/statement.h"
 #include <cstring>
-#include <sstream>
 #include <cstdio>
 #include <ctime>
 #include <cctype>

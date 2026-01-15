@@ -11,8 +11,6 @@
 #include "firebird/common.h"
 #include "soci/soci.h"
 
-#include <sstream>
-
 using namespace soci;
 using namespace soci::details;
 using namespace soci::details::firebird;

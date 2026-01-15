@@ -8,12 +8,13 @@
 #include "soci/soci.h"
 #include "soci/odbc/soci-odbc.h"
 #include "test-context.h"
-#include <iostream>
 #include <string>
 #include <ctime>
 #include <cmath>
 
 #include <catch.hpp>
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::tests;
@@ -42,13 +43,13 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
 
     // Build a string at least 8000 characters long to test that it survives
     // the round trip unscathed.
-    std::ostringstream os;
+    std::string str_in;
+    str_in.reserve(16000);
     for ( int n = 0; n < 1000; ++n )
     {
-        os << "Line #" << n << "\n";
+        str_in += fmt::format("Line #{}\n", n);
     }
 
-    std::string const str_in = os.str();
     CHECK_NOTHROW((
         sql << "insert into soci_test(long_text) values(:str)", use(str_in)
     ));

@@ -11,9 +11,9 @@
 #include <cstdlib>
 #include <map>
 #include <cstdint>
-#include <sstream>
 #include <string>
 #include <vector>
+#include <fmt/format.h>
 
 #include "soci-mutex.h"
 
@@ -333,16 +333,14 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
 
     if (nullptr == h)
     {
-        std::ostringstream msg;
+        std::string msg;
         if (shared_object.empty() == false)
         {
-            msg << "Failed to load shared library for backend " << name
-                << " from \"" << shared_object << "\"";
+            msg = fmt::format("Failed to load shared library for backend {} from \"{}\"", name, shared_object);
         }
         else
         {
-            msg << "Failed to find shared library \"" << LIBNAME(name) << "\" "
-                << "for backend " << name;
+            msg = fmt::format("Failed to find shared library \"{}\" for backend {}", LIBNAME(name), name);
 
             // We always add "." as the first search path element, so it's not
             // really useful to show it, but do show the search path if there
@@ -351,17 +349,17 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
             if (search_paths.size() > 1 ||
                 (!search_paths.empty() && search_paths[0] != "."))
             {
-                msg << " (even using extra search path \"";
+                std::string paths;
                 for (std::size_t i = 0; i != search_paths.size(); ++i)
                 {
                     if (i != 0)
-                        msg << ":";
-                    msg << search_paths[i];
+                        paths += ":";
+                    paths += search_paths[i];
                 }
-                msg << "\")";
+                msg += fmt::format(" (even using extra search path \"{}\")", paths);
             }
         }
-        throw soci_error(msg.str());
+        throw soci_error(msg);
     }
 
     std::string symbol = "factory_" + name;
@@ -376,10 +374,7 @@ void do_register_backend(std::string const & name, std::string const & shared_ob
     {
         DLCLOSE(h);
 
-        std::ostringstream msg;
-        msg << "Failed to resolve dynamic symbol \"" << symbol << "\" "
-            << "in the shared library \"" << fullFileName << "\"";
-        throw soci_error(msg.str());
+        throw soci_error(fmt::format("Failed to resolve dynamic symbol \"{}\" in the shared library \"{}\"", symbol, fullFileName));
     }
 
     backend_factory const* f = entry();

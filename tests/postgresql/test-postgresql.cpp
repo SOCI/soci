@@ -9,8 +9,6 @@
 #include "soci/postgresql/soci-postgresql.h"
 #include "test-context.h"
 #include "test-myint.h"
-#include <iostream>
-#include <sstream>
 #include <string>
 #include <cmath>
 #include <cstring>
@@ -18,6 +16,8 @@
 #include <cstdlib>
 
 #include <catch.hpp>
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::tests;
@@ -1251,7 +1251,7 @@ private:
             msession << "DROP TYPE IF EXISTS EnumType ;";
         }
         catch (soci_error const& e){
-            std::cerr << e.what() << std::endl;
+            fmt::println(stderr, "{}", e.what());
         }
     }
     soci::session& msession;
@@ -1333,7 +1333,7 @@ private:
             msession << "drop table if exists soci_test;";
         }
         catch (soci_error const& e){
-            std::cerr << e.what() << std::endl;
+            fmt::println(stderr, "{}", e.what());
         }
     }
     soci::session& msession;

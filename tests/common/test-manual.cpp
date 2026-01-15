@@ -11,6 +11,9 @@
 
 #include <catch.hpp>
 
+#include <fmt/format.h>
+#include <fmt/chrono.h>
+
 #include <chrono>
 #include <iostream>
 
@@ -40,9 +43,9 @@ TEST_CASE_METHOD(common_tests, "Reconnect", "[keep-alive][.]")
     REQUIRE_NOTHROW( sql.commit() );
     CHECK( sql.is_connected() );
 
-    std::cout << "Please break connection to the database "
+    fmt::print(stderr, "Please break connection to the database "
                  "(stop the server, unplug the network cable, ...) "
-                 "and press Enter" << std::endl;
+                 "and press Enter");
     std::cin.get();
 
     using Clock = std::chrono::steady_clock;
@@ -74,12 +77,10 @@ TEST_CASE_METHOD(common_tests, "Reconnect", "[keep-alive][.]")
     }
 
     auto const elapsed = Clock::now() - start;
-    std::cout << "Database query failed after "
-              << std::chrono::duration_cast<std::chrono::seconds>(elapsed).count()
-              << " seconds as expected.\n"
-              << "Now please undo the previous action "
+    fmt::println("Database query failed after {} seconds as expected.", elapsed);
+    fmt::println("Now please undo the previous action "
                  "(restart the server, plug the cable back, ...) "
-                 "and press Enter" << std::endl;
+                 "and press Enter");
     std::cin.get();
 
     REQUIRE_NOTHROW( sql.reconnect() );
@@ -110,9 +111,9 @@ TEST_CASE_METHOD(common_tests, "Failover", "[keep-alive][.]")
 
         void started() override
         {
-            std::cout << "Please undo the previous action "
+            fmt::println("Please undo the previous action "
                          "(restart the server, plug the cable back, ...) "
-                         "and press Enter" << std::endl;
+                         "and press Enter");
             std::cin.get();
         }
 
@@ -146,9 +147,9 @@ TEST_CASE_METHOD(common_tests, "Failover", "[keep-alive][.]")
     sql << "insert into soci_test (id) values (:id)", use(id);
     REQUIRE_NOTHROW( sql.commit() );
 
-    std::cout << "Please break connection to the database "
+    fmt::println("Please break connection to the database "
                  "(stop the server, unplug the network cable, ...) "
-                 "and press Enter" << std::endl;
+                 "and press Enter");
     std::cin.get();
 
     int id2;

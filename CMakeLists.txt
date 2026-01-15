@@ -113,6 +113,49 @@ endif()
 set(SOCI_NAME_PREFIX "" CACHE STRING "Optional prefix to add before 'soci_' in library names")
 set(SOCI_NAME_SUFFIX "${soci_default_suffix}" CACHE STRING "Optional suffix to add to the library names")
 
+# By default, we use system fmt if available, otherwise the bundled one, but
+# this option can be used to either force or forbid using the bundled one.
+set(SOCI_FMT_BUILTIN "" CACHE STRING "Prefer, or forbid, using the bundled fmt library")
+
+set(soci_use_bundled_fmt ON)
+if(NOT SOCI_FMT_BUILTIN)
+  find_package(fmt QUIET)
+  if (fmt_FOUND)
+    message(STATUS "Using system fmt library ${fmt_VERSION}")
+    set(soci_use_bundled_fmt OFF)
+  else()
+    if ("${SOCI_FMT_BUILTIN}" STREQUAL "OFF")
+      message(
+        FATAL_ERROR
+          "System fmt library not found and using built-in version was disabled."
+      )
+    endif()
+  endif()
+endif()
+
+# Name of the library to link with.
+set(soci_fmt fmt::fmt)
+
+if(soci_use_bundled_fmt)
+  if (NOT EXISTS ${PROJECT_SOURCE_DIR}/3rdparty/fmt/CMakeLists.txt)
+    message(
+      FATAL_ERROR
+        "fmt library submodule not found.\n"
+        "Please ensure that you have cloned the SOCI repository with --recurse-submodules."
+    )
+  endif()
+
+  add_subdirectory(3rdparty/fmt EXCLUDE_FROM_ALL)
+  if (NOT SOCI_SHARED)
+    # When building SOCI as static library, we can't depend on fmt library, as
+    # this would require SOCI users to link with fmt too, which would also
+    # require installing it and we don't want to do this, so use header-only
+    # library in this case and also use only its build interface, as otherwise
+    # we'd still have a dependency on it in the SOCI targets.
+    set(soci_fmt $<BUILD_INTERFACE:fmt::fmt-header-only>)
+  endif()
+endif()
+
 # Helper function appending prefix and suffix to the library name.
 function(soci_build_library_name result basename)
   set(${result} "${SOCI_NAME_PREFIX}${basename}${SOCI_NAME_SUFFIX}" PARENT_SCOPE)

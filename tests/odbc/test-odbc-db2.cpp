@@ -257,8 +257,6 @@ TEST_CASE("ODBC/DB2 vector unsigned long long", "[odbc][db2][vector][unsigned][l
         }
         CHECK(recs == num_recs);
     }
-
-    std::cout << "test odbc_db2_unsigned_long_long_vector passed" << std::endl;
 }
 
 test_context tc_odbc_db2;

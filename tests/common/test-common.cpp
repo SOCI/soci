@@ -14,6 +14,7 @@
 #include "soci-compiler.h"
 
 #include <catch.hpp>
+#include <fmt/format.h>
 
 #include <algorithm>
 #include <clocale>
@@ -358,11 +359,10 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         int const rowsToTest = 10;
         for (int i = 0; i != rowsToTest; ++i)
         {
-            std::ostringstream ss;
-            ss << "Hello_" << i;
+            std::string s = fmt::format("Hello_{}", i);
 
             sql << "insert into soci_test(str) values(\'"
-                << ss.str() << "\')";
+                << s << "\')";
         }
 
         int count;
@@ -378,9 +378,7 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                std::ostringstream ss;
-                ss << "Hello_" << i;
-                CHECK(s == ss.str());
+                CHECK(s == fmt::format("Hello_{}", i));
                 ++i;
             }
             CHECK(i == rowsToTest);
@@ -396,9 +394,7 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             {
                 for (const auto & j : vec)
                 {
-                    std::ostringstream ss;
-                    ss << "Hello_" << i;
-                    CHECK(ss.str() == j);
+                    CHECK(fmt::format("Hello_{}", i) == j);
                     ++i;
                 }
 
@@ -679,12 +675,10 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         int const rowsToTest = 8;
         for (int i = 0; i != rowsToTest; ++i)
         {
-            std::ostringstream ss;
-            ss << 2000 + i << "-0" << 1 + i << '-' << 20 - i << ' '
-                << 15 + i << ':' << 50 - i << ':' << 40 + i;
+            std::string s = fmt::format("{}-0{}-{} {}:{}:{}", 2000 + i, 1 + i, 20 - i, 15 + i, 50 - i, 40 + i);
 
             sql << "insert into soci_test(id, tm) values(" << i
-            << ", " << tc_.to_date_time(ss.str()) << ")";
+            << ", " << tc_.to_date_time(s) << ")";
         }
 
         int count;

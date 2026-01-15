@@ -8,6 +8,8 @@
 #define CATCH_CONFIG_RUNNER
 #include <catch.hpp>
 
+#include <fmt/format.h>
+
 #include "test-context.h"
 
 using namespace soci;
@@ -19,7 +21,7 @@ int main(int argc, char** argv)
     auto* const tc = tests::test_context_base::get_instance_pointer();
     if (!tc)
     {
-        std::cerr << "Internal error: each test must create its test context.\n";
+        fmt::println(stderr, "Internal error: each test must create its test context.");
         return EXIT_FAILURE;
     }
 
@@ -47,13 +49,12 @@ int main(int argc, char** argv)
 
     if ( !tc->initialize_connect_string(std::move(argFromCommandLine)) )
     {
-        std::cerr << "usage: " << argv[0]
-            << " <connection-string> [test-arguments...]\n";
+        fmt::println("usage: {} <connection-string> [test-arguments...]", argv[0]);
 
         auto const& dsn = tc->get_example_connection_string();
         if ( !dsn.empty() )
         {
-            std::cerr << "example: " << argv[0] << " \'" << dsn << "\'\n";
+            fmt::println("example: {} '{}'", argv[0], dsn);
         }
 
         return EXIT_FAILURE;

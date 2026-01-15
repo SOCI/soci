@@ -14,7 +14,6 @@
 #include <cstddef>
 #include <map>
 #include <string>
-#include <sstream>
 #include <vector>
 #include <algorithm>
 #include <cstring>
@@ -358,6 +357,12 @@ private:
 
 // polymorphic session backend
 
+// Helper function to create a varchar type name.
+std::string SOCI_DECL make_varchar_type(int precision);
+
+// Same for number/numeric/similar types.
+std::string SOCI_DECL make_number_type(const char* name, int precision, int scale);
+
 class session_backend
 {
 public:
@@ -434,19 +439,13 @@ public:
         switch (dt)
         {
         case db_string:
+            if (precision == 0)
             {
-                std::ostringstream oss;
-
-                if (precision == 0)
-                {
-                    oss << "text";
-                }
-                else
-                {
-                    oss << "varchar(" << precision << ")";
-                }
-
-                res += oss.str();
+                res = "text";
+            }
+            else
+            {
+                res = make_varchar_type(precision);
             }
             break;
 
@@ -455,18 +454,13 @@ public:
             break;
 
         case db_double:
+            if (precision == 0)
             {
-                std::ostringstream oss;
-                if (precision == 0)
-                {
-                    oss << "numeric";
-                }
-                else
-                {
-                    oss << "numeric(" << precision << ", " << scale << ")";
-                }
-
-                res += oss.str();
+                res = "numeric";
+            }
+            else
+            {
+                res = make_number_type("numeric", precision, scale);
             }
             break;
 

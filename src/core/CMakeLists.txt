@@ -72,6 +72,7 @@ target_sources(soci_core
       "${PROJECT_SOURCE_DIR}/include/soci/error.h"
       "${PROJECT_SOURCE_DIR}/include/soci/exchange-traits.h"
       "${PROJECT_SOURCE_DIR}/include/soci/fixed-size-ints.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/fmt.h"
       "${PROJECT_SOURCE_DIR}/include/soci/into-type.h"
       "${PROJECT_SOURCE_DIR}/include/soci/into.h"
       "${PROJECT_SOURCE_DIR}/include/soci/is-detected.h"
@@ -124,6 +125,8 @@ target_include_directories(soci_core
 if (SOCI_SHARED)
   target_compile_definitions(soci_core PUBLIC SOCI_DLL)
 endif()
+
+target_link_libraries(soci_core PRIVATE ${soci_fmt})
 
 if (WITH_BOOST)
   # Try and find Boost with the date_time component.

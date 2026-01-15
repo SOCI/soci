@@ -13,7 +13,6 @@
 #include "soci/mysql/soci-mysql.h"
 #include "mysql/test-mysql.h"
 #include <string.h>
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -1106,8 +1105,6 @@ void test14()
         sql << "select s5 from soci_test", into(s2);
         CHECK(s == s2);
     }
-
-    std::cout << "test 14 passed" << std::endl;
 }
 
 void test15()
@@ -1118,8 +1115,6 @@ void test15()
         sql << "select @a := 123", into(n);
         CHECK(n == 123);
     }
-
-    std::cout << "test 15 passed" << std::endl;
 }
 
 test_context tc_mysql;
