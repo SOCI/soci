@@ -12,6 +12,7 @@
 #include "soci/query_transformation.h"
 #include "soci/log-context.h"
 
+#include <cstdint>
 #include <fmt/format.h>
 
 using namespace soci;
@@ -600,6 +601,13 @@ bool session::get_next_sequence_value(std::string const & sequence, long long & 
 }
 
 bool session::get_last_insert_id(std::string const & sequence, long long & value)
+{
+    ensureConnected(backEnd_);
+
+    return backEnd_->get_last_insert_id(*this, sequence, value);
+}
+
+bool session::get_last_insert_id(std::string const & sequence, std::int64_t & value)
 {
     ensureConnected(backEnd_);
 

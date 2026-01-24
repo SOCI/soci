@@ -16,6 +16,7 @@
 # define SOCI_ODBC_DECL SOCI_DECL_IMPORT
 #endif
 
+#include <cstdint>
 #include <vector>
 #include <soci/soci-backend.h>
 #if defined(_MSC_VER) || defined(__MINGW32__)
@@ -350,6 +351,8 @@ struct SOCI_ODBC_DECL odbc_session_backend : details::session_backend
         std::string const & sequence, long long & value) override;
     bool get_last_insert_id(session & s,
         std::string const & table, long long & value) override;
+    bool get_last_insert_id(session & s,
+        std::string const & table, std::int64_t & value) override;
 
     std::string get_dummy_from_table() const override;
 

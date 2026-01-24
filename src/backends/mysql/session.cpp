@@ -12,6 +12,7 @@
 #include <cctype>
 #include <cerrno>
 #include <climits>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <string>
@@ -567,6 +568,14 @@ bool mysql_session_backend::get_last_insert_id(
     value = static_cast<long long>(mysql_insert_id(conn_));
 
     return true;
+}
+
+bool mysql_session_backend::get_last_insert_id(
+    session & s, std::string const & table, std::int64_t & value)
+{
+    long long tmp = value;
+
+    return get_last_insert_id(s, table, tmp);
 }
 
 void mysql_session_backend::clean_up()

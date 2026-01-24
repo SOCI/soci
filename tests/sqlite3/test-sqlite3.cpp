@@ -203,9 +203,17 @@ TEST_CASE("SQLite get_last_insert_id works with AUTOINCREMENT",
     sql << "insert into t(name) values('x')";
     sql << "insert into t(name) values('y')";
 
-    long long val;
-    sql.get_last_insert_id("t", val);
-    CHECK(val == 2);
+    {
+        long long val;
+        sql.get_last_insert_id("t", val);
+        CHECK(val == 2);
+    }
+
+    {
+        std::int64_t val;
+        sql.get_last_insert_id("t", val);
+        CHECK(val == 2);
+    }
 }
 
 TEST_CASE("SQLite get_last_insert_id with AUTOINCREMENT does not reuse IDs when rows deleted",
@@ -219,9 +227,17 @@ TEST_CASE("SQLite get_last_insert_id with AUTOINCREMENT does not reuse IDs when 
 
     sql << "delete from t where id = 2";
 
-    long long val;
-    sql.get_last_insert_id("t", val);
-    CHECK(val == 2);
+    {
+        long long val;
+        sql.get_last_insert_id("t", val);
+        CHECK(val == 2);
+    }
+
+    {
+        std::int64_t val;
+        sql.get_last_insert_id("t", val);
+        CHECK(val == 2);
+    }
 }
 
 class SetupNoAutoIncrementTable
@@ -260,9 +276,17 @@ TEST_CASE("SQLite get_last_insert_id without AUTOINCREMENT reuses IDs when rows 
 
     sql << "delete from t where id = 2";
 
-    long long val;
-    sql.get_last_insert_id("t", val);
-    CHECK(val == 1);
+    {
+        long long val;
+        sql.get_last_insert_id("t", val);
+        CHECK(val == 1);
+    }
+    
+    {
+        std::int64_t val;
+        sql.get_last_insert_id("t", val);
+        CHECK(val == 1);
+    }
 }
 
 TEST_CASE("SQLite get_last_insert_id throws if table not found",
@@ -270,8 +294,15 @@ TEST_CASE("SQLite get_last_insert_id throws if table not found",
 {
     soci::session sql(backEnd, connectString);
 
-    long long val;
-    CHECK_THROWS(sql.get_last_insert_id("notexisting", val));
+    {
+        long long val;
+        CHECK_THROWS(sql.get_last_insert_id("notexisting", val));
+    }
+
+    {
+        std::int64_t val;
+        CHECK_THROWS(sql.get_last_insert_id("notexisting", val));
+    }
 }
 
 class SetupTableWithDoubleQuoteInName
@@ -305,9 +336,17 @@ TEST_CASE("SQLite get_last_insert_id escapes table name",
     soci::session sql(backEnd, connectString);
     SetupTableWithDoubleQuoteInName table(sql);
 
-    long long val;
-    sql.get_last_insert_id("t\"fff", val);
-    CHECK(val == 0);
+    {
+        long long val;
+        sql.get_last_insert_id("t\"fff", val);
+        CHECK(val == 0);
+    }
+
+    {
+        std::int64_t val;
+        sql.get_last_insert_id("t\"fff", val);
+        CHECK(val == 0);
+    }
 }
 
 // This test was put in to fix a problem that occurs when there are both
@@ -852,10 +891,20 @@ TEST_CASE("SQLite last insert id", "[sqlite][last-insert-id]")
     soci::session sql(backEnd, connectString);
     table_creator_for_get_last_insert_id tableCreator(sql);
     sql << "insert into soci_test default values";
-    long long id;
-    bool result = sql.get_last_insert_id("soci_test", id);
-    CHECK(result == true);
-    CHECK(id == 42);
+
+    {
+        long long id;
+        bool result = sql.get_last_insert_id("soci_test", id);
+        CHECK(result == true);
+        CHECK(id == 42);
+    }
+
+    {
+        std::int64_t id;
+        bool result = sql.get_last_insert_id("soci_test", id);
+        CHECK(result == true);
+        CHECK(id == 42);
+    }
 }
 
 struct table_creator_for_std_tm_bind : table_creator_base

@@ -13,6 +13,7 @@
 #include "soci-mutex.h"
 #include "soci-ssize.h"
 
+#include <cstdint>
 #include <cstdio>
 #include <unordered_map>
 
@@ -531,6 +532,14 @@ bool odbc_session_backend::get_last_insert_id(
     s << query, into(value);
 
     return true;
+}
+
+bool odbc_session_backend::get_last_insert_id(
+    session & s, std::string const & table, std::int64_t & value)
+{
+    long long tmp = value;
+
+    return get_last_insert_id(s, table, tmp);
 }
 
 std::string odbc_session_backend::get_dummy_from_table() const

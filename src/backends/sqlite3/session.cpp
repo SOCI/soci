@@ -11,6 +11,7 @@
 
 #include "soci-cstrtoi.h"
 
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <sqlite3.h>
@@ -297,6 +298,13 @@ bool sqlite3_session_backend::get_last_insert_id(
     value = ctx.valid_ ? ctx.value_ : 0;
 
     return true;
+}
+
+bool sqlite3_session_backend::get_last_insert_id(
+    session & s, std::string const & table, std::int64_t & value)
+{
+    long long tmp = value;
+    return get_last_insert_id(s, table, tmp);
 }
 
 void sqlite3_session_backend::clean_up()
