@@ -9,6 +9,7 @@
 #define SOCI_ODBC_H_INCLUDED
 
 #include <soci/soci-platform.h>
+#include <soci/soci-types.h>
 
 #ifdef SOCI_ODBC_SOURCE
 # define SOCI_ODBC_DECL SOCI_DECL_EXPORT
@@ -351,8 +352,9 @@ struct SOCI_ODBC_DECL odbc_session_backend : details::session_backend
         std::string const & sequence, long long & value) override;
     bool get_last_insert_id(session & s,
         std::string const & table, long long & value) override;
+
     bool get_last_insert_id(session & s,
-        std::string const & table, std::int64_t & value) override;
+        std::string const & table, soci_l_or_ll_int_t & value);
 
     std::string get_dummy_from_table() const override;
 

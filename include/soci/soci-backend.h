@@ -391,11 +391,6 @@ public:
     {
         return false;
     }
-    
-    virtual bool get_last_insert_id(session&, std::string const&, std::int64_t&)
-    {
-        return false;
-    }
 
     // There is a set of standard SQL metadata structures that can be
     // queried in a portable way - backends that are standard compliant

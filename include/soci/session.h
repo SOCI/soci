@@ -14,6 +14,7 @@
 #include "soci/connection-parameters.h"
 #include "soci/logger.h"
 #include "soci/log-context.h"
+#include "soci/soci-types.h"
 
 // std
 #include <cstddef>
@@ -140,7 +141,7 @@ public:
     bool get_last_insert_id(std::string const & table, long long & value);
 
     // Overloaded function.
-    bool get_last_insert_id(std::string const & table, std::int64_t & value);
+    bool get_last_insert_id(std::string const & table, soci_l_or_ll_int_t & value);
 
     // Returns once_temp_type for the internally composed query
     // for the list of tables in the current schema.

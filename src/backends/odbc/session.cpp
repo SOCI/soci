@@ -9,6 +9,7 @@
 #include "soci/odbc/soci-odbc.h"
 #include "soci/session.h"
 
+#include "soci/soci-types.h"
 #include "soci-autostatement.h"
 #include "soci-mutex.h"
 #include "soci-ssize.h"
@@ -535,11 +536,12 @@ bool odbc_session_backend::get_last_insert_id(
 }
 
 bool odbc_session_backend::get_last_insert_id(
-    session & s, std::string const & table, std::int64_t & value)
+    session & s, std::string const & table, soci_l_or_ll_int_t & value)
 {
     long long tmp = value;
-
-    return get_last_insert_id(s, table, tmp);
+    get_last_insert_id(s, table, tmp);
+    value = tmp;
+    return true;
 }
 
 std::string odbc_session_backend::get_dummy_from_table() const

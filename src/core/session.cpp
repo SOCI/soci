@@ -9,10 +9,10 @@
 #include "soci/connection-parameters.h"
 #include "soci/connection-pool.h"
 #include "soci/soci-backend.h"
+#include "soci/soci-types.h"
 #include "soci/query_transformation.h"
 #include "soci/log-context.h"
 
-#include <cstdint>
 #include <fmt/format.h>
 
 using namespace soci;
@@ -607,11 +607,10 @@ bool session::get_last_insert_id(std::string const & sequence, long long & value
     return backEnd_->get_last_insert_id(*this, sequence, value);
 }
 
-bool session::get_last_insert_id(std::string const & sequence, std::int64_t & value)
+bool session::get_last_insert_id(std::string const & sequence, soci_l_or_ll_int_t & value)
 {
-    ensureConnected(backEnd_);
-
-    return backEnd_->get_last_insert_id(*this, sequence, value);
+    long long tmp = value;
+    return get_last_insert_id(sequence, tmp);
 }
 
 details::once_temp_type session::get_table_names()
