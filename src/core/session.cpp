@@ -611,7 +611,7 @@ bool session::get_last_insert_id(std::string const & sequence, std::conditional<
 {
     long long tmp = -1;
     const bool result = get_last_insert_id(sequence, tmp);
-    value = tmp;
+    value = static_cast<std::remove_reference_t<decltype(value)>>(tmp);
     return result;
 }
 
