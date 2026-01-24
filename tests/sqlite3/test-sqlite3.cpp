@@ -218,7 +218,7 @@ TEST_CASE("SQLite get_last_insert_id works with AUTOINCREMENT",
         ")";
         sql << "insert into a(name) values('x')";
 
-        std::int64_t val;
+        std::int64_t val = -1;
         sql.get_last_insert_id("a", val);
         CHECK(val == 1);
     }

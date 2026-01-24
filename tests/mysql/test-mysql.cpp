@@ -751,10 +751,10 @@ TEST_CASE("MySQL last insert id", "[mysql][last-insert-id]")
 
     {
         soci::session sql(backEnd, connectString);
-        sql << "create table a(id integer not null auto_increment, primary key (id))";
-        sql << "insert into a (id) values (4)";
+        sql << "create table a(id integer not null auto_increment, name text, primary key (id))";
+        sql << R"(insert into a (name) values ("dfr"))";
 
-        std::int64_t id;
+        std::int64_t id = -1;
         bool result = sql.get_last_insert_id("a", id);
         CHECK(result == true);
         CHECK(id == 1);
