@@ -540,7 +540,7 @@ bool odbc_session_backend::get_last_insert_id(
 {
     long long tmp = -1;
     get_last_insert_id(s, table, tmp);
-    value = tmp;
+    value = static_cast<std::remove_reference_t<decltype(value)>>(tmp);
     return true;
 }
 
