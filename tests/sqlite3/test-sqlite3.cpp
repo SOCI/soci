@@ -197,10 +197,10 @@ private:
 TEST_CASE("SQLite get_last_insert_id works with AUTOINCREMENT",
           "[sqlite][rowid]")
 {
-    soci::session sql(backEnd, connectString);
-    SetupAutoIncrementTable createTable(sql);
-
     {
+        soci::session sql(backEnd, connectString);
+        SetupAutoIncrementTable createTable(sql);
+
         sql << "insert into t(name) values('x')";
         sql << "insert into t(name) values('y')";
 
@@ -210,9 +210,17 @@ TEST_CASE("SQLite get_last_insert_id works with AUTOINCREMENT",
     }
 
     {
+        soci::session sql(backEnd, connectString);
+        sql <<
+        "create table a("
+        "    id integer primary key autoincrement,"
+        "    name text"
+        ")";
+        sql << "insert into a(name) values('x')";
+
         std::int64_t val;
-        sql.get_last_insert_id("t", val);
-        CHECK(val == 2);
+        sql.get_last_insert_id("a", val);
+        CHECK(val == 1);
     }
 }
 

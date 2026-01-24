@@ -305,7 +305,7 @@ bool sqlite3_session_backend::get_last_insert_id(
 bool sqlite3_session_backend::get_last_insert_id(
     session & s, std::string const & table, std::conditional<std::is_same<std::int64_t, long long>::value, std::int32_t, std::int64_t>::type & value)
 {
-    long long tmp = value;
+    long long tmp = -1;
     get_last_insert_id(s, table, tmp);
     value = tmp;
     return true;
