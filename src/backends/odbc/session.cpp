@@ -9,10 +9,12 @@
 #include "soci/odbc/soci-odbc.h"
 #include "soci/session.h"
 
+#include "soci/soci-types.h"
 #include "soci-autostatement.h"
 #include "soci-mutex.h"
 #include "soci-ssize.h"
 
+#include <cstdint>
 #include <cstdio>
 #include <unordered_map>
 
@@ -530,6 +532,15 @@ bool odbc_session_backend::get_last_insert_id(
 
     s << query, into(value);
 
+    return true;
+}
+
+bool odbc_session_backend::get_last_insert_id(
+    session & s, std::string const & table, std::conditional<std::is_same<std::int64_t, long long>::value, std::int32_t, std::int64_t>::type & value)
+{
+    long long tmp = -1;
+    get_last_insert_id(s, table, tmp);
+    value = static_cast<std::remove_reference_t<decltype(value)>>(tmp);
     return true;
 }
 

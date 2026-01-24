@@ -738,13 +738,29 @@ struct table_creator_for_get_last_insert_id : table_creator_base
 
 TEST_CASE("MySQL last insert id", "[mysql][last-insert-id]")
 {
-    soci::session sql(backEnd, connectString);
-    table_creator_for_get_last_insert_id tableCreator(sql);
-    sql << "insert into soci_test () values ()";
-    long long id;
-    bool result = sql.get_last_insert_id("soci_test", id);
-    CHECK(result == true);
-    CHECK(id == 42);
+    {
+        soci::session sql(backEnd, connectString);
+        table_creator_for_get_last_insert_id tableCreator(sql);
+        sql << "insert into soci_test () values ()";
+
+        long long id;
+        bool result = sql.get_last_insert_id("soci_test", id);
+        CHECK(result == true);
+        CHECK(id == 42);
+    }
+
+    {
+        soci::session sql(backEnd, connectString);
+        sql << "create table a(id integer not null auto_increment, name text, primary key (id))";
+        sql << R"(insert into a (name) values ("dfr"))";
+
+        std::int64_t id = -1;
+        bool result = sql.get_last_insert_id("a", id);
+        CHECK(result == true);
+        CHECK(id == 1);
+
+        sql << "drop table a";
+    }
 }
 
 TEST_CASE("MySQL DDL with metadata", "[mysql][ddl]")

@@ -8,10 +8,12 @@
 
 #include "soci/mysql/soci-mysql.h"
 #include "soci/connection-parameters.h"
+#include "soci/soci-types.h"
 // std
 #include <cctype>
 #include <cerrno>
 #include <climits>
+#include <cstdint>
 #include <cstdio>
 #include <cstdlib>
 #include <string>
@@ -566,6 +568,15 @@ bool mysql_session_backend::get_last_insert_id(
 {
     value = static_cast<long long>(mysql_insert_id(conn_));
 
+    return true;
+}
+
+bool mysql_session_backend::get_last_insert_id(
+    session & s, std::string const & table, std::conditional<std::is_same<std::int64_t, long long>::value, std::int32_t, std::int64_t>::type & value)
+{
+    long long tmp = -1;
+    get_last_insert_id(s, table, tmp);
+    value = static_cast<std::remove_reference_t<decltype(value)>>(tmp);
     return true;
 }
 

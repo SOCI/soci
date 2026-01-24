@@ -10,7 +10,9 @@
 #include "soci/connection-parameters.h"
 
 #include "soci-cstrtoi.h"
+#include "soci/soci-types.h"
 
+#include <cstdint>
 #include <functional>
 #include <memory>
 #include <sqlite3.h>
@@ -298,6 +300,17 @@ bool sqlite3_session_backend::get_last_insert_id(
 
     return true;
 }
+
+#ifdef __linux__
+bool sqlite3_session_backend::get_last_insert_id(
+    session & s, std::string const & table, std::conditional<std::is_same<std::int64_t, long long>::value, std::int32_t, std::int64_t>::type & value)
+{
+    long long tmp = -1;
+    get_last_insert_id(s, table, tmp);
+    value = static_cast<std::remove_reference_t<decltype(value)>>(tmp);
+    return true;
+}
+#endif
 
 void sqlite3_session_backend::clean_up()
 {

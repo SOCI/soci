@@ -313,6 +313,8 @@ struct SOCI_SQLITE3_DECL sqlite3_session_backend : details::session_backend
 
     bool get_last_insert_id(session&, std::string const&, long long&) override;
 
+    bool get_last_insert_id(session&, std::string const&, std::conditional<std::is_same<std::int64_t, long long>::value, std::int32_t, std::int64_t>::type&);
+
     std::string empty_blob() override
     {
         return "x\'\'";
