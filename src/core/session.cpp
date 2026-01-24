@@ -609,8 +609,10 @@ bool session::get_last_insert_id(std::string const & sequence, long long & value
 
 bool session::get_last_insert_id(std::string const & sequence, std::conditional<std::is_same<std::int64_t, long long>::value, std::int32_t, std::int64_t>::type & value)
 {
-    long long tmp = value;
-    return get_last_insert_id(sequence, tmp);
+    long long tmp = -1;
+    const bool result = get_last_insert_id(sequence, tmp);
+    value = tmp;
+    return result;
 }
 
 details::once_temp_type session::get_table_names()
