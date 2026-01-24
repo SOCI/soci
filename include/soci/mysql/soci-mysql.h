@@ -243,7 +243,7 @@ struct SOCI_MYSQL_DECL mysql_session_backend : details::session_backend
 
     bool get_last_insert_id(session&, std::string const&, long long&) override;
 
-    bool get_last_insert_id(session&, std::string const&, soci_l_or_ll_int_t&);
+    bool get_last_insert_id(session&, std::string const&, std::conditional<std::is_same<std::int64_t, long long>::value, std::int32_t, std::int64_t>::type&);
 
     // Note that MySQL supports both "SELECT 2+2" and "SELECT 2+2 FROM DUAL"
     // syntaxes, but there doesn't seem to be any reason to use the longer one.

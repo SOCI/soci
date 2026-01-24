@@ -607,7 +607,7 @@ bool session::get_last_insert_id(std::string const & sequence, long long & value
     return backEnd_->get_last_insert_id(*this, sequence, value);
 }
 
-bool session::get_last_insert_id(std::string const & sequence, soci_l_or_ll_int_t & value)
+bool session::get_last_insert_id(std::string const & sequence, std::conditional<std::is_same<std::int64_t, long long>::value, std::int32_t, std::int64_t>::type & value)
 {
     long long tmp = value;
     return get_last_insert_id(sequence, tmp);

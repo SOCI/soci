@@ -141,7 +141,7 @@ public:
     bool get_last_insert_id(std::string const & table, long long & value);
 
     // Overloaded function.
-    bool get_last_insert_id(std::string const & table, soci_l_or_ll_int_t & value);
+    bool get_last_insert_id(std::string const & table, std::conditional<std::is_same<std::int64_t, long long>::value, std::int32_t, std::int64_t>::type & value);
 
     // Returns once_temp_type for the internally composed query
     // for the list of tables in the current schema.
