@@ -749,11 +749,13 @@ TEST_CASE("MySQL last insert id", "[mysql][last-insert-id]")
         CHECK(id == 42);
     }
 
+    sql << "insert into soci_test () values ()";
+
     {
         std::int64_t id;
         bool result = sql.get_last_insert_id("soci_test", id);
         CHECK(result == true);
-        CHECK(id == 42);
+        CHECK(id == 43);
     }
 }
 
