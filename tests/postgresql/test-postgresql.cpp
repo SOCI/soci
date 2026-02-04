@@ -1413,6 +1413,37 @@ TEST_CASE("colon_in_double_quotes_in_single_quotes",
     CHECK(return_value == "hello it is \"10:10\"");
 }
 
+// execute_fetch_insert_noreturn
+struct table_creator_execute_fetch_insert_noreturn :
+    table_creator_base
+{
+    table_creator_execute_fetch_insert_noreturn(soci::session & sql)
+        : table_creator_base(sql)
+    {
+        sql << "CREATE TABLE soci_test( \"flag\" boolean )";
+    }
+};
+TEST_CASE("execute_fetch_insert_noreturn",
+          "[postgresql]")
+{
+    {
+        soci::session sql(backEnd, connectString);
+        table_creator_execute_fetch_insert_noreturn tableCreator(sql);
+
+        sql << "INSERT INTO soci_test(\"flag\") VALUES (TRUE), (FALSE)";
+
+        soci::row r;
+        soci::statement st = (sql.prepare << "UPDATE soci_test SET flag=TRUE", soci::into(r));
+        CHECK(!st.execute(false));
+
+        std::size_t count = 0;
+        while (st.fetch()) {
+            ++count;
+        }
+        CHECK(count == 0);
+    }
+}
+
 //
 // Support for soci Common Tests
 //
