@@ -1432,15 +1432,41 @@ TEST_CASE("execute_fetch_insert_noreturn",
 
         sql << "INSERT INTO soci_test(\"flag\") VALUES (TRUE), (FALSE)";
 
-        soci::row r;
-        soci::statement st = (sql.prepare << "UPDATE soci_test SET flag=TRUE", soci::into(r));
-        CHECK(!st.execute(false));
+        const auto fetch_all = [&sql] (const std::string& query, auto& out) {
+            soci::statement st = (sql.prepare << query, soci::into(out));
 
-        std::size_t count = 0;
-        while (st.fetch()) {
-            ++count;
-        }
-        CHECK(count == 0);
+            st.execute(false);
+            std::size_t count = 0;
+            while (st.fetch()) {
+                ++count;
+            }
+            return count;
+        }; // <-- fetch_all
+
+        soci::row row;
+        int       flag;
+
+        // Reads several rows - fine
+        CHECK(fetch_all("SELECT * FROM soci_test", flag) == 2);
+        // Reads zero rows - fine
+        CHECK(fetch_all("SELECT * FROM soci_test WHERE flag = NOT flag", flag) == 0);
+        // UPDATE causes a sanitizer error
+        CHECK(fetch_all("UPDATE soci_test SET flag=TRUE", flag) == 0);
+        // INSERT causes a sanitizer error
+        CHECK(fetch_all("INSERT INTO soci_test(flag) VALUES (FALSE)", flag) == 0);
+        // DELETE causes a sanitizer error
+        CHECK(fetch_all("DELETE FROM soci_test WHERE NOT flag", flag) == 0);
+
+        // Reads several rows - fine
+        CHECK(fetch_all("SELECT * FROM soci_test", row) == 2);
+        // Reads zero rows - fine
+        CHECK(fetch_all("SELECT * FROM soci_test WHERE flag = NOT flag", row) == 0);
+        // UPDATE causes a sanitizer error
+        CHECK(fetch_all("UPDATE soci_test SET flag=TRUE", row) == 0);
+        // INSERT causes a sanitizer error
+        CHECK(fetch_all("INSERT INTO soci_test(flag) VALUES (FALSE)", row) == 0);
+        // DELETE causes a sanitizer error
+        CHECK(fetch_all("DELETE FROM soci_test WHERE NOT flag", row) == 0);
     }
 }
 
