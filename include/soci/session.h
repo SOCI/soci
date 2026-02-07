@@ -142,7 +142,14 @@ public:
     bool get_last_insert_id(std::string const & table, long long & value);
 
     // Overload provided for platforms where std::int64_t is not long long.
-    bool get_last_insert_id(std::string const & table, std::conditional<std::is_same<std::int64_t, long long>::value, std::int32_t, std::int64_t>::type & value);
+    template<typename T, typename = std::enable_if_t<!std::is_same<T, long long>::value>>
+    bool get_last_insert_id(std::string const & table, T & value)
+    {
+        long long tmp = -1;
+        const bool result = get_last_insert_id(table, tmp);
+        value = static_cast<std::remove_reference_t<decltype(value)>>(tmp);
+        return result;
+    }
 
     // Returns once_temp_type for the internally composed query
     // for the list of tables in the current schema.

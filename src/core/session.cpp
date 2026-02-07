@@ -600,19 +600,11 @@ bool session::get_next_sequence_value(std::string const & sequence, long long & 
     return backEnd_->get_next_sequence_value(*this, sequence, value);
 }
 
-bool session::get_last_insert_id(std::string const & sequence, long long & value)
+bool session::get_last_insert_id(std::string const & table, long long & value)
 {
     ensureConnected(backEnd_);
 
-    return backEnd_->get_last_insert_id(*this, sequence, value);
-}
-
-bool session::get_last_insert_id(std::string const & sequence, std::conditional<std::is_same<std::int64_t, long long>::value, std::int32_t, std::int64_t>::type & value)
-{
-    long long tmp = -1;
-    const bool result = get_last_insert_id(sequence, tmp);
-    value = static_cast<std::remove_reference_t<decltype(value)>>(tmp);
-    return result;
+    return backEnd_->get_last_insert_id(*this, table, value);
 }
 
 details::once_temp_type session::get_table_names()
