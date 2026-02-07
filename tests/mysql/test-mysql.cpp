@@ -743,7 +743,7 @@ TEST_CASE("MySQL last insert id", "[mysql][last-insert-id]")
     sql << "insert into soci_test () values ()";
 
     {
-        long long id;
+        long long id = -1;
         CHECK(sql.get_last_insert_id("soci_test", id));
         CHECK(id == 42);
     }

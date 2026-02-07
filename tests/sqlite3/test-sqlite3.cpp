@@ -204,7 +204,7 @@ TEST_CASE("SQLite get_last_insert_id works with AUTOINCREMENT",
     sql << "insert into t(name) values('y')";
 
      {
-        long long val;
+        long long val = -1;
         CHECK(sql.get_last_insert_id("t", val));
         CHECK(val == 2);
      }
