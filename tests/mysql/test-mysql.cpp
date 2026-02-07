@@ -744,15 +744,13 @@ TEST_CASE("MySQL last insert id", "[mysql][last-insert-id]")
 
     {
         long long id;
-        bool result = sql.get_last_insert_id("soci_test", id);
-        CHECK(result == true);
+        CHECK(sql.get_last_insert_id("soci_test", id));
         CHECK(id == 42);
     }
 
     {
         std::int64_t id = -1;
-        bool result = sql.get_last_insert_id("a", id);
-        CHECK(result == true);
+        CHECK(sql.get_last_insert_id("soci_test", id));
         CHECK(id == 42);
     }
 }

@@ -205,13 +205,13 @@ TEST_CASE("SQLite get_last_insert_id works with AUTOINCREMENT",
 
      {
         long long val;
-        sql.get_last_insert_id("t", val);
+        CHECK(sql.get_last_insert_id("t", val));
         CHECK(val == 2);
      }
 
      {
         std::int64_t val = -1;
-        sql.get_last_insert_id("t", val);
+        CHECK(sql.get_last_insert_id("t", val));
         CHECK(val == 2);
      }
 }
