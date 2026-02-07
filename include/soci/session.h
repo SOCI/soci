@@ -140,8 +140,8 @@ public:
     bool get_last_insert_id(std::string const & table, long long & value);
 
     // Overload provided for platforms where std::int64_t is not long long.
-    template<typename T, typename = std::enable_if_t<!std::is_same<T, long long>::value>>
-    bool get_last_insert_id(std::string const & table, T & value)
+    template<typename T, typename = std::enable_if_t<! std::is_same<std::int64_t, long long>::value>>
+    bool get_last_insert_id(std::string const & table, std::int64_t & value)
     {
         long long tmp = -1;
         const bool result = get_last_insert_id(table, tmp);
