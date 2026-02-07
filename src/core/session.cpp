@@ -13,7 +13,6 @@
 #include "soci/log-context.h"
 
 #include <fmt/format.h>
-#include <type_traits>
 
 using namespace soci;
 using namespace soci::details;
