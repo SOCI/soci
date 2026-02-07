@@ -24,6 +24,7 @@
 #include <sstream>
 #include <string>
 #include <forward_list>
+#include <type_traits>
 
 namespace soci
 {
@@ -140,7 +141,7 @@ public:
     // return the last value auto-generated in this session).
     bool get_last_insert_id(std::string const & table, long long & value);
 
-    // Overloaded function.
+    // Overload provided for platforms where std::int64_t is not long long.
     bool get_last_insert_id(std::string const & table, std::conditional<std::is_same<std::int64_t, long long>::value, std::int32_t, std::int64_t>::type & value);
 
     // Returns once_temp_type for the internally composed query

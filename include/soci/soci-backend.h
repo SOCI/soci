@@ -12,7 +12,6 @@
 #include "soci/error.h"
 // std
 #include <cstddef>
-#include <cstdint>
 #include <map>
 #include <string>
 #include <vector>
@@ -386,7 +385,6 @@ public:
     {
         return false;
     }
-
     virtual bool get_last_insert_id(session&, std::string const&, long long&)
     {
         return false;

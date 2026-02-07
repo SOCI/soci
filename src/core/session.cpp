@@ -9,11 +9,11 @@
 #include "soci/connection-parameters.h"
 #include "soci/connection-pool.h"
 #include "soci/soci-backend.h"
-#include "soci/soci-types.h"
 #include "soci/query_transformation.h"
 #include "soci/log-context.h"
 
 #include <fmt/format.h>
+#include <type_traits>
 
 using namespace soci;
 using namespace soci::details;
