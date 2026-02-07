@@ -14,11 +14,9 @@
 #include "soci/connection-parameters.h"
 #include "soci/logger.h"
 #include "soci/log-context.h"
-#include "soci/soci-types.h"
 
 // std
 #include <cstddef>
-#include <cstdint>
 #include <memory>
 #include <ostream>
 #include <sstream>
