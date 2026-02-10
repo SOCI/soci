@@ -139,8 +139,7 @@ public:
     {
         long long tmp = -1;
         const bool result = get_next_sequence_value(sequence, tmp);
-        //value = static_cast<std::remove_reference_t<decltype(value)>>(tmp); TODO
-        value = tmp;
+        value = static_cast<std::remove_reference_t<decltype(value)>>(tmp);
         return result;
     }
 
