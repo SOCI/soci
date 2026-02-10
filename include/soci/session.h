@@ -17,11 +17,13 @@
 
 // std
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <ostream>
 #include <sstream>
 #include <string>
 #include <forward_list>
+#include <type_traits>
 
 namespace soci
 {
