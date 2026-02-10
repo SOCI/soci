@@ -194,9 +194,7 @@ template<typename IntType>
 std::string format_decimal(const void *sqldata, int sqlscale)
 {
     IntType x = *reinterpret_cast<const IntType *>(sqldata);
-    std::stringstream out;
-    out << x;
-    std::string r = out.str();
+    std::string r = fmt::format("{}", x);
     if (sqlscale < 0)
     {
         if (ssize(r) - (x < 0) <= -sqlscale)
