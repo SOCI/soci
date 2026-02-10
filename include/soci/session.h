@@ -133,6 +133,17 @@ public:
     // get_last_insert_id() after the insertion in this case.
     bool get_next_sequence_value(std::string const & sequence, long long & value);
 
+    // Overload provided for platforms where std::int64_t is not long long.
+    template<typename T = std::int64_t, typename = std::enable_if_t<! std::is_same<T, long long>::value>>
+    bool get_next_sequence_value(std::string const & sequence, std::int64_t & value)
+    {
+        long long tmp = -1;
+        const bool result = get_next_sequence_value(sequence, tmp);
+        //value = static_cast<std::remove_reference_t<decltype(value)>>(tmp); TODO
+        value = tmp;
+        return result;
+    }
+
     // If true is returned, value is filled with the last auto-generated value
     // for this table (although some backends ignore the table argument and
     // return the last value auto-generated in this session).
