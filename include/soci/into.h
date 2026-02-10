@@ -60,13 +60,6 @@ details::into_container<T, Indicator>
     into(T &t, Indicator &ind)
 { return details::into_container<T, Indicator>(t, ind); }
 
-// for char buffer with run-time size information
-template <typename T>
-details::into_type_ptr into(T & t, std::size_t bufSize)
-{
-    return details::into_type_ptr(new details::into_type<T>(t, bufSize));
-}
-
 // vectors with index ranges
 
 template <typename T>
