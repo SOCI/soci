@@ -1413,6 +1413,32 @@ TEST_CASE("colon_in_double_quotes_in_single_quotes",
     CHECK(return_value == "hello it is \"10:10\"");
 }
 
+struct table_creator_sequence : table_creator_base
+{
+    table_creator_sequence(soci::session &sql) : table_creator_base(sql)
+    {
+        sql << "create sequence serial start 101";
+    }
+};
+
+TEST_CASE("next sequence value", "[postgresql][get_next_sequence_value()]")
+{
+    soci::session sql(backEnd, connectString);
+    table_creator_sequence tableCreator(sql);
+
+    {
+        long long val = -1;
+        CHECK(sql.get_next_sequence_value("serial", val));
+        CHECK(val == 102);
+    }
+
+    {
+        std::int64_t val = -1;
+        CHECK(sql.get_next_sequence_value("serial", val));
+        CHECK(val == 102);
+    }
+}
+
 //
 // Support for soci Common Tests
 //
