@@ -146,7 +146,7 @@ public:
     {
         long long tmp = -1;
         const bool result = get_last_insert_id(table, tmp);
-        value = static_cast<std::remove_reference_t<decltype(value)>>(tmp);
+        value = tmp;
         return result;
     }
 
