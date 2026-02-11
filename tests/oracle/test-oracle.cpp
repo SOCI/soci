@@ -102,6 +102,14 @@ struct table_creator_for_timestamp : public tests::table_creator_base
     }
 };
 
+struct table_creator_for_sequence : public tests::table_creator_base
+{
+    table_creator_for_timestamp(soci::session &sql) : tests::table_creator_base(sql)
+    {
+        sql << "create sequence seqtest start with 101";
+    }
+};
+
 // Extra tests for date/time
 TEST_CASE("Oracle datetime", "[oracle][datetime]")
 {
@@ -1528,6 +1536,26 @@ end;
 
     REQUIRE(ls.value.length() == test_utf8.length() + 2*xCount);
 }
+
+
+TEST_CASE("next sequence value", "[postgresql][get_next_sequence_value()]")
+{
+    soci::session sql(backEnd, connectString);
+    table_creator_for_sequence tableCreator(sql);
+
+    {
+        long long val = -1;
+        CHECK(sql.get_next_sequence_value("seqtest", val));
+        CHECK(val == 101);
+    }
+
+    {
+        std::int64_t val = -1;
+        CHECK(sql.get_next_sequence_value("seqtest", val));
+        CHECK(val == 102);
+    }
+}
+
 
 //
 // Support for soci Common Tests
