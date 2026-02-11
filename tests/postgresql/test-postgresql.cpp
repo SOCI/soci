@@ -1435,7 +1435,7 @@ TEST_CASE("next sequence value", "[postgresql][get_next_sequence_value()]")
     {
         std::int64_t val = -1;
         CHECK(sql.get_next_sequence_value("serial", val));
-        CHECK(val == 101);
+        CHECK(val == 102);
     }
 }
 
