@@ -1092,6 +1092,26 @@ TEST_CASE("Firebird decimals as strings", "[firebird][decimal][string]")
     sql << "drop table test13";
 }
 
+TEST_CASE("Firebird next value", "[firebird][get_next_sequence_value()]")
+{
+    soci::session sql(backEnd, connectString);
+    sql << "create sequence seqtest";
+
+    {
+        long long val = -1;
+        CHECK(sql.get_next_sequence_value("seqtest", val));
+        CHECK(val == 1);
+    }
+
+    {
+        std::int64_t val = -1;
+        CHECK(sql.get_next_sequence_value("seqtest", val));
+        CHECK(val == 2);
+    }
+
+    sql << "drop sequence seqtest";
+}
+
 //
 // Support for soci Common Tests
 //
