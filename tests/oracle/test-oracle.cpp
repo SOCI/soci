@@ -1538,7 +1538,7 @@ end;
 }
 
 
-TEST_CASE("next sequence value", "[postgresql][get_next_sequence_value()]")
+TEST_CASE("next sequence value", "[oracle][get_next_sequence_value()]")
 {
     soci::session sql(backEnd, connectString);
     table_creator_for_sequence tableCreator(sql);
