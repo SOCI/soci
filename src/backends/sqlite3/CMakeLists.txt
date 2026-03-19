@@ -12,11 +12,18 @@ endif()
 # disable using the built-in copy of SQLite3.
 set(SOCI_SQLITE3_BUILTIN "" CACHE STRING "Prefer, or forbid, using the built-in SQLite3 library")
 
+set(SQLITE_TARGET "SQLite3::SQLite3")
+if (CMAKE_VERSION VERSION_LESS 4.3)
+  # CMake 4.3 changed the name of the SQLite target. For older CMake versions,
+  # we'll stick to the old name.
+  set(SQLITE_TARGET "SQLite::SQLite3")
+endif()
+
 soci_define_backend_target(
   NAME "SQLite3"
   TARGET_NAME "soci_sqlite3"
   DEPENDENCIES
-    "SQLite3 YIELDS SQLite::SQLite3"
+    "SQLite3 YIELDS ${SQLITE_TARGET}"
   SOURCE_FILES
     "blob.cpp"
     "error.cpp"
@@ -38,7 +45,7 @@ if (NOT SOCI_SQLITE3)
 endif()
 
 # If SQLite3 was found, this target must have been created.
-if (NOT TARGET SQLite::SQLite3)
+if (NOT TARGET ${SQLITE_TARGET})
   set(SOCI_SQLITE3_DIRECTORY "${PROJECT_SOURCE_DIR}/3rdparty/sqlite3" CACHE
     STRING "Directory where the built-in SQLite3 source code is located"
   )
