@@ -131,8 +131,8 @@ sqlite3_session_backend::sqlite3_session_backend(
     }
     if (params.get_option("timeout", val))
     {
-        std::istringstream converter(val);
-        converter >> timeout;
+        if (!cstring_to_integer(timeout, val.c_str()) || timeout < 0)
+            throw soci_error("Invalid value for timeout option: {}", val);
     }
     if (params.get_option("synchronous", val))
     {
