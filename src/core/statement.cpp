@@ -596,7 +596,7 @@ void statement_impl::do_add_query_parameters()
     for (std::size_t i = 0; i != usize; ++i)
     {
         std::string name = get_name(*uses_[i], i, backEnd_);
-        std::stringstream value;
+        std::ostringstream value;
         uses_[i]->dump_value(value, backEnd_->get_row_to_dump());
         session_.add_query_parameter(std::move(name), value.str());
     }
