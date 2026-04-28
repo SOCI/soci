@@ -97,7 +97,7 @@ void firebird_session_backend::begin()
     }
 }
 
-firebird_session_backend::~firebird_session_backend()
+firebird_session_backend::~firebird_session_backend() noexcept(false)
 {
     cleanUp();
 }

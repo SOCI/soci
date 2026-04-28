@@ -373,7 +373,7 @@ void odbc_session_backend::configure_connection()
     }
 }
 
-odbc_session_backend::~odbc_session_backend()
+odbc_session_backend::~odbc_session_backend() noexcept(false)
 {
     clean_up();
 }
