@@ -28,15 +28,25 @@ case "$(uname)" in
         # progress" errors.
         for apt_file in `grep -lr microsoft /etc/apt/sources.list.d/`; do sudo rm $apt_file; done
 
-        codename=$(lsb_release --codename --short)
-        # Enable the `-dbgsym` repositories.
-        echo "deb http://ddebs.ubuntu.com ${codename} main restricted universe multiverse
-        deb http://ddebs.ubuntu.com ${codename}-updates main restricted universe multiverse" | \
-        sudo tee --append /etc/apt/sources.list.d/ddebs.list >/dev/null
+        # If debuginfod is available, use it as this is faster and more robust.
+        if apt-cache show debuginfod >/dev/null 2>&1; then
+            packages_to_install="$packages_to_install debuginfod"
+            # Set this variable to use debuginfod when running tests.
+            echo "DEBUGINFOD_URLS=https://debuginfod.ubuntu.com" >> "$GITHUB_ENV"
+            # Also set it in this CI step, so that install_xxx.sh files could
+            # check it and only install -dbgsym packages if it's not set.
+            export DEBUGINFOD_URLS=https://debuginfod.ubuntu.com
+        else
+            codename=$(lsb_release --codename --short)
+            # Enable the `-dbgsym` repositories.
+            echo "deb http://ddebs.ubuntu.com ${codename} main restricted universe multiverse
+            deb http://ddebs.ubuntu.com ${codename}-updates main restricted universe multiverse" | \
+            sudo tee --append /etc/apt/sources.list.d/ddebs.list >/dev/null
 
-        # Import the debug symbol archive signing key from the Ubuntu server.
-        # Note that this command works only on Ubuntu 18.04 LTS and newer.
-        run_apt install ubuntu-dbgsym-keyring
+            # Import the debug symbol archive signing key from the Ubuntu server.
+            # Note that this command works only on Ubuntu 18.04 LTS and newer.
+            run_apt install ubuntu-dbgsym-keyring
+        fi
 
         run_apt update
         run_apt install ${packages_to_install}
