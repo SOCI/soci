@@ -95,11 +95,11 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(Oracle
   REQUIRED_VARS Oracle_LIBRARIES Oracle_INCLUDE_DIRS)
 
-if(Oracle_FOUND)
+if(Oracle_FOUND AND NOT TARGET Oracle)
   add_library(Oracle INTERFACE)
   target_link_libraries(Oracle INTERFACE ${Oracle_LIBRARIES})
   target_include_directories(Oracle SYSTEM INTERFACE ${Oracle_INCLUDE_DIRS})
   add_library(Oracle::Oracle ALIAS Oracle)
-else()
+elseif(NOT TARGET Oracle)
 	message(STATUS "None of the supported Oracle versions (${Oracle_VERSIONS}) could be found, consider updating Oracle_VERSIONS if the version you use is not among them.")
 endif()
