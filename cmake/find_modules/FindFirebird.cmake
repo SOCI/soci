@@ -42,9 +42,8 @@ find_package_handle_standard_args(Firebird
   REQUIRED_VARS Firebird_LIBRARIES Firebird_INCLUDE_DIRS
 )
 
-if (Firebird_FOUND AND NOT TARGET Firebird)
-  add_library(Firebird INTERFACE)
-  target_link_libraries(Firebird INTERFACE ${Firebird_LIBRARIES})
-  target_include_directories(Firebird SYSTEM INTERFACE ${Firebird_INCLUDE_DIRS})
-  add_library(Firebird::Firebird ALIAS Firebird)
+if (Firebird_FOUND AND NOT TARGET Firebird::Firebird)
+  add_library(Firebird::Firebird UNKNOWN IMPORTED)
+  set_target_properties(Firebird::Firebird PROPERTIES IMPORTED_LOCATION "${Firebird_LIBRARIES}")
+  target_include_directories(Firebird::Firebird SYSTEM INTERFACE ${Firebird_INCLUDE_DIRS})
 endif()
