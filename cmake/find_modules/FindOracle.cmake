@@ -96,9 +96,18 @@ find_package_handle_standard_args(Oracle
   REQUIRED_VARS Oracle_LIBRARIES Oracle_INCLUDE_DIRS)
 
 if(Oracle_FOUND AND NOT TARGET Oracle::Oracle)
-  add_library(Oracle::Oracle UNKNOWN IMPORTED)
-  set_target_properties(Oracle::Oracle PROPERTIES IMPORTED_LOCATION "${Oracle_LIBRARIES}")
-  target_include_directories(Oracle::Oracle SYSTEM INTERFACE ${Oracle_INCLUDE_DIRS})
+  add_library(Oracle::OCI UNKNOWN IMPORTED)
+  set_target_properties(Oracle::OCI PROPERTIES IMPORTED_LOCATION "${Oracle_OCI_LIBRARY}")
+  add_library(Oracle::OCCI UNKNOWN IMPORTED)
+  set_target_properties(Oracle::OCCI PROPERTIES IMPORTED_LOCATION "${Oracle_OCCI_LIBRARY}")
+  add_library(Oracle::NNZ UNKNOWN IMPORTED)
+  set_target_properties(Oracle::NNZ PROPERTIES IMPORTED_LOCATION "${Oracle_NNZ_LIBRARY}")
+
+  add_library(Oracle_interface INTERFACE)
+  target_include_directories(Oracle_interface SYSTEM INTERFACE ${Oracle_INCLUDE_DIRS})
+  target_link_libraries(Oracle_interface INTERFACE Oracle::OCI Oracle::OCCI Oracle::NNZ)
+
+  add_library(Oracle::Oracle ALIAS Oracle_interface)
 elseif(NOT TARGET Oracle::Oracle)
 	message(STATUS "None of the supported Oracle versions (${Oracle_VERSIONS}) could be found, consider updating Oracle_VERSIONS if the version you use is not among them.")
 endif()
