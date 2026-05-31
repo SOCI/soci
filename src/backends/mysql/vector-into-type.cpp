@@ -109,17 +109,15 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 break;
             case x_int8:
                 {
-                    int32_t tmp = 0;
-                    parse_num(buf, tmp);
-                    int8_t val = static_cast<int8_t>(tmp);
+                    int8_t val;
+                    parse_num(buf, val);
                     set_invector_(data_, i, val);
                 }
                 break;
             case x_uint8:
                 {
-                    uint32_t tmp = 0;
-                    parse_num(buf, tmp);
-                    uint8_t val = static_cast<uint8_t>(tmp);
+                    uint8_t val;
+                    parse_num(buf, val);
                     set_invector_(data_, i, val);
                 }
                 break;

@@ -87,28 +87,10 @@ void mysql_standard_into_type_backend::post_fetch(
             }
             break;
         case x_int8:
-            {
-                int32_t tmp = 0;
-                parse_num(buf, tmp);
-                if (tmp < (std::numeric_limits<int8_t>::min)() ||
-                    tmp > (std::numeric_limits<int8_t>::max)())
-                {
-                    throw soci_error("Cannot convert data.");
-                }
-                exchange_type_cast<x_int8>(data_) = static_cast<int8_t>(tmp);
-            }
+            parse_num(buf, exchange_type_cast<x_int8>(data_));
             break;
         case x_uint8:
-            {
-                uint32_t tmp = 0;
-                parse_num(buf, tmp);
-                if (tmp < (std::numeric_limits<uint8_t>::min)() ||
-                    tmp > (std::numeric_limits<uint8_t>::max)())
-                {
-                    throw soci_error("Cannot convert data.");
-                }
-                exchange_type_cast<x_uint8>(data_) = static_cast<uint8_t>(tmp);
-            }
+            parse_num(buf, exchange_type_cast<x_uint8>(data_));
             break;
         case x_int16:
             parse_num(buf, exchange_type_cast<x_int16>(data_));

@@ -10,6 +10,7 @@
 
 #include "soci/error.h"
 
+#include <cerrno>
 #include <cstdlib>
 #include <limits>
 
@@ -30,7 +31,7 @@ bool cstring_to_integer(T& result, char const* buf)
     char * end;
     const long long t = strtoll(buf, &end, 10);
 
-    if (end == buf || *end != '\0')
+    if (end == buf || *end != '\0' || errno == ERANGE)
         return false;
 
     // successfully converted to long long
@@ -53,7 +54,7 @@ bool cstring_to_unsigned(T& result, char const* buf)
     char * end;
     const unsigned long long t = strtoull(buf, &end, 10);
 
-    if (end == buf || *end != '\0')
+    if (end == buf || *end != '\0' || errno == ERANGE)
         return false;
 
     // successfully converted to unsigned long long
