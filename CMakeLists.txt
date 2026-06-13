@@ -139,9 +139,6 @@ elseif(NOT SOCI_FMT_BUILTIN)
   endif()
 endif()
 
-# Name of the library to link with.
-set(soci_fmt fmt::fmt)
-
 if(soci_use_bundled_fmt)
   if (NOT EXISTS ${PROJECT_SOURCE_DIR}/3rdparty/fmt/CMakeLists.txt)
     message(
@@ -152,9 +149,6 @@ if(soci_use_bundled_fmt)
   endif()
 
   add_subdirectory(3rdparty/fmt EXCLUDE_FROM_ALL)
-
-  # Use the header-only version to avoid forcing SOCI users to link with it.
-  set(soci_fmt $<BUILD_INTERFACE:fmt::fmt-header-only>)
 endif()
 
 # Helper function appending prefix and suffix to the library name.

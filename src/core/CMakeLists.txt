@@ -125,7 +125,7 @@ if (SOCI_SHARED)
   target_compile_definitions(soci_core PUBLIC SOCI_DLL)
 endif()
 
-target_link_libraries(soci_core PRIVATE ${soci_fmt})
+target_link_libraries(soci_core PRIVATE $<BUILD_INTERFACE:fmt::fmt-header-only>)
 
 if (WITH_BOOST)
   # Try and find Boost with the date_time component.
