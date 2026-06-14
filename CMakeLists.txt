@@ -149,7 +149,10 @@ if(soci_use_bundled_fmt)
   endif()
 
   set(FMT_INSTALL ${SOCI_INSTALL})
-  add_subdirectory(3rdparty/fmt)
+  if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.25)
+    set(SYSTEM_FLAG "SYSTEM")
+  endif()
+  add_subdirectory(3rdparty/fmt ${SYSTEM_FLAG})
 endif()
 
 # Helper function appending prefix and suffix to the library name.
