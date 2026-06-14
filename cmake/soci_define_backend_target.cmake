@@ -149,8 +149,13 @@ function(soci_define_backend_target)
   endforeach()
 
   # Set settings common to all backends.
-  target_link_libraries(${DEFINE_BACKEND_TARGET_NAME} PUBLIC SOCI::Core PRIVATE $<BUILD_INTERFACE:fmt::fmt-header-only>)
+  target_link_libraries(${DEFINE_BACKEND_TARGET_NAME} PUBLIC SOCI::Core)
   target_include_directories(${DEFINE_BACKEND_TARGET_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/include/private")
+  soci_private_dependency(
+    NAME fmt
+    DEP_TARGETS fmt::fmt
+    TARGET "SOCI::${DEFINE_BACKEND_NAME}"
+  )
 
   soci_build_library_name(full_backend_target_name "${DEFINE_BACKEND_TARGET_NAME}")
 
