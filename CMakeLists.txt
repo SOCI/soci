@@ -119,6 +119,7 @@ set(SOCI_NAME_SUFFIX "${soci_default_suffix}" CACHE STRING "Optional suffix to a
 set(SOCI_FMT_BUILTIN "" CACHE STRING "Prefer, or forbid, using the bundled fmt library")
 
 set(soci_use_bundled_fmt ON)
+set(SOCI_DEPENDENCY_FMT FALSE)
 
 # Skip searching for fmt if the superproject has already defined it.
 if(TARGET fmt::fmt)
@@ -128,6 +129,7 @@ elseif(NOT SOCI_FMT_BUILTIN)
   find_package(fmt QUIET)
   if (fmt_FOUND)
     message(STATUS "Using system fmt library ${fmt_VERSION}")
+    set(SOCI_DEPENDENCY_FMT TRUE)
     set(soci_use_bundled_fmt OFF)
   else()
     if ("${SOCI_FMT_BUILTIN}" STREQUAL "OFF")
