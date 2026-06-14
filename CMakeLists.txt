@@ -148,7 +148,8 @@ if(soci_use_bundled_fmt)
     )
   endif()
 
-  add_subdirectory(3rdparty/fmt EXCLUDE_FROM_ALL)
+  set(FMT_INSTALL ${SOCI_INSTALL})
+  add_subdirectory(3rdparty/fmt)
 endif()
 
 # Helper function appending prefix and suffix to the library name.
