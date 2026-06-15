@@ -45,7 +45,7 @@ struct exchange_traits
 };
 
 template <>
-struct exchange_traits<int8_t>
+struct exchange_traits<soci_int8_t>
 {
     typedef basic_type_tag type_family;
     enum { x_type = x_int8 };
@@ -100,37 +100,15 @@ struct exchange_traits<uint64_t>
     enum { x_type = x_uint64 };
 };
 
-#if defined(SOCI_INT64_T_IS_LONG)
 template <>
-struct exchange_traits<long long> : exchange_traits<int64_t>
+struct exchange_traits<soci_l_or_ll_t> : exchange_traits<soci_l_or_ll_int_t>
 {
 };
 
 template <>
-struct exchange_traits<unsigned long long> : exchange_traits<uint64_t>
+struct exchange_traits<soci_ul_or_ull_t> : exchange_traits<soci_ul_or_ull_int_t>
 {
 };
-#elif defined(SOCI_LONG_IS_64_BIT)
-template <>
-struct exchange_traits<long> : exchange_traits<int64_t>
-{
-};
-
-template <>
-struct exchange_traits<unsigned long> : exchange_traits<uint64_t>
-{
-};
-#else
-template <>
-struct exchange_traits<long> : exchange_traits<int32_t>
-{
-};
-
-template <>
-struct exchange_traits<unsigned long> : exchange_traits<uint32_t>
-{
-};
-#endif
 
 template <>
 struct exchange_traits<double>
@@ -139,14 +117,12 @@ struct exchange_traits<double>
     enum { x_type = x_double };
 };
 
-#ifndef SOCI_INT8_T_IS_CHAR
 template <>
 struct exchange_traits<char>
 {
     typedef basic_type_tag type_family;
     enum { x_type = x_char };
 };
-#endif // !SOCI_INT8_T_IS_CHAR
 
 template <>
 struct exchange_traits<std::string>

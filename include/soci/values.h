@@ -14,7 +14,6 @@
 // std
 #include <cstddef>
 #include <map>
-#include <sstream>
 #include <string>
 #include <utility>
 #include <vector>
@@ -49,7 +48,7 @@ class SOCI_DECL values
 
 public:
 
-    values() : row_(NULL), currentPos_(0), uppercaseColumnNames_(false) {}
+    values() : row_(nullptr), currentPos_(0), uppercaseColumnNames_(false) {}
 
     indicator get_indicator(std::size_t pos) const;
     indicator get_indicator(std::string const & name) const;
@@ -57,7 +56,7 @@ public:
     template <typename T>
     T get(std::size_t pos) const
     {
-        if (row_ != NULL)
+        if (row_ != nullptr)
         {
             return row_->get<T>(pos);
         }
@@ -67,18 +66,14 @@ public:
         }
         else
         {
-            std::ostringstream msg;
-            msg << "Column at position "
-                << static_cast<unsigned long>(pos)
-                << " contains NULL value and no default was provided";
-            throw soci_error(msg.str());
+            throw soci_error("Column at position {} contains NULL value and no default was provided", pos);
         }
     }
 
     template <typename T>
     T get(std::size_t pos, T const & nullValue) const
     {
-        if (row_ != NULL)
+        if (row_ != nullptr)
         {
             return row_->get<T>(pos, nullValue);
         }
@@ -95,13 +90,13 @@ public:
     template <typename T>
     T get(std::string const & name) const
     {
-        return row_ != NULL ? row_->get<T>(name) : get_from_uses<T>(name);
+        return row_ != nullptr ? row_->get<T>(name) : get_from_uses<T>(name);
     }
 
     template <typename T>
     T get(std::string const & name, T const & nullValue) const
     {
-        return row_ != NULL
+        return row_ != nullptr
             ? row_->get<T>(name, nullValue)
             : get_from_uses<T>(name, nullValue);
     }
@@ -109,7 +104,7 @@ public:
     template <typename T>
     values const & operator>>(T & value) const
     {
-        if (row_ != NULL)
+        if (row_ != nullptr)
         {
             // row maintains its own position counter
             // which is automatically reset when needed
@@ -128,11 +123,7 @@ public:
         }
         else
         {
-            std::ostringstream msg;
-            msg << "Column at position "
-                << static_cast<unsigned long>(currentPos_)
-                << " contains NULL value and no default was provided";
-            throw soci_error(msg.str());
+            throw soci_error("Column at position {} contains NULL value and no default was provided", currentPos_);
         }
 
         return *this;
@@ -140,7 +131,7 @@ public:
 
     void skip(std::size_t num = 1) const
     {
-        if (row_ != NULL)
+        if (row_ != nullptr)
         {
             row_->skip(num);
         }
@@ -152,7 +143,7 @@ public:
 
     void reset_get_counter() const
     {
-        if (row_ != NULL)
+        if (row_ != nullptr)
         {
             row_->reset_get_counter();
         }
@@ -173,8 +164,17 @@ public:
             indicator * pind = new indicator(indic);
             indicators_.push_back(pind);
 
+            // If a NULL indicator was passes by the user, we must preserve it,
+            // even if conversion to the base type was successful.
+            indicator conv_ind = i_ok;
+
             base_type baseValue{};
-            type_conversion<T>::to_base(value, baseValue, *pind);
+            type_conversion<T>::to_base(value, baseValue, conv_ind);
+
+            if (indic != i_null)
+            {
+                *pind = conv_ind;
+            }
 
             details::copy_holder<base_type> * pcopy =
                     new details::copy_holder<base_type>(baseValue);
@@ -204,8 +204,18 @@ public:
         indicators_.push_back(pind);
 
         typedef typename type_conversion<T>::base_type base_type;
+
+        // If a NULL indicator was passes by the user, we must preserve it,
+        // even if conversion to the base type was successful.
+        indicator conv_ind = i_ok;
+
         base_type baseValue;
-        type_conversion<T>::to_base(value, baseValue, *pind);
+        type_conversion<T>::to_base(value, baseValue, conv_ind);
+
+        if (indic != i_null)
+        {
+            *pind = conv_ind;
+        }
 
         details::copy_holder<base_type> * pcopy =
             new details::copy_holder<base_type>(baseValue);
@@ -298,12 +308,7 @@ private:
         }
         else
         {
-            std::ostringstream msg;
-            msg << "Value at position "
-                << static_cast<unsigned long>(pos)
-                << " was set using a different type"
-                   " than the one passed to get()";
-            throw soci_error(msg.str());
+            throw soci_error("Value at position {} was set using a different type than the one passed to get()", pos);
         }
     }
 
@@ -327,21 +332,20 @@ private:
     void clean_up()
     {
         delete row_;
-        row_ = NULL;
+        row_ = nullptr;
 
         // delete any uses and indicators which were created  by set() but
         // were not bound by the Statement
         // (bound uses and indicators are deleted in Statement::clean_up())
-        for (std::map<details::use_type_base *, indicator *>::iterator pos =
-            unused_.begin(); pos != unused_.end(); ++pos)
+        for (auto & pos : unused_)
         {
-            delete pos->first;
-            delete pos->second;
+            delete pos.first;
+            delete pos.second;
         }
 
-        for (std::size_t i = 0; i != deepCopies_.size(); ++i)
+        for (auto & deepCopie : deepCopies_)
         {
-            delete deepCopies_[i];
+            delete deepCopie;
         }
     }
 };

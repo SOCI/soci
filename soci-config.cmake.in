@@ -20,7 +20,21 @@ endif()
 
 
 if (NOT DEFINED SOCI_FIND_COMPONENTS OR SOCI_FIND_COMPONENTS STREQUAL "")
-    # Use all available SOCI components
+  set(SOCI_FIND_COMPONENTS "")
+
+  foreach(__current_comp IN LISTS __dep_soci_comps)
+    string(REPLACE "SOCI::" "" __comp_name "${__current_comp}")
+    string(TOUPPER "${__comp_name}" __comp_name_upper)
+
+    if (DEFINED "SOCI_${__comp_name_upper}")
+      message(WARNING "Setting SOCI_${__comp_name_upper} when using find_package has no effect - specify components in find_package instead")
+    endif()
+  endforeach()
+  unset(__current_comp)
+  unset(__comp_name)
+  unset(__comp_name_upper)
+
+  # Use all available SOCI components
   set(SOCI_FIND_COMPONENTS "${__dep_soci_comps}")
   list(REMOVE_DUPLICATES SOCI_FIND_COMPONENTS)
   list(TRANSFORM SOCI_FIND_COMPONENTS REPLACE "SOCI::" "")
@@ -142,13 +156,23 @@ unset(__dep_dep_targets)
 check_required_components(SOCI)
 
 if (NOT DEFINED SOCI_FOUND OR SOCI_FOUND)
-  add_library(soci_interface INTERFACE)
+  if (NOT TARGET SOCI::SOCI)
+    add_library(SOCI::SOCI INTERFACE IMPORTED)
+  endif()
 
   foreach (__comp IN LISTS SOCI_FIND_COMPONENTS)
-      target_link_libraries(soci_interface INTERFACE SOCI::${__comp})
+      target_link_libraries(SOCI::SOCI INTERFACE SOCI::${__comp})
   endforeach()
 
-  add_library(SOCI::soci ALIAS soci_interface)
+  # Shall be removed in SOCI v5
+  if (NOT TARGET soci_interface_deprecated)
+    add_library(soci_interface_deprecated INTERFACE)
+  endif()
+  target_link_libraries(soci_interface_deprecated INTERFACE SOCI::SOCI)
+  set_target_properties(soci_interface_deprecated PROPERTIES DEPRECATION "Use SOCI::SOCI (all-uppercase) instead of SOCI::soci")
+  if (NOT TARGET SOCI::soci)
+    add_library(SOCI::soci ALIAS soci_interface_deprecated)
+  endif()
 
   if (NOT SOCI_FIND_QUIETLY)
       list(JOIN SOCI_FIND_COMPONENTS ", " __components)

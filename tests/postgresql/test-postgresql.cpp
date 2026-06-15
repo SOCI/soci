@@ -9,8 +9,6 @@
 #include "soci/postgresql/soci-postgresql.h"
 #include "test-context.h"
 #include "test-myint.h"
-#include <iostream>
-#include <sstream>
 #include <string>
 #include <cmath>
 #include <cstring>
@@ -18,6 +16,8 @@
 #include <cstdlib>
 
 #include <catch.hpp>
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::tests;
@@ -542,12 +542,12 @@ TEST_CASE("PostgreSQL insert into ... returning", "[postgresql]")
     table_creator_for_test12 tableCreator(sql);
 
     std::vector<long> ids(10);
-    for (std::size_t i = 0; i != ids.size(); i++)
+    for (long & id : ids)
     {
         long sid(0);
         std::string txt("abc");
         sql << "insert into soci_test(txt) values(:txt) returning sid", use(txt, "txt"), into(sid);
-        ids[i] = sid;
+        id = sid;
     }
 
     std::vector<long> ids2(ids.size());
@@ -632,7 +632,7 @@ server_version get_postgresql_version(soci::session& sql)
     std::string version;
     std::pair<int,int> result;
     sql << "select version()",into(version);
-    if (sscanf(version.c_str(),"PostgreSQL %i.%i", &result.first, &result.second) < 2)
+    if (soci::sscanf(version.c_str(),"PostgreSQL %i.%i", &result.first, &result.second) < 2)
     {
         throw std::runtime_error("Failed to retrieve PostgreSQL version number");
     }
@@ -995,7 +995,7 @@ TEST_CASE("Cross-schema metadata", "[postgresql][cross-schema]")
     st.execute();
     while (st.fetch())
     {
-        if (get_table_name_without_schema(table_name) == tables) 
+        if (get_table_name_without_schema(table_name) == tables)
         {
             tables_found = true;
             schema = get_schema_from_table_name(table_name);
@@ -1251,7 +1251,7 @@ private:
             msession << "DROP TYPE IF EXISTS EnumType ;";
         }
         catch (soci_error const& e){
-            std::cerr << e.what() << std::endl;
+            fmt::println(stderr, "{}", e.what());
         }
     }
     soci::session& msession;
@@ -1333,7 +1333,7 @@ private:
             msession << "drop table if exists soci_test;";
         }
         catch (soci_error const& e){
-            std::cerr << e.what() << std::endl;
+            fmt::println(stderr, "{}", e.what());
         }
     }
     soci::session& msession;
@@ -1411,6 +1411,32 @@ TEST_CASE("colon_in_double_quotes_in_single_quotes",
     }
 
     CHECK(return_value == "hello it is \"10:10\"");
+}
+
+struct table_creator_sequence : table_creator_base
+{
+    table_creator_sequence(soci::session &sql) : table_creator_base(sql)
+    {
+        sql << "create sequence serial start 101";
+    }
+};
+
+TEST_CASE("next sequence value", "[postgresql][get_next_sequence_value()]")
+{
+    soci::session sql(backEnd, connectString);
+    table_creator_sequence tableCreator(sql);
+
+    {
+        long long val = -1;
+        CHECK(sql.get_next_sequence_value("serial", val));
+        CHECK(val == 101);
+    }
+
+    {
+        std::int64_t val = -1;
+        CHECK(sql.get_next_sequence_value("serial", val));
+        CHECK(val == 102);
+    }
 }
 
 //

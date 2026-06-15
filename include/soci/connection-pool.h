@@ -11,6 +11,7 @@
 #include "soci/soci-platform.h"
 // std
 #include <cstddef>
+#include <memory>
 
 namespace soci
 {
@@ -31,7 +32,7 @@ public:
 
 private:
     struct connection_pool_impl;
-    connection_pool_impl * pimpl_;
+    std::unique_ptr<connection_pool_impl> pimpl_;
 
     SOCI_NOT_COPYABLE(connection_pool)
 };

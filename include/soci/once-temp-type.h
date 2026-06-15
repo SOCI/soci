@@ -64,7 +64,7 @@ private:
 class once_type
 {
 public:
-    once_type() : session_(NULL) {}
+    once_type() : session_(nullptr) {}
     once_type(session * s) : session_(s) {}
 
     void set_session(session * s)
@@ -89,7 +89,7 @@ private:
 class prepare_type
 {
 public:
-    prepare_type() : session_(NULL) {}
+    prepare_type() : session_(nullptr) {}
     prepare_type(session * s) : session_(s) {}
 
     void set_session(session * s)

@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_SQLITE3_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/sqlite3/soci-sqlite3.h"
 #include "soci/rowid.h"
@@ -19,15 +18,16 @@
 #include <cstring>
 #include <ctime>
 #include <limits>
-#include <sstream>
 #include <string>
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
 
 sqlite3_standard_use_type_backend::sqlite3_standard_use_type_backend(
         sqlite3_statement_backend &st)
-    : statement_(st), data_(NULL), type_(x_int32), position_(-1)
+    : statement_(st), data_(nullptr), type_(x_int32), position_(-1)
 {
 }
 
@@ -66,9 +66,7 @@ void sqlite3_standard_use_type_backend::bind_by_name(std::string const& name,
 
     if (0 == position_)
     {
-        std::ostringstream ss;
-        ss << "Cannot bind to (by name) " << name_;
-        throw soci_error(ss.str());
+        throw soci_error(fmt::format("Cannot bind to {} (by name)", name_));
     }
     statement_.boundByName_ = true;
 }
@@ -87,7 +85,7 @@ void sqlite3_standard_use_type_backend::pre_use(indicator const * ind)
 
     sqlite3_column &col = statement_.useData_[0][pos];
 
-    if (ind != NULL && *ind == i_null)
+    if (ind != nullptr && *ind == i_null)
     {
         col.isNull_ = true;
         return;
@@ -259,5 +257,5 @@ void sqlite3_standard_use_type_backend::clean_up()
         return;
 
     delete[] col.buffer_.data_;
-    col.buffer_.data_ = NULL;
+    col.buffer_.data_ = nullptr;
 }

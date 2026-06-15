@@ -31,6 +31,11 @@ if (NOT SOCI_POSTGRESQL)
   return()
 endif()
 
+if (WIN32)
+  # We use WinSock functions under Windows.
+  target_link_libraries(soci_postgresql PUBLIC ws2_32)
+endif()
+
 option(SOCI_POSTGRESQL_NO_LO64
   "Do not use lo_xxx64() functions for compatibility with PostgreSQL < 9.3"
   OFF
@@ -40,5 +45,11 @@ if (POSTGRESQL_VERSION VERSION_LESS "9.3.0")
 endif()
 
 if (SOCI_POSTGRESQL_NO_LO64)
-  target_compile_definitions(soci_postgresql INTERFACE SOCI_POSTGRESQL_NO_LO64)
+  target_compile_definitions(soci_postgresql PRIVATE SOCI_POSTGRESQL_NO_LO64)
+endif()
+
+if (POSTGRESQL_VERSION VERSION_LESS "9.1.0")
+  # PQlibVersion() has appeared in PostgreSQL 9.1, so we can't use it with
+  # older versions.
+  target_compile_definitions(soci_postgresql PRIVATE SOCI_POSTGRESQL_NO_LIBVERSION)
 endif()

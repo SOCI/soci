@@ -5,13 +5,12 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_SOURCE
 #include "soci/row.h"
 #include "soci/type-holder.h"
 
 #include <cstddef>
-#include <sstream>
 #include <string>
+#include <fmt/format.h>
 
 #include "soci-case.h"
 
@@ -101,9 +100,7 @@ std::size_t row::find_column(std::string const &name) const
     std::map<std::string, std::size_t>::const_iterator it = index_.find(name);
     if (it == index_.end())
     {
-        std::ostringstream msg;
-        msg << "Column '" << name << "' not found";
-        throw soci_error(msg.str());
+        throw soci_error(fmt::format("Column '{}' not found", name));
     }
 
     return it->second;

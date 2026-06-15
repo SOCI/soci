@@ -72,12 +72,6 @@ public:
     column_properties const& get_properties(std::size_t pos) const;
     column_properties const& get_properties(std::string const& name) const;
 
-#ifdef _MSC_VER
-// MSVC complains about "unreachable code" in case get<base_type> can
-// be determined at compile time to throw.
-#pragma warning(push)
-#pragma warning(disable:4702)
-#endif
     template <typename T>
     T get(std::size_t pos) const
     {
@@ -110,9 +104,6 @@ public:
 
         return ret;
     }
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
     template <typename T>
     T get(std::size_t pos, T const &nullValue) const

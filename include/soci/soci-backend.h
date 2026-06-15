@@ -14,7 +14,6 @@
 #include <cstddef>
 #include <map>
 #include <string>
-#include <sstream>
 #include <vector>
 #include <algorithm>
 #include <cstring>
@@ -267,6 +266,7 @@ public:
     {
         switch (dbt)
         {
+            case db_wstring:
             case db_string: return dt_string;
             case db_date:   return dt_date;
             case db_double: return dt_double;
@@ -280,9 +280,6 @@ public:
             case db_uint64: return dt_unsigned_long_long;
             case db_blob:   return dt_blob;
             case db_xml:    return dt_xml;
-
-            case db_wstring:
-                throw soci_error("unable to convert value to data_type");
         }
 
         // unreachable
@@ -348,11 +345,8 @@ public:
 
     // Deprecated functions with backend-specific semantics preserved only for
     // compatibility.
-    [[deprecated("Use read_from_start instead")]]
     std::size_t read(std::size_t offset, void* buf, std::size_t toRead) { return do_deprecated_read(offset, buf, toRead); }
-
-    [[deprecated("Use write_from_start instead")]]
-    virtual std::size_t write(std::size_t offset, const void* buf, std::size_t toWrite) { return do_deprecated_write(offset, buf, toWrite); }
+    std::size_t write(std::size_t offset, const void* buf, std::size_t toWrite) { return do_deprecated_write(offset, buf, toWrite); }
 
 private:
     virtual std::size_t do_deprecated_read(std::size_t offset, void* buf, std::size_t toRead) { return read_from_start(buf, toRead, offset); }
@@ -363,11 +357,17 @@ private:
 
 // polymorphic session backend
 
+// Helper function to create a varchar type name.
+std::string SOCI_DECL make_varchar_type(int precision);
+
+// Same for number/numeric/similar types.
+std::string SOCI_DECL make_number_type(const char* name, int precision, int scale);
+
 class session_backend
 {
 public:
-    session_backend() : failoverCallback_(NULL), session_(NULL) {}
-    virtual ~session_backend() {}
+    session_backend() : failoverCallback_(nullptr), session_(nullptr) {}
+    virtual ~session_backend() noexcept(false) {}
 
     virtual bool is_connected() = 0;
 
@@ -439,19 +439,13 @@ public:
         switch (dt)
         {
         case db_string:
+            if (precision == 0)
             {
-                std::ostringstream oss;
-
-                if (precision == 0)
-                {
-                    oss << "text";
-                }
-                else
-                {
-                    oss << "varchar(" << precision << ")";
-                }
-
-                res += oss.str();
+                res = "text";
+            }
+            else
+            {
+                res = make_varchar_type(precision);
             }
             break;
 
@@ -460,18 +454,13 @@ public:
             break;
 
         case db_double:
+            if (precision == 0)
             {
-                std::ostringstream oss;
-                if (precision == 0)
-                {
-                    oss << "numeric";
-                }
-                else
-                {
-                    oss << "numeric(" << precision << ", " << scale << ")";
-                }
-
-                res += oss.str();
+                res = "numeric";
+            }
+            else
+            {
+                res = make_number_type("numeric", precision, scale);
             }
             break;
 

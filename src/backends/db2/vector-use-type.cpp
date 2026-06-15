@@ -6,7 +6,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_DB2_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/db2/soci-db2.h"
 #include <cctype>
@@ -14,15 +13,7 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <sstream>
-
-#ifdef _MSC_VER
-// disables the warning about converting int to void*.  This is a 64 bit compatibility
-// warning, but odbc requires the value to be converted on this line
-// SQLSetStmtAttr(statement_.hstmt_, SQL_ATTR_PARAMSET_SIZE, (SQLPOINTER)arraySize, 0);
-#pragma warning(disable:4312)
-#endif
-
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -40,7 +31,7 @@ void db2_vector_use_type_backend::prepare_indicators(std::size_t size)
 void *db2_vector_use_type_backend::prepare_for_bind(SQLUINTEGER &size,
     SQLSMALLINT &sqlType, SQLSMALLINT &cType)
 {
-    void* sqlData = NULL;
+    void* sqlData = nullptr;
     switch (type)
     {    // simple cases
     case x_int8:
@@ -261,10 +252,9 @@ void db2_vector_use_type_backend::bind_by_name(
     }
     statement_.use_binding_method_ = details::db2::BOUND_BY_NAME;
 
-    for (std::vector<std::string>::iterator it = statement_.names_.begin();
-         it != statement_.names_.end(); ++it)
+    for (auto const& s : statement_.names_)
     {
-        if (*it == name)
+        if (s == name)
         {
             position = count;
             break;
@@ -274,9 +264,7 @@ void db2_vector_use_type_backend::bind_by_name(
 
     if (position == -1)
     {
-        std::ostringstream ss;
-        ss << "Unable to find name '" << name << "' to bind to";
-        throw soci_error(ss.str());
+        throw soci_error(fmt::format("Unable to find name '{}' to bind to", name));
     }
 
     this->position = position;
@@ -319,7 +307,7 @@ void db2_vector_use_type_backend::pre_use(indicator const *ind)
     }
 
     // then handle indicators
-    if (ind != NULL)
+    if (ind != nullptr)
     {
         std::size_t const vsize = this->size();
         for (std::size_t i = 0; i != vsize; ++i, ++ind)
@@ -461,9 +449,9 @@ std::size_t db2_vector_use_type_backend::size() const
 
 void db2_vector_use_type_backend::clean_up()
 {
-    if (buf != NULL)
+    if (buf != nullptr)
     {
         delete [] buf;
-        buf = NULL;
+        buf = nullptr;
     }
 }

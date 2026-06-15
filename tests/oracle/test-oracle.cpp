@@ -11,13 +11,14 @@
 #include "test-context.h"
 #include "test-myint.h"
 #include <iomanip>
-#include <iostream>
 #include <string>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
 
 #include <catch.hpp>
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::tests;
@@ -101,13 +102,21 @@ struct table_creator_for_timestamp : public tests::table_creator_base
     }
 };
 
+struct table_creator_for_sequence : public tests::table_creator_base
+{
+    table_creator_for_sequence(soci::session &sql) : tests::table_creator_base(sql)
+    {
+        sql << "create sequence seqtest start with 101";
+    }
+};
+
 // Extra tests for date/time
 TEST_CASE("Oracle datetime", "[oracle][datetime]")
 {
     soci::session sql(backEnd, connectString);
 
     {
-        std::time_t now = std::time(NULL);
+        std::time_t now = std::time(nullptr);
         std::tm t1, t2;
         t2 = *std::localtime(&now);
 
@@ -138,7 +147,7 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
 
     {
         // date and time - before year 2000
-        std::time_t then = std::time(NULL) - 17*365*24*60*60;
+        std::time_t then = std::time(nullptr) - 17*365*24*60*60;
         std::tm t1, t2;
         t2 = *std::localtime(&then);
 
@@ -213,7 +222,7 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
             CHECK(t4.tm_year == t2.tm_year);
             CHECK((1900 + t4.tm_year) == i);
         }
-    }   
+    }
 }
 
 // explicit calls test
@@ -1528,6 +1537,26 @@ end;
     REQUIRE(ls.value.length() == test_utf8.length() + 2*xCount);
 }
 
+
+TEST_CASE("next sequence value", "[oracle][get_next_sequence_value()]")
+{
+    soci::session sql(backEnd, connectString);
+    table_creator_for_sequence tableCreator(sql);
+
+    {
+        long long val = -1;
+        CHECK(sql.get_next_sequence_value("seqtest", val));
+        CHECK(val == 101);
+    }
+
+    {
+        std::int64_t val = -1;
+        CHECK(sql.get_next_sequence_value("seqtest", val));
+        CHECK(val == 102);
+    }
+}
+
+
 //
 // Support for soci Common Tests
 //
@@ -1544,9 +1573,9 @@ public:
 
     bool start_testing() override
     {
-        if (!std::getenv("ORACLE_HOME"))
+        if (!soci::getenv("ORACLE_HOME"))
         {
-            std::cerr << "ORACLE_HOME environment variable must be defined for Oracle tests.\n";
+            fmt::println(stderr, "ORACLE_HOME environment variable must be defined for Oracle tests.");
             return false;
         }
 

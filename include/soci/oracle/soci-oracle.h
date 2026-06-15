@@ -18,13 +18,7 @@
 
 #include <soci/soci-backend.h>
 #include <oci.h> // OCI
-#include <sstream>
 #include <vector>
-
-#ifdef _MSC_VER
-#pragma warning(disable:4512 4511)
-#endif
-
 
 namespace soci
 {
@@ -32,6 +26,8 @@ namespace soci
 class SOCI_ORACLE_DECL oracle_soci_error : public soci_error
 {
 public:
+    oracle_soci_error(sword res, OCIError *errhp);
+
     oracle_soci_error(std::string const & msg, int errNum = 0);
 
     error_category get_error_category() const override;
@@ -49,8 +45,8 @@ struct oracle_statement_backend;
 struct oracle_standard_into_type_backend : details::standard_into_type_backend
 {
     oracle_standard_into_type_backend(oracle_statement_backend &st)
-        : statement_(st), defnp_(NULL), indOCIHolder_(0),
-          data_(NULL), buf_(NULL) {}
+        : statement_(st), defnp_(nullptr), indOCIHolder_(0),
+          data_(nullptr), buf_(nullptr) {}
 
     void define_by_pos(int &position,
         void *data, details::exchange_type type) override;
@@ -67,7 +63,7 @@ struct oracle_standard_into_type_backend : details::standard_into_type_backend
     OCIDefine *defnp_;
     sb2 indOCIHolder_;
     void *data_;
-    void *ociData_ = NULL;
+    void *ociData_ = nullptr;
     char *buf_;        // generic buffer
     details::exchange_type type_;
 
@@ -77,8 +73,8 @@ struct oracle_standard_into_type_backend : details::standard_into_type_backend
 struct oracle_vector_into_type_backend : details::vector_into_type_backend
 {
     oracle_vector_into_type_backend(oracle_statement_backend &st)
-        : statement_(st), defnp_(NULL),
-        data_(NULL), buf_(NULL), user_ranges_(true) {}
+        : statement_(st), defnp_(nullptr),
+        data_(nullptr), buf_(nullptr), user_ranges_(true) {}
 
     void define_by_pos(int &position,
         void *data, details::exchange_type type) override
@@ -125,8 +121,8 @@ struct oracle_vector_into_type_backend : details::vector_into_type_backend
 struct oracle_standard_use_type_backend : details::standard_use_type_backend
 {
     oracle_standard_use_type_backend(oracle_statement_backend &st)
-        : statement_(st), bindp_(NULL), indOCIHolder_(0),
-          data_(NULL), buf_(NULL) {}
+        : statement_(st), bindp_(nullptr), indOCIHolder_(0),
+          data_(nullptr), buf_(nullptr) {}
 
     void bind_by_pos(int &position,
         void *data, details::exchange_type type, bool readOnly) override;
@@ -147,7 +143,7 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
     OCIBind *bindp_;
     sb2 indOCIHolder_;
     void *data_;
-    void *ociData_ = NULL;
+    void *ociData_ = nullptr;
     bool readOnly_;
     char *buf_;        // generic buffer
     details::exchange_type type_;
@@ -156,8 +152,8 @@ struct oracle_standard_use_type_backend : details::standard_use_type_backend
 struct oracle_vector_use_type_backend : details::vector_use_type_backend
 {
     oracle_vector_use_type_backend(oracle_statement_backend &st)
-        : statement_(st), bindp_(NULL),
-          data_(NULL), buf_(NULL), bind_position_(0) {}
+        : statement_(st), bindp_(nullptr),
+          data_(nullptr), buf_(nullptr), bind_position_(0) {}
 
     void bind_by_pos(int & position,
         void * data, details::exchange_type type) override
@@ -329,8 +325,8 @@ struct SOCI_ORACLE_DECL oracle_session_backend : details::session_backend
         std::string const & password,
         int mode,
         bool decimals_as_strings = false,
-        int charset = 0,
-        int ncharset = 0);
+        ub2 charset = 0,
+        ub2 ncharset = 0);
 
     ~oracle_session_backend() override;
 
@@ -367,19 +363,13 @@ struct SOCI_ORACLE_DECL oracle_session_backend : details::session_backend
         switch (dt)
         {
         case db_string:
+            if (precision == 0)
             {
-                std::ostringstream oss;
-
-                if (precision == 0)
-                {
-                    oss << "clob";
-                }
-                else
-                {
-                    oss << "varchar(" << precision << ")";
-                }
-
-                res += oss.str();
+                res = "clob";
+            }
+            else
+            {
+                res = details::make_varchar_type(precision);
             }
             break;
 
@@ -388,18 +378,13 @@ struct SOCI_ORACLE_DECL oracle_session_backend : details::session_backend
             break;
 
         case db_double:
+            if (precision == 0)
             {
-                std::ostringstream oss;
-                if (precision == 0)
-                {
-                    oss << "number";
-                }
-                else
-                {
-                    oss << "number(" << precision << ", " << scale << ")";
-                }
-
-                res += oss.str();
+                res = "number";
+            }
+            else
+            {
+                res = details::make_number_type("number", precision, scale);
             }
             break;
 

@@ -5,7 +5,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
 
-#define SOCI_DB2_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/db2/soci-db2.h"
 #include "soci-exchange-cast.h"
@@ -14,7 +13,7 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <sstream>
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -159,10 +158,9 @@ void db2_standard_use_type_backend::bind_by_name(
     int position = -1;
     int count = 1;
 
-    for (std::vector<std::string>::iterator it = statement_.names_.begin();
-         it != statement_.names_.end(); ++it)
+    for (auto const& s : statement_.names_)
     {
-        if (*it == name)
+        if (s == name)
         {
             position = count;
             break;
@@ -178,9 +176,7 @@ void db2_standard_use_type_backend::bind_by_name(
     }
     else
     {
-        std::ostringstream ss;
-        ss << "Unable to find name '" << name << "' to bind to";
-        throw soci_error(ss.str());
+        throw soci_error(fmt::format("Unable to find name '{}' to bind to", name));
     }
 }
 
@@ -216,9 +212,9 @@ void db2_standard_use_type_backend::post_use(bool /*gotData*/, indicator* /*ind*
 
 void db2_standard_use_type_backend::clean_up()
 {
-    if (buf != NULL)
+    if (buf != nullptr)
     {
         delete [] buf;
-        buf = NULL;
+        buf = nullptr;
     }
 }

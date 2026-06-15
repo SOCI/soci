@@ -3,7 +3,6 @@
 // (See accompanying file LICENSE_1_0.txt or copy at
 // https://www.boost.org/LICENSE_1_0.txt)
 
-#define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
 #include "soci/soci-unicode.h"
@@ -14,7 +13,7 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <sstream>
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -232,10 +231,9 @@ void odbc_standard_use_type_backend::bind_by_name(
     int position = -1;
     int count = 1;
 
-    for (std::vector<std::string>::iterator it = statement_.names_.begin();
-         it != statement_.names_.end(); ++it)
+    for (auto const& s : statement_.names_)
     {
-        if (*it == name)
+        if (s == name)
         {
             position = count;
             break;
@@ -245,9 +243,7 @@ void odbc_standard_use_type_backend::bind_by_name(
 
     if (position == -1)
     {
-        std::ostringstream ss;
-        ss << "Unable to find name '" << name << "' to bind to";
-        throw soci_error(ss.str());
+        throw soci_error(fmt::format("Unable to find name '{}' to bind to", name));
     }
 
     position_ = position;
@@ -287,15 +283,13 @@ void odbc_standard_use_type_backend::pre_use(indicator const *ind)
 
     if (is_odbc_error(rc))
     {
-        std::ostringstream ss;
-        ss << "binding input parameter #" << position_;
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, ss.str());
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, fmt::format("binding input parameter #{}", position_));
     }
 }
 
 void odbc_standard_use_type_backend::post_use(bool gotData, indicator *ind)
 {
-    if (ind != NULL)
+    if (ind != nullptr)
     {
         if (gotData)
         {
@@ -319,9 +313,9 @@ void odbc_standard_use_type_backend::post_use(bool gotData, indicator *ind)
 
 void odbc_standard_use_type_backend::clean_up()
 {
-    if (buf_ != NULL)
+    if (buf_ != nullptr)
     {
         delete [] buf_;
-        buf_ = NULL;
+        buf_ = nullptr;
     }
 }

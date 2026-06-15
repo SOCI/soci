@@ -5,28 +5,114 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/odbc/soci-odbc.h"
 #include "soci/session.h"
 
 #include "soci-autostatement.h"
+#include "soci-mutex.h"
+#include "soci-ssize.h"
 
 #include <cstdio>
+#include <unordered_map>
 
 using namespace soci;
 using namespace soci::details;
 
 char const * soci::odbc_option_driver_complete = "odbc.driver_complete";
+char const * soci::odbc_option_parent_window = "odbc.parent_window";
+
+namespace
+{
+
+// Map from the connection strings to their completed version, i.e. with the
+// missing credentials filled in by the user. This is used when the
+// odbc_option_remember_completed option is specified to avoid prompting the
+// user for the same connection string again.
+std::unordered_map<std::string, std::string> completed_connection_strings;
+
+// Mutex protecting the map above from concurrent access.
+soci_mutex_t completed_connection_strings_mutex;
+
+// Helper function replacing the given connection string with the previously
+// completed version if we have one.
+void
+complete_connection_string(std::string& connectString)
+{
+  soci_scoped_lock lock(&completed_connection_strings_mutex);
+  auto const it = completed_connection_strings.find(connectString);
+  if (it != completed_connection_strings.end())
+  {
+    connectString = it->second;
+  }
+}
+
+
+// Helper function checking if the given option is specified in the connection
+// string and returning its value while removing this option (which is supposed
+// to be SOCI-specific and not understood by ODBC) from the connection string.
+//
+// Returns empty string if the option is not specified in the connection string.
+std::string
+extract_soci_option(std::string& connectString,
+                    char const* optionName)
+{
+    auto start = connectString.find(optionName);
+    if (start == std::string::npos)
+    {
+        // Not found at all.
+        return {};
+    }
+
+    // Must be followed by the equal sign, remember its position before
+    // modifying start below.
+    auto const posEq = start + strlen(optionName);
+
+    if (start != 0)
+    {
+        if (connectString[start - 1] != ';')
+        {
+            // Not preceded by the semicolon (and not at the very beginning),
+            // so not a valid option.
+            return {};
+        }
+
+        start--;
+    }
+
+    if (posEq >= connectString.size() || connectString[posEq] != '=')
+    {
+        // Not followed by the equal sign, so not a valid option.
+        return {};
+    }
+
+    // It looks like we have the option, extract its value and remove it.
+    std::string value;
+    auto const end = connectString.find(';', posEq + 1);
+    if (end == std::string::npos)
+    {
+        value = connectString.substr(posEq + 1);
+        connectString.erase(start);
+    }
+    else
+    {
+        value = connectString.substr(posEq + 1, end - posEq - 1);
+        connectString.erase(start, end - start);
+    }
+
+    return value;
+}
+
+} // anonymous namespace
 
 odbc_session_backend::odbc_session_backend(
     connection_parameters const & parameters)
-    : henv_(0), hdbc_(0), product_(prod_uninitialized)
+    : product_(prod_uninitialized)
 {
     SQLRETURN rc;
 
     // Allocate environment handle
-    rc = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &henv_);
+    rc = SQLAllocHandle(SQL_HANDLE_ENV, SQL_NULL_HANDLE, &henv_.h_);
     if (is_odbc_error(rc))
     {
         throw soci_error("Unable to get environment handle");
@@ -40,50 +126,114 @@ odbc_session_backend::odbc_session_backend(
     }
 
     // Allocate connection handle
-    rc = SQLAllocHandle(SQL_HANDLE_DBC, henv_, &hdbc_);
+    rc = SQLAllocHandle(SQL_HANDLE_DBC, henv_, &hdbc_.h_);
     if (is_odbc_error(rc))
     {
         throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                               "allocating connection handle");
     }
 
-    SQLCHAR outConnString[1024];
+    SQLCHAR outConnString[4096];
     SQLSMALLINT strLength = 0;
 
+    std::string connectString = parameters.get_connect_string();
+
     // Prompt the user for any missing information (typically UID/PWD) in the
-    // connection string by default but allow overriding this using "prompt"
+    // connection string by default but allow overriding this using a special
     // option and also suppress prompts when reconnecting, see the comment in
     // soci::session::reconnect().
-    SQLHWND hwnd_for_prompt = NULL;
+    SQLHWND hwnd_for_prompt = nullptr;
     unsigned completion = SQL_DRIVER_COMPLETE;
+
+    // Additionally, when completion is enabled, we may remember the completed
+    // connection string returned by SQLDriverConnect() and use it for the
+    // connections to the same database again, but as this involves storing
+    // passwords in clear text in memory, we only do this when the application
+    // explicitly requested it by setting the special bit in the completion
+    // mode value.
+    bool remember_completed = false;
 
     if (parameters.is_option_on(option_reconnect))
     {
       completion = SQL_DRIVER_NOPROMPT;
+
+      // Use the previously completed connection string if we have one,
+      // otherwise reconnecting would always fail when using a connection
+      // string without credentials.
+      complete_connection_string(connectString);
     }
     else
     {
       std::string completionString;
-      if (parameters.get_option(odbc_option_driver_complete, completionString))
+      if (!parameters.get_option(odbc_option_driver_complete, completionString))
+      {
+        // For convenience, also allow specifying this option as part of the
+        // connection string itself.
+        completionString = extract_soci_option(connectString,
+                                               soci::odbc_option_driver_complete);
+      }
+
+      if (!completionString.empty())
       {
         // The value of the option is supposed to be just the integer value of
         // one of SQL_DRIVER_XXX constants but don't check for the exact value in
         // case more of them are added in the future, the ODBC driver will return
         // an error if we pass it an invalid value anyhow.
-        if (std::sscanf(completionString.c_str(), "%u", &completion) != 1)
+        if (soci::sscanf(completionString.c_str(), "%u", &completion) != 1)
         {
           throw soci_error("Invalid non-numeric driver completion option value \"" +
                             completionString + "\".");
+        }
+
+        if ( completion & odbc_option_remember_completed )
+        {
+          remember_completed = true;
+          completion &= ~odbc_option_remember_completed;
+
+          // Check if we already have a completed connection string for this
+          // connection string and use it if we do.
+          complete_connection_string(connectString);
+        }
+      }
+
+      // Check for odbc_option_parent_window in the same way.
+      std::string parentWindowString;
+      if (!parameters.get_option(odbc_option_parent_window, parentWindowString))
+      {
+        parentWindowString = extract_soci_option(connectString,
+                                                 soci::odbc_option_parent_window);
+      }
+
+      if (!parentWindowString.empty())
+      {
+        bool badFormat = false;
+
+        try
+        {
+          std::size_t count = 0;
+          hwnd_for_prompt = (SQLHWND)std::stoull(parentWindowString, &count, 0);
+
+          // Check that the whole string was converted.
+          if (count != parentWindowString.size())
+            badFormat = true;
+        }
+        catch (const std::exception &)
+        {
+          badFormat = true;
+        }
+
+        if (badFormat)
+        {
+          throw soci_error("Invalid non-numeric parent window handle \"" +
+                            parentWindowString + "\".");
         }
       }
     }
 
 #ifdef _WIN32
-    if (completion != SQL_DRIVER_NOPROMPT)
+    if (completion != SQL_DRIVER_NOPROMPT && hwnd_for_prompt == nullptr)
       hwnd_for_prompt = ::GetDesktopWindow();
 #endif // _WIN32
-
-    std::string const & connectString = parameters.get_connect_string();
 
     // This "infinite" loop can be executed at most twice.
     std::string errContext;
@@ -136,7 +286,22 @@ odbc_session_backend::odbc_session_backend(
         break;
     }
 
-    connection_string_.assign((const char*)outConnString, strLength);
+    // Note that we must *not* use strLength returned by SQLDriverConnect()
+    // here because it may be larger than the actual length of the string,
+    // and while using truncated string is bad, reading beyond the end of the
+    // buffer would be even worse.
+    connection_string_ = (const char*)outConnString;
+
+    // Also check that the string is not truncated before remembering it.
+    if (remember_completed
+          && connection_string_ != connectString
+            && strLength < ssize(outConnString))
+    {
+      // Remember the completed connection string for next time.
+      soci_scoped_lock lock(&completed_connection_strings_mutex);
+
+      completed_connection_strings[connectString] = connection_string_;
+    }
 
     reset_transaction();
 
@@ -165,22 +330,28 @@ void odbc_session_backend::configure_connection()
         // need to parse it fully, we just need the major version which,
         // conveniently, comes first.
         unsigned major_ver = 0;
-        if (std::sscanf(product_ver, "%u", &major_ver) != 1)
+        if (soci::sscanf(product_ver, "%u", &major_ver) != 1)
         {
             throw soci_error("DBMS version \"" + std::string(product_ver) +
                              "\" in unrecognizable format.");
         }
 
-        details::auto_statement<odbc_statement_backend> st(*this);
-
-        std::string const q(major_ver >= 9 ? "SET extra_float_digits = 3"
-                                           : "SET extra_float_digits = 2");
-        rc = SQLExecDirect(st.hstmt_, sqlchar_cast(q), static_cast<SQLINTEGER>(q.size()));
-
-        if (is_odbc_error(rc))
+        // As explained in src/backends/postgresql/session.cpp, we need to
+        // increase the number of digits used for floating point values to
+        // ensure that all numbers round trip correctly with old PostgreSQL.
+        if (major_ver < 12)
         {
-            throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
-                                  "setting extra_float_digits for PostgreSQL");
+            details::auto_statement<odbc_statement_backend> st(*this);
+
+            std::string const q(major_ver >= 9 ? "SET extra_float_digits = 3"
+                                               : "SET extra_float_digits = 2");
+            rc = SQLExecDirect(st.hstmt_, sqlchar_cast(q), static_cast<SQLINTEGER>(q.size()));
+
+            if (is_odbc_error(rc))
+            {
+                throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
+                                      "setting extra_float_digits for PostgreSQL");
+            }
         }
 
         // This is extracted from pgapifunc.h header from psqlODBC driver.
@@ -202,7 +373,7 @@ void odbc_session_backend::configure_connection()
     }
 }
 
-odbc_session_backend::~odbc_session_backend()
+odbc_session_backend::~odbc_session_backend() noexcept(false)
 {
     clean_up();
 }
@@ -214,10 +385,10 @@ bool odbc_session_backend::is_connected()
     // The name of the table we check for is irrelevant, as long as we have a
     // working connection, it should still find (or, hopefully, not) something.
     return !is_odbc_error(SQLTables(st.hstmt_,
-                                    NULL, SQL_NTS,
-                                    NULL, SQL_NTS,
+                                    nullptr, SQL_NTS,
+                                    nullptr, SQL_NTS,
                                     sqlchar_cast("bloordyblop"), SQL_NTS,
-                                    NULL, SQL_NTS));
+                                    nullptr, SQL_NTS));
 }
 
 void odbc_session_backend::begin()
@@ -416,13 +587,13 @@ void odbc_session_backend::clean_up()
         throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "disconnecting");
     }
 
-    rc = SQLFreeHandle(SQL_HANDLE_DBC, hdbc_);
+    rc = hdbc_.reset();
     if (is_odbc_error(rc))
     {
         throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "freeing connection");
     }
 
-    rc = SQLFreeHandle(SQL_HANDLE_ENV, henv_);
+    rc = henv_.reset();
     if (is_odbc_error(rc))
     {
         throw odbc_soci_error(SQL_HANDLE_ENV, henv_, "freeing environment");

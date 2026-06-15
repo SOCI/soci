@@ -5,11 +5,9 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
 #include "soci/statement.h"
 #include "clob.h"
-#include "error.h"
 #include "soci/soci-platform.h"
 #include "soci-mktime.h"
 #include "soci-vector-helpers.h"
@@ -19,11 +17,6 @@
 #include <cstring>
 #include <cstdlib>
 #include <ctime>
-#include <sstream>
-
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
 
 using namespace soci;
 using namespace soci::details;
@@ -55,7 +48,7 @@ void oracle_vector_into_type_backend::define_by_pos_bulk(
 
     ub2 oracleType SOCI_DUMMY_INIT(0);
     sb4 elementSize SOCI_DUMMY_INIT(0);
-    void * dataBuf = NULL;
+    void * dataBuf = nullptr;
 
     switch (type)
     {
@@ -228,7 +221,7 @@ void oracle_vector_into_type_backend::define_by_pos_bulk(
         &indOCIHolderVec_[0], &sizes_[0], &rCodes_[0], OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, statement_.session_.errhp_);
+        throw oracle_soci_error(res, statement_.session_.errhp_);
     }
 }
 
@@ -290,7 +283,7 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
             {
                 if (indOCIHolderVec_[i] != -1)
                 {
-                    v[begin_ + i] = std::strtoll(pos, NULL, 10);
+                    v[begin_ + i] = std::strtoll(pos, nullptr, 10);
                 }
                 pos += colSize_;
             }
@@ -308,7 +301,7 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
             {
                 if (indOCIHolderVec_[i] != -1)
                 {
-                    v[begin_ + i] = std::strtoull(pos, NULL, 10);
+                    v[begin_ + i] = std::strtoull(pos, nullptr, 10);
                 }
                 pos += colSize_;
             }
@@ -364,7 +357,7 @@ void oracle_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
         }
 
         // then - deal with indicators
-        if (ind != NULL)
+        if (ind != nullptr)
         {
             std::size_t const indSize = statement_.get_number_of_rows();
             for (std::size_t i = 0; i != indSize; ++i)
@@ -431,7 +424,7 @@ std::size_t oracle_vector_into_type_backend::size() const
         return actual_size;
     }
 
-    if (end_ != NULL && *end_ != 0)
+    if (end_ != nullptr && *end_ != 0)
     {
         return *end_ - begin_;
     }
@@ -459,15 +452,15 @@ void oracle_vector_into_type_backend::clean_up()
         }
     }
 
-    if (defnp_ != NULL)
+    if (defnp_ != nullptr)
     {
         OCIHandleFree(defnp_, OCI_HTYPE_DEFINE);
-        defnp_ = NULL;
+        defnp_ = nullptr;
     }
 
-    if (buf_ != NULL)
+    if (buf_ != nullptr)
     {
         delete [] buf_;
-        buf_ = NULL;
+        buf_ = nullptr;
     }
 }

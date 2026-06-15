@@ -13,13 +13,11 @@
 #include "soci/mysql/soci-mysql.h"
 #include "mysql/test-mysql.h"
 #include <string.h>
-#include <iostream>
 #include <sstream>
 #include <string>
 #include <vector>
 #include <cmath>
 #include <ctime>
-#include <ciso646>
 #include <cstdlib>
 #include <mysqld_error.h>
 #include <errmsg.h>
@@ -522,13 +520,7 @@ TEST_CASE("MySQL unsigned int", "[mysql][int]")
     unsigned int mask = 0xffffff00;
     sql << "insert into soci_test set val = " << mask;
     soci::rowset<> rows(sql.prepare << "select val from soci_test");
-    int cnt = 0;
-    for (soci::rowset<>::iterator it = rows.begin(), end = rows.end();
-         it != end; ++it)
-    {
-        cnt++;
-    }
-    CHECK(cnt == 1);
+    CHECK(std::distance(rows.begin(), rows.end()) == 1);
 }
 
 TEST_CASE("MySQL function call", "[mysql][function]")
@@ -749,10 +741,18 @@ TEST_CASE("MySQL last insert id", "[mysql][last-insert-id]")
     soci::session sql(backEnd, connectString);
     table_creator_for_get_last_insert_id tableCreator(sql);
     sql << "insert into soci_test () values ()";
-    long long id;
-    bool result = sql.get_last_insert_id("soci_test", id);
-    CHECK(result == true);
-    CHECK(id == 42);
+
+    {
+        long long id = -1;
+        CHECK(sql.get_last_insert_id("soci_test", id));
+        CHECK(id == 42);
+    }
+
+    {
+        std::int64_t id = -1;
+        CHECK(sql.get_last_insert_id("soci_test", id));
+        CHECK(id == 42);
+    }
 }
 
 TEST_CASE("MySQL DDL with metadata", "[mysql][ddl]")
@@ -1113,8 +1113,6 @@ void test14()
         sql << "select s5 from soci_test", into(s2);
         CHECK(s == s2);
     }
-
-    std::cout << "test 14 passed" << std::endl;
 }
 
 void test15()
@@ -1125,8 +1123,6 @@ void test15()
         sql << "select @a := 123", into(n);
         CHECK(n == 123);
     }
-
-    std::cout << "test 15 passed" << std::endl;
 }
 
 test_context tc_mysql;

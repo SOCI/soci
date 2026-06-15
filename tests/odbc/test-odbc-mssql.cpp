@@ -8,12 +8,13 @@
 #include "soci/soci.h"
 #include "soci/odbc/soci-odbc.h"
 #include "test-context.h"
-#include <iostream>
 #include <string>
 #include <ctime>
 #include <cmath>
 
 #include <catch.hpp>
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::tests;
@@ -42,13 +43,13 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
 
     // Build a string at least 8000 characters long to test that it survives
     // the round trip unscathed.
-    std::ostringstream os;
+    std::string str_in;
+    str_in.reserve(16000);
     for ( int n = 0; n < 1000; ++n )
     {
-        os << "Line #" << n << "\n";
+        str_in += fmt::format("Line #{}\n", n);
     }
 
-    std::string const str_in = os.str();
     CHECK_NOTHROW((
         sql << "insert into soci_test(long_text) values(:str)", use(str_in)
     ));
@@ -83,7 +84,7 @@ struct wide_text_table_creator : public table_creator_base
       : table_creator_base(sql)
   {
       sql << "create table soci_test ("
-                  "wide_text nvarchar(40) null"
+                  "wide_text nvarchar(17) null"
               ")";
   }
 };
@@ -102,6 +103,15 @@ TEST_CASE("MS SQL wide string", "[odbc][mssql][wstring]")
   sql << "select wide_text from soci_test", into(str_out);
 
   CHECK(str_out == str_in);
+
+  soci::rowset<soci::row> rs = (sql.prepare << "select wide_text from soci_test");
+  auto it = rs.begin();
+  REQUIRE( it != rs.end() );
+
+  CHECK( it->get<std::wstring>(0) == str_in );
+
+  ++it;
+  CHECK( it == rs.end() );
 }
 
 TEST_CASE("MS SQL wide string vector", "[odbc][mssql][vector][wstring]")
@@ -171,9 +181,9 @@ TEST_CASE("MS SQL table records count", "[odbc][mssql][count]")
     soci::rowset<soci::row> rs = (sql.prepare << sql_query);
 
     // Check that we can access the results.
-    for (auto it = rs.begin(); it != rs.end(); ++it)
+    bool hasTables = false;
+    for (soci::row const& row : rs)
     {
-        soci::row const& row = *it;
         std::string instance_name = row.get<std::string>(0);
         std::string database_name = row.get<std::string>(1);
         std::string table_name = row.get<std::string>(2);
@@ -185,10 +195,10 @@ TEST_CASE("MS SQL table records count", "[odbc][mssql][count]")
         INFO("Table " << instance_name << "." << table_name <<
              " has " << number_of_records << " records");
         CHECK( database_name == "master" );
-        return;
+        hasTables = true;
     }
 
-    FAIL("No tables found in the master database");
+    CHECK(hasTables);
 }
 
 // DDL Creation objects for common tests

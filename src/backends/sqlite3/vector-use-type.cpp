@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_SQLITE3_SOURCE
 #include "soci-exchange-cast.h"
 #include "soci/soci-platform.h"
 #include "soci/sqlite3/soci-sqlite3.h"
@@ -18,8 +17,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <limits>
-#include <sstream>
 
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -61,9 +60,7 @@ void sqlite3_vector_use_type_backend::bind_by_name(std::string const & name,
 
     if (0 == position_)
     {
-        std::ostringstream ss;
-        ss << "Cannot bind (by name) to " << name_;
-        throw soci_error(ss.str());
+        throw soci_error(fmt::format("Cannot bind to {} (by name)", name_));
     }
     statement_.boundByName_ = true;
 }
@@ -87,10 +84,10 @@ void sqlite3_vector_use_type_backend::pre_use(indicator const * ind)
         sqlite3_column &col = statement_.useData_[i][pos];
 
         // the data in vector can be either i_ok or i_null
-        if (ind != NULL && ind[i] == i_null)
+        if (ind != nullptr && ind[i] == i_null)
         {
             col.isNull_ = true;
-            col.buffer_.data_ = NULL;
+            col.buffer_.data_ = nullptr;
             continue;
         }
 
@@ -257,10 +254,9 @@ void sqlite3_vector_use_type_backend::clean_up()
 
     int const pos = position_ - 1;
 
-    for (sqlite3_recordset::iterator iter = statement_.useData_.begin(), last = statement_.useData_.end();
-        iter != last; ++iter)
+    for (sqlite3_row& row : statement_.useData_)
     {
-        sqlite3_column &col = (*iter)[pos];
+        sqlite3_column &col = row[pos];
 
         if (col.isNull_)
             continue;

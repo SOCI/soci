@@ -6,12 +6,10 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_MYSQL_SOURCE
 #include "soci/mysql/soci-mysql.h"
 #include "soci-mktime.h"
 #include "common.h"
 #include "soci/soci-platform.h"
-#include <ciso646>
 #include <cstdint>
 #include <cstdlib>
 
@@ -67,9 +65,9 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
         {
             MYSQL_ROW row = mysql_fetch_row(statement_.result_);
             // first, deal with indicators
-            if (row[pos] == NULL)
+            if (row[pos] == nullptr)
             {
-                if (ind == NULL)
+                if (ind == nullptr)
                 {
                     throw soci_error(
                         "Null value fetched and no indicator defined.");
@@ -82,14 +80,14 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
             }
             else
             {
-                if (ind != NULL)
+                if (ind != nullptr)
                 {
                     ind[i] = i_ok;
                 }
             }
 
             // buffer with data retrieved from server, in text format
-            const char *buf = row[pos] != NULL ? row[pos] : "";
+            const char *buf = row[pos] != nullptr ? row[pos] : "";
 
             switch (type_)
             {
@@ -111,17 +109,15 @@ void mysql_vector_into_type_backend::post_fetch(bool gotData, indicator *ind)
                 break;
             case x_int8:
                 {
-                    int32_t tmp = 0;
-                    parse_num(buf, tmp);
-                    int8_t val = static_cast<int8_t>(tmp);
+                    int8_t val;
+                    parse_num(buf, val);
                     set_invector_(data_, i, val);
                 }
                 break;
             case x_uint8:
                 {
-                    uint32_t tmp = 0;
-                    parse_num(buf, tmp);
-                    uint8_t val = static_cast<uint8_t>(tmp);
+                    uint8_t val;
+                    parse_num(buf, val);
                     set_invector_(data_, i, val);
                 }
                 break;

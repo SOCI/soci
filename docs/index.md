@@ -1,22 +1,25 @@
 # SOCI - The C++ Database Access Library
 
-SOCI is a database access library written in C++ that makes an illusion of embedding
-SQL queries in the regular C++ code, staying entirely within the Standard C++.
-
-The idea is to provide C++ programmers a way to access SQL databases in the most natural and intuitive way.
-If you find existing libraries too difficult for your needs or just distracting, SOCI can be a good alternative.
+SOCI is a database access library written in C++ that allows embedding
+SQL queries in the regular C++ code in the most natural and intuitive way,
+while staying entirely within the Standard C++.
 
 ## Basic Syntax
 
-The simplest motivating code example for the SQL query that is supposed to retrieve a single row is:
+Note that all the examples here assume that `using namespaces soci;` directive
+is in scope, and use a [previously initialized](connections.md) `sql` object
+of type `soci::session`.
+
+The simplest motivating code example for the SQL query that is supposed to
+retrieve a single row is:
 
 ```cpp
 int id = ...;
-string name;
+std::string name;
 int salary;
 
-sql << "select name, salary from persons where id = " << id,
-        into(name), into(salary);
+sql << "select name, salary from persons where id = :id",
+       use(id), into(name), into(salary);
 ```
 
 ## Basic ORM
@@ -28,7 +31,7 @@ int id = ...;
 Person p;
 
 sql << "select first_name, last_name, date_of_birth "
-       "from persons where id = " << id, into(p);
+       "from persons where id = :id", use(id), into(p);
 ```
 
 ## Integrations
@@ -36,11 +39,11 @@ sql << "select first_name, last_name, date_of_birth "
 Integration with STL is also supported:
 
 ```cpp
-Rowset<string> rs = (sql.prepare << "select name from persons");
+Rowset<std::string> rs = (sql.prepare << "select name from persons");
 std::copy(rs.begin(), rs.end(), std::ostream_iterator<std::string>(std::cout, "\n"));
 ```
 
-SOCI offers also extensive [integration with Boost](boost.md) datatypes (optional, tuple and fusion) and flexible support for user-defined datatypes.
+SOCI also offers [integration with Boost](boost.md) data types (optional, tuple and fusion) and flexible support for user-defined types.
 
 ## Database Backends
 

@@ -5,11 +5,9 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
 #include "soci/blob.h"
 #include "clob.h"
-#include "error.h"
 #include "soci/rowid.h"
 #include "soci/statement.h"
 #include "soci/type-wrappers.h"
@@ -25,11 +23,6 @@
 #include <cstring>
 #include <cstdlib>
 #include <ctime>
-#include <sstream>
-
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
 
 using namespace soci;
 using namespace soci::details;
@@ -193,7 +186,7 @@ void oracle_standard_use_type_backend::prepare_for_bind(
             // actual creation of this object is in pre_exec, which
             // is called right before statement's execute
 
-            OCILobLocator * lobp = NULL;
+            OCILobLocator * lobp = nullptr;
 
             size = sizeof(lobp);
             data = &ociData_;
@@ -226,10 +219,10 @@ void oracle_standard_use_type_backend::bind_by_pos(
     sword res = OCIBindByPos(statement_.stmtp_, &bindp_,
         statement_.session_.errhp_,
         position++, data, size, oracleType,
-        &indOCIHolder_, 0, 0, 0, 0, OCI_DEFAULT);
+        &indOCIHolder_, nullptr, nullptr, 0, nullptr, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, statement_.session_.errhp_);
+        throw oracle_soci_error(res, statement_.session_.errhp_);
     }
 
     statement_.boundByPos_ = true;
@@ -257,10 +250,10 @@ void oracle_standard_use_type_backend::bind_by_name(
         reinterpret_cast<text*>(const_cast<char*>(name.c_str())),
         static_cast<sb4>(name.size()),
         data, size, oracleType,
-        &indOCIHolder_, 0, 0, 0, 0, OCI_DEFAULT);
+        &indOCIHolder_, nullptr, nullptr, 0, nullptr, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, statement_.session_.errhp_);
+        throw oracle_soci_error(res, statement_.session_.errhp_);
     }
 
     statement_.boundByName_ = true;
@@ -283,10 +276,10 @@ void oracle::write_to_lob(
         res = OCILobWrite(session.svchp_, session.errhp_,
             lobp, &toWrite, offset,
             reinterpret_cast<dvoid*>(const_cast<char*>(value.data())),
-            toWrite, OCI_ONE_PIECE, 0, 0, 0, SQLCS_IMPLICIT);
+            toWrite, OCI_ONE_PIECE, nullptr, nullptr, 0, SQLCS_IMPLICIT);
         if (res != OCI_SUCCESS)
         {
-            throw_oracle_soci_error(res, session.errhp_);
+            throw oracle_soci_error(res, session.errhp_);
         }
     }
 
@@ -295,7 +288,7 @@ void oracle::write_to_lob(
     res = OCILobGetLength(session.svchp_, session.errhp_, lobp, &len);
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, session.errhp_);
+        throw oracle_soci_error(res, session.errhp_);
     }
 
     if (toWrite < len)
@@ -303,7 +296,7 @@ void oracle::write_to_lob(
         res = OCILobTrim(session.svchp_, session.errhp_, lobp, toWrite);
         if (res != OCI_SUCCESS)
         {
-            throw_oracle_soci_error(res, session.errhp_);
+            throw oracle_soci_error(res, session.errhp_);
         }
     }
 }
@@ -312,10 +305,10 @@ OCILobLocator * oracle::create_temp_lob(oracle_session_backend& session)
 {
     OCILobLocator * lobp;
     sword res = OCIDescriptorAlloc(session.envhp_,
-        reinterpret_cast<dvoid**>(&lobp), OCI_DTYPE_LOB, 0, 0);
+        reinterpret_cast<dvoid**>(&lobp), OCI_DTYPE_LOB, 0, nullptr);
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, session.errhp_);
+        throw oracle_soci_error(res, session.errhp_);
     }
 
     res = OCILobCreateTemporary(session.svchp_,
@@ -324,7 +317,7 @@ OCILobLocator * oracle::create_temp_lob(oracle_session_backend& session)
         OCI_TEMP_CLOB, OCI_ATTR_NOCACHE, OCI_DURATION_SESSION);
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, session.errhp_);
+        throw oracle_soci_error(res, session.errhp_);
     }
 
     return lobp;
@@ -479,7 +472,7 @@ void oracle_standard_use_type_backend::pre_use(indicator const *ind)
     }
 
     // then handle indicators
-    if (ind != NULL && *ind == i_null)
+    if (ind != nullptr && *ind == i_null)
     {
         indOCIHolder_ = -1; // null
     }
@@ -590,7 +583,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
             if (readOnly_)
             {
                 int64_t const original = exchange_type_cast<x_int64>(data_);
-                int64_t const bound = std::strtoll(buf_, NULL, 10);
+                int64_t const bound = std::strtoll(buf_, nullptr, 10);
 
                 if (original != bound)
                 {
@@ -602,7 +595,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
             if (readOnly_)
             {
                 uint64_t const original = exchange_type_cast<x_uint64>(data_);
-                uint64_t const bound = std::strtoull(buf_, NULL, 10);
+                uint64_t const bound = std::strtoull(buf_, nullptr, 10);
 
                 if (original != bound)
                 {
@@ -695,7 +688,7 @@ void oracle_standard_use_type_backend::post_use(bool gotData, indicator *ind)
         }
     }
 
-    if (ind != NULL)
+    if (ind != nullptr)
     {
         if (gotData)
         {
@@ -734,18 +727,18 @@ void oracle_standard_use_type_backend::clean_up()
                 throw soci_error("Internal error: OCI data used for unexpected type");
         }
 
-        ociData_ = NULL;
+        ociData_ = nullptr;
     }
 
-    if (bindp_ != NULL)
+    if (bindp_ != nullptr)
     {
         OCIHandleFree(bindp_, OCI_HTYPE_DEFINE);
-        bindp_ = NULL;
+        bindp_ = nullptr;
     }
 
-    if (buf_ != NULL)
+    if (buf_ != nullptr)
     {
         delete [] buf_;
-        buf_ = NULL;
+        buf_ = nullptr;
     }
 }

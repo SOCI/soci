@@ -19,7 +19,7 @@ The SOCI ODBC backend is supported for use with ODBC 3.
 |3|Windows XP|Visual Studio 2005 (express)|
 |3|Windows XP|Visual C++ 8.0 Professional|
 |3|Windows XP|g++ 3.3.4 (Cygwin)|
-|3 (unixodbc 2.3.6)|macOS High Sierra 10.13.5|AppleClang 9.1.0.9020039|
+|3 (unixODBC 2.3.6)|macOS High Sierra 10.13.5|AppleClang 9.1.0.9020039|
 
 ### Required Client Libraries
 
@@ -40,7 +40,7 @@ or simply:
 session sql(odbc, "filedsn=c:\\my.dsn");
 ```
 
-The set of parameters used in the connection string for ODBC is the same as accepted by the [SQLDriverConnect](https://msdn.microsoft.com/library/default.asp?url=/library/en-us/odbcsql/od_odbc_d_4x4k.asp) function from the ODBC library.
+The set of parameters used in the connection string for ODBC is the same as accepted by the [SQLDriverConnect](https://msdn.microsoft.com/library/default.asp?url=/library/en-us/odbcsql/od_odbc_d_4x4k.asp) function from the ODBC library with the addition of SOCI-specific `odbc.driver_complete` and `odbc.parent_window` options described in the [configuration options](#configuration-options) section below.
 
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 
@@ -110,7 +110,7 @@ The ODBC backend has support for SOCI's [bulk operations](../binding.md#bulk-ope
 |--- |--- |--- |
 |MS SQL Server 2005|YES|YES|
 |MS Access 2003|YES|NO|
-|PostgresQL 8.1|YES|YES|
+|PostgreSQL 8.1|YES|YES|
 |MySQL 4.1|NO|NO|
 
 ### Transactions
@@ -135,9 +135,9 @@ Not currently supported.
 
 ## Native API Access
 
-SOCI provides access to underlying datbabase APIs via several getBackEnd() functions, as described in the [beyond SOCI](../beyond.md) documentation.
+SOCI provides access to underlying database APIs via several getBackEnd() functions, as described in the [beyond SOCI](../beyond.md) documentation.
 
-The ODBC backend provides the following concrete classes for navite API access:
+The ODBC backend provides the following concrete classes for native API access:
 
 |Accessor Function|Concrete Class|
 |--- |--- |
@@ -179,10 +179,44 @@ that returns fully expanded connection string as returned by the `SQLDriverConne
 
 ## Configuration options
 
-This backend supports `odbc_option_driver_complete` option which can be passed to it via `connection_parameters` class. The value of this option is passed to `SQLDriverConnect()` function as "driver completion" parameter and so must be one of `SQL_DRIVER_XXX` values, in the string form. The default value of this option is `SQL_DRIVER_PROMPT` meaning that the driver will query the user for the user name and/or the password if they are not stored together with the connection. If this is undesirable for some reason, you can use `SQL_DRIVER_NOPROMPT` value for this option to suppress showing the message box:
+This backend supports `odbc_option_driver_complete` option which can be passed to it via `connection_parameters` class. The value of this option is passed to `SQLDriverConnect()` function as "driver completion" parameter and so must be one of `SQL_DRIVER_XXX` values, in the string form. The default value of this option is `SQL_DRIVER_PROMPT` meaning that the driver will query the user for the user name and/or the password if they are not stored together with the connection. If this is undesirable, e.g. because the program is running in non-interactive environment such as CI job context, you can use `SQL_DRIVER_NOPROMPT` value for this option to suppress showing the message box:
 
 ```cpp
 connection_parameters parameters("odbc", "DSN=mydb");
 parameters.set_option(odbc_option_driver_complete, "0" /* SQL_DRIVER_NOPROMPT */);
 session sql(parameters);
 ```
+
+For extra convenience, this option can also be specified as part of the connection string itself, e.g.
+
+```cpp
+session sql("odbc", "DSN=mydb;odbc.driver_complete=0");
+```
+
+has the same effect as the snippet above.
+
+Additionally, the special value `soci::odbc_option_remember_completed` (defined
+in `soci/odbc/soci-odbc.h`) can be added to this option value to indicate that
+the driver should remember the completed connection string for future connections
+which allows to avoid prompting the user again — albeit at the cost of storing
+the completed connection string, containing credentials in clear text, in
+memory, which may be problematic from security point of view, which is why this
+behaviour is not enabled by default. To enable it, you can do:
+
+```cpp
+connection_parameters parameters("odbc", "DSN=mydb");
+parameters.set_option(odbc_option_driver_complete,
+    std::to_string(SQL_DRIVER_COMPLETE | soci::odbc_option_remember_completed));
+session sql(parameters);
+```
+
+or, equivalently:
+
+```cpp
+session sql("odbc", "DSN=mydb;odbc.driver_complete=257");
+```
+
+Note that using `odbc_option_remember_completed` with `SQL_DRIVER_NOPROMPT`
+doesn't make sense, as the connection string is never completed in this case.
+
+Finally, it is also possible to specify the `odbc.parent_window` option to provide a parent window handle (`HWND`) for any dialog boxes shown by the ODBC driver on Windows, e.g. to ensure that these dialog boxes always remain in front of the application window. The value of this option should be the handle value as a string in either decimal or hexadecimal, with "0x" prefix. This option is silently ignored on non-Windows platforms.

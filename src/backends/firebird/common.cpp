@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_FIREBIRD_SOURCE
 #include "soci/soci-platform.h"
 #include "firebird/common.h"
 #include "soci/soci-backend.h"
@@ -14,9 +13,9 @@
 #include <cstddef>
 #include <cstring>
 #include <cstdio>
-#include <sstream>
 #include <iostream>
 #include <string>
+#include <fmt/format.h>
 
 namespace soci
 {
@@ -64,9 +63,7 @@ void tmEncode(short type, std::tm * src, void * dst)
         isc_encode_sql_date(src, static_cast<ISC_DATE*>(dst));
         break;
     default:
-        std::ostringstream msg;
-        msg << "Unexpected type of date/time field (" << type << ")";
-        throw soci_error(msg.str());
+        throw soci_error(fmt::format("Unexpected type of date/time field ({})", type));
     }
 }
 
@@ -84,9 +81,7 @@ void tmDecode(short type, void * src, std::tm * dst)
         isc_decode_sql_date(static_cast<ISC_DATE*>(src), dst);
         break;
     default:
-        std::ostringstream msg;
-        msg << "Unexpected type of date/time field (" << type << ")";
-        throw soci_error(msg.str());
+        throw soci_error(fmt::format("Unexpected type of date/time field ({})", type));
     }
 }
 
@@ -99,11 +94,8 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
     {
         if (size > static_cast<std::size_t>(var->sqllen))
         {
-            std::ostringstream msg;
-            msg << "Value \"" << s << "\" is too long ("
-                << size << " bytes) to be stored in column of size "
-                << var->sqllen << " bytes";
-            throw soci_error(msg.str());
+            throw soci_error(fmt::format("Value \"{}\" is too long ({} bytes) to be stored in column of size {} bytes",
+                s, size, var->sqllen));
         }
 
         short const sz = static_cast<short>(size);
@@ -138,14 +130,14 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
             || sqltype == SQL_TYPE_DATE)
     {
         unsigned short year, month, day, hour, min, sec;
-        if (std::sscanf(s, "%hu-%hu-%hu %hu:%hu:%hu",
+        if (soci::sscanf(s, "%hu-%hu-%hu %hu:%hu:%hu",
                     &year, &month, &day, &hour, &min, &sec) != 6)
         {
-            if (std::sscanf(s, "%hu-%hu-%huT%hu:%hu:%hu",
+            if (soci::sscanf(s, "%hu-%hu-%huT%hu:%hu:%hu",
                         &year, &month, &day, &hour, &min, &sec) != 6)
             {
                 hour = min = sec = 0;
-                if (std::sscanf(s, "%hu-%hu-%hu", &year, &month, &day) != 3)
+                if (soci::sscanf(s, "%hu-%hu-%hu", &year, &month, &day) != 3)
                 {
                     throw soci_error("Could not parse timestamp value.");
                 }
@@ -165,7 +157,7 @@ void setTextParam(char const * s, std::size_t size, char * buf_,
     else if (sqltype == SQL_TYPE_TIME)
     {
         unsigned short hour, min, sec;
-        if (std::sscanf(s, "%hu:%hu:%hu", &hour, &min, &sec) != 3)
+        if (soci::sscanf(s, "%hu:%hu:%hu", &hour, &min, &sec) != 3)
         {
             throw soci_error("Could not parse timestamp value.");
         }
@@ -237,10 +229,8 @@ void copy_from_blob(firebird_statement_backend &st, char *buf, std::string &out)
     std::size_t const len_read = blob.read_from_start(&out[0], len_total);
     if (len_read != len_total)
     {
-        std::ostringstream os;
-        os << "Read " << len_read << " bytes instead of expected "
-           << len_total << " from Firebird text blob object";
-        throw soci_error(os.str());
+        throw soci_error(fmt::format("Read {} bytes instead of expected {} from Firebird text blob object",
+            len_read, len_total));
     }
 }
 

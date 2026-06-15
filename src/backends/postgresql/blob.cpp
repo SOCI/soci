@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_POSTGRESQL_SOURCE
 #include "soci/postgresql/soci-postgresql.h"
 
 #include <libpq-fe.h>
@@ -16,7 +15,6 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
-#include <sstream>
 #include <limits>
 
 using namespace soci;

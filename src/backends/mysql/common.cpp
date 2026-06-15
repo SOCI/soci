@@ -5,9 +5,7 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_MYSQL_SOURCE
 #include "common.h"
-#include <ciso646>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>

@@ -11,10 +11,13 @@ run_apt remove \
     libodbc1 odbcinst1debian2 \
     unixodbc unixodbc-dev
 
-run_apt install \
-    tar bzip2 \
-    unixodbc unixodbc-dbgsym unixodbc-dev \
-    odbc-postgresql odbc-postgresql-dbgsym postgresql
+packages_to_install="tar bzip2 unixodbc unixodbc-dev odbc-postgresql postgresql"
+
+if [ -z "$DEBUGINFOD_URLS" ]; then
+    packages_to_install="$packages_to_install unixodbc-dbgsym odbc-postgresql-dbgsym"
+fi
+
+run_apt install ${packages_to_install}
 
 # Use full path to the driver library to avoid errors like
 # [01000][unixODBC][Driver Manager]Can't open lib 'psqlodbca.so' : file not found

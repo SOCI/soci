@@ -17,9 +17,6 @@
 # define SOCI_FIREBIRD_DECL SOCI_DECL_IMPORT
 #endif
 
-#ifdef _WIN32
-#include <ciso646> // To understand and/or/not on MSVC9
-#endif
 #include <soci/soci-backend.h>
 #include <ibase.h> // FireBird
 #include <cstdlib>
@@ -34,7 +31,7 @@ class SOCI_FIREBIRD_DECL firebird_soci_error : public soci_error
 {
 public:
     firebird_soci_error(std::string const & msg,
-        ISC_STATUS const * status = 0);
+        ISC_STATUS const * status = nullptr);
 
     error_category get_error_category() const override;
 
@@ -54,7 +51,7 @@ struct firebird_statement_backend;
 struct firebird_standard_into_type_backend : details::standard_into_type_backend
 {
     firebird_standard_into_type_backend(firebird_statement_backend &st)
-        : statement_(st), data_(NULL), type_(), position_(0), buf_(NULL), indISCHolder_(0)
+        : statement_(st), data_(nullptr), type_(), position_(0), buf_(nullptr), indISCHolder_(0)
     {}
 
     void define_by_pos(int &position,
@@ -80,7 +77,7 @@ struct firebird_standard_into_type_backend : details::standard_into_type_backend
 struct firebird_vector_into_type_backend : details::vector_into_type_backend
 {
     firebird_vector_into_type_backend(firebird_statement_backend &st)
-        : statement_(st), data_(NULL), type_(), position_(0), buf_(NULL), indISCHolder_(0)
+        : statement_(st), data_(nullptr), type_(), position_(0), buf_(nullptr), indISCHolder_(0)
     {}
 
     void define_by_pos(int &position,
@@ -108,8 +105,8 @@ struct firebird_vector_into_type_backend : details::vector_into_type_backend
 struct firebird_standard_use_type_backend : details::standard_use_type_backend
 {
     firebird_standard_use_type_backend(firebird_statement_backend &st)
-        : statement_(st), data_(NULL), type_(), position_(0), buf_(NULL), indISCHolder_(0),
-          blob_(NULL)
+        : statement_(st), data_(nullptr), type_(), position_(0), buf_(nullptr), indISCHolder_(0),
+          blob_(nullptr)
     {}
 
     void bind_by_pos(int &position,
@@ -144,8 +141,8 @@ private:
 struct firebird_vector_use_type_backend : details::vector_use_type_backend
 {
     firebird_vector_use_type_backend(firebird_statement_backend &st)
-        : statement_(st), data_(NULL), type_(), position_(0), buf_(NULL), indISCHolder_(0),
-          blob_(NULL)
+        : statement_(st), data_(nullptr), type_(), position_(0), buf_(nullptr), indISCHolder_(0),
+          blob_(nullptr)
     {}
 
     void bind_by_pos(int &position,
@@ -305,7 +302,7 @@ struct SOCI_FIREBIRD_DECL firebird_session_backend : details::session_backend
 {
     firebird_session_backend(connection_parameters const & parameters);
 
-    ~firebird_session_backend() override;
+    ~firebird_session_backend() noexcept(false) override;
 
     bool is_connected() override;
 

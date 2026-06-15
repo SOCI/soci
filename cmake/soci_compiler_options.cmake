@@ -14,14 +14,6 @@ set(SOCI_LD "" CACHE STRING "Specify a non-default linker")
 
 
 if (WIN32)
-  target_compile_definitions(soci_compiler_interface
-    INTERFACE
-      _CRT_SECURE_NO_DEPRECATE
-      _CRT_SECURE_NO_WARNINGS
-      _CRT_NONSTDC_NO_WARNING
-      _SCL_SECURE_NO_WARNINGS
-  )
-
   # Prevent the Windows header files from defining annoying macros
   # and also cut down on the definitions in general
   target_compile_definitions(soci_compiler_interface
@@ -42,6 +34,7 @@ if (MSVC)
     INTERFACE
       "$<${soci_cxx_source}:/W4>"
       "$<${soci_cxx_source}:/we4266>"
+      "$<${soci_cxx_source}:/wd4702>"  # we get many bogus "unreachable code"
   )
 
   if (SOCI_ENABLE_WERROR)
@@ -55,7 +48,7 @@ if (MSVC)
     message(FATAL_ERROR "Using a non-default linker is not supported when using MSVC")
   endif()
 
-  target_compile_options(soci_compiler_interface INTERFACE "/bigobj" "/utf-8")
+  target_compile_options(soci_compiler_interface INTERFACE "/nologo" "/bigobj" "/utf-8")
 else()
 
   if (SOCI_ENABLE_WERROR)
@@ -117,10 +110,17 @@ else()
         "$<${soci_cxx_source}:-Wpointer-arith>"
         "$<${soci_cxx_source}:-Wcast-align>"
         "$<${soci_cxx_source}:-Wcast-qual>"
-        "$<${soci_cxx_source}:-Wfloat-equal>"
         "$<${soci_cxx_source}:-Woverloaded-virtual>"
         "$<${soci_cxx_source}:-Wredundant-decls>"
         "$<${soci_cxx_source}:-Wno-long-long>"
     )
+
+    # We can't use this when using header-only fmt as it gives this warning.
+    if(NOT soci_use_bundled_fmt)
+      target_compile_options(soci_compiler_interface
+        INTERFACE
+          "$<${soci_cxx_source}:-Wfloat-equal>"
+      )
+    endif()
   endif()
 endif()

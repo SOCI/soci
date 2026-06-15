@@ -5,27 +5,27 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_FIREBIRD_SOURCE
 #include "soci/firebird/soci-firebird.h"
 #include "soci-ssize.h"
 #include "firebird/error-firebird.h"
 #include <cctype>
-#include <sstream>
 #include <iostream>
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
 using namespace soci::details::firebird;
 
 firebird_statement_backend::firebird_statement_backend(firebird_session_backend &session)
-    : session_(session), stmtp_(0), sqldap_(NULL), sqlda2p_(NULL),
+    : session_(session), stmtp_(0), sqldap_(nullptr), sqlda2p_(nullptr),
         boundByName_(false), boundByPos_(false), rowsFetched_(0), endOfRowSet_(false), rowsAffectedBulk_(-1LL),
             intoType_(eStandard), useType_(eStandard), procedure_(false)
 {}
 
 void firebird_statement_backend::prepareSQLDA(XSQLDA ** sqldap, short size)
 {
-    if (*sqldap != NULL)
+    if (*sqldap != nullptr)
     {
         *sqldap = reinterpret_cast<XSQLDA*>(realloc(*sqldap, XSQLDA_LENGTH(size)));
     }
@@ -63,16 +63,16 @@ void firebird_statement_backend::clean_up()
         stmtp_ = 0;
     }
 
-    if (sqldap_ != NULL)
+    if (sqldap_ != nullptr)
     {
         free(sqldap_);
-        sqldap_ = NULL;
+        sqldap_ = nullptr;
     }
 
-    if (sqlda2p_ != NULL)
+    if (sqlda2p_ != nullptr)
     {
         free(sqlda2p_);
-        sqlda2p_ = NULL;
+        sqlda2p_ = nullptr;
     }
 }
 
@@ -89,48 +89,47 @@ void firebird_statement_backend::rewriteParameters(
     std::string name;
     int position = 0;
 
-    for (std::string::const_iterator it = src.begin(), end = src.end();
-        it != end; ++it)
+    for (char it : src)
     {
         switch (state)
         {
         case eNormal:
-            if (*it == '\'')
+            if (it == '\'')
             {
-                *dst_it++ = *it;
+                *dst_it++ = it;
                 state = eInQuotes;
             }
-            else if (*it == ':')
+            else if (it == ':')
             {
                 state = eInName;
             }
             else // regular character, stay in the same state
             {
-                *dst_it++ = *it;
+                *dst_it++ = it;
             }
             break;
         case eInQuotes:
-            if (*it == '\'')
+            if (it == '\'')
             {
-                *dst_it++ = *it;
+                *dst_it++ = it;
                 state = eNormal;
             }
             else // regular quoted character
             {
-                *dst_it++ = *it;
+                *dst_it++ = it;
             }
             break;
         case eInName:
-            if (std::isalnum(*it) || *it == '_')
+            if (std::isalnum(it) || it == '_')
             {
-                name += *it;
+                name += it;
             }
             else // end of name
             {
                 names_.insert(std::pair<std::string, int>(name, position++));
                 name.clear();
                 *dst_it++ = '?';
-                *dst_it++ = *it;
+                *dst_it++ = it;
                 state = eNormal;
             }
             break;
@@ -212,7 +211,7 @@ void firebird_statement_backend::rewriteQuery(
     std::copy(rewQuery.begin(), rewQuery.end(), qItr);
 
     // preparing buffers for output parameters
-    if (sqldap_ == NULL)
+    if (sqldap_ == nullptr)
     {
         prepareSQLDA(&sqldap_);
     }
@@ -321,7 +320,7 @@ void firebird_statement_backend::prepare(std::string const & query,
     }
 
     // preparing input parameters
-    if (sqlda2p_ == NULL)
+    if (sqlda2p_ == nullptr)
     {
         prepareSQLDA(&sqlda2p_);
     }
@@ -363,10 +362,7 @@ namespace
     {
         if (actual != expected)
         {
-            std::ostringstream msg;
-            msg << "Incorrect number of " << name << " variables. "
-                << "Expected " << expected << ", got " << actual;
-            throw soci_error(msg.str());
+            throw soci_error(fmt::format("Incorrect number of {} variables. Expected {}, got {}", name, expected, actual));
         }
     }
 }
@@ -375,7 +371,7 @@ statement_backend::exec_fetch_result
 firebird_statement_backend::execute(int number)
 {
     ISC_STATUS stat[ISC_STATUS_LENGTH];
-    XSQLDA *t = NULL;
+    XSQLDA *t = nullptr;
 
     std::size_t usize = uses_.size();
 
@@ -414,7 +410,7 @@ firebird_statement_backend::execute(int number)
 
         // Here we have to explicitly loop to achieve the
         // effect of inserting or updating with vector use elements.
-        const int rows = ssize(*static_cast<firebird_vector_use_type_backend*>(uses_[0]));
+        const int rows = isize(*static_cast<firebird_vector_use_type_backend*>(uses_[0]));
         for (current_row_ = 0; current_row_ < rows; ++current_row_)
         {
             // first we have to prepare input parameters
@@ -471,6 +467,7 @@ firebird_statement_backend::execute(int number)
     else
     {
         // query can't return any data
+        endOfRowSet_ = true;
         return ef_no_data;
     }
 }
@@ -641,12 +638,10 @@ int firebird_statement_backend::get_number_of_rows()
 
 std::string firebird_statement_backend::get_parameter_name(int index) const
 {
-    for (std::map<std::string, int>::const_iterator i = names_.begin();
-         i != names_.end();
-         ++i)
+    for (auto const& kv : names_)
     {
-        if (i->second == index)
-            return i->first;
+        if (kv.second == index)
+            return kv.first;
     }
 
     return std::string();
@@ -743,10 +738,8 @@ void firebird_statement_backend::describe_column(int colNum,
         break;
         /* case SQL_ARRAY:*/
     default:
-        std::ostringstream msg;
-        msg << "Type of column ["<< colNum << "] \"" << columnName
-            << "\" is not supported for dynamic queries";
-        throw soci_error(msg.str());
+        throw soci_error(fmt::format("Type of column [{}] \"{}\" is not supported for dynamic queries",
+                                     colNum, columnName));
         break;
     }
 }

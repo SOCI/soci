@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_POSTGRESQL_SOURCE
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci/blob.h"
 #include "soci/rowid.h"
@@ -23,7 +22,6 @@
 #include <cstring>
 #include <ctime>
 #include <limits>
-#include <sstream>
 
 using namespace soci;
 using namespace soci::details;
@@ -52,9 +50,9 @@ void postgresql_standard_use_type_backend::bind_by_name(
 
 void postgresql_standard_use_type_backend::pre_use(indicator const * ind)
 {
-    if (ind != NULL && *ind == i_null)
+    if (ind != nullptr && *ind == i_null)
     {
-        // leave the working buffer as NULL
+        // leave the working buffer null
     }
     else
     {
@@ -234,15 +232,15 @@ void postgresql_standard_use_type_backend::post_use(
 
 void postgresql_standard_use_type_backend::clean_up()
 {
-    if (buf_ != NULL)
+    if (buf_ != nullptr)
     {
         delete [] buf_;
-        buf_ = NULL;
+        buf_ = nullptr;
     }
 }
 
 void postgresql_standard_use_type_backend::copy_from_string(std::string const& s)
 {
     buf_ = new char[s.size() + 1];
-    std::strcpy(buf_, s.c_str());
+    strncpy(buf_, s.c_str(), s.size() + 1);
 }

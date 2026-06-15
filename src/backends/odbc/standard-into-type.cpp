@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_ODBC_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/soci-unicode.h"
 #include "soci/odbc/soci-odbc.h"
@@ -15,6 +14,7 @@
 #include "soci-mktime.h"
 #include <cstdint>
 #include <ctime>
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -56,7 +56,8 @@ void odbc_standard_into_type_backend::define_by_pos(
         // Do exactly the same thing here as for x_stdstring above.
         size = static_cast<SQLUINTEGER>(statement_.column_size(position_));
         size = (size >= ODBC_MAX_COL_SIZE || size == 0) ? odbc_max_buffer_length : size;
-        size += sizeof(SQLWCHAR);
+        size++;
+        size = size * sizeof(SQLWCHAR); // size in bytes
         buf_ = new char[size];
         data = buf_;
         break;
@@ -136,9 +137,7 @@ void odbc_standard_into_type_backend::define_by_pos(
         static_cast<SQLUSMALLINT>(odbcType_), data, size, &valueLen_);
     if (is_odbc_error(rc))
     {
-        std::ostringstream ss;
-        ss << "binding output column #" << position_;
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, ss.str());
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, fmt::format("binding output column #{}", position_));
     }
 }
 
@@ -162,7 +161,7 @@ void odbc_standard_into_type_backend::post_fetch(
         // first, deal with indicators
         if (SQL_NULL_DATA == get_sqllen_from_value(valueLen_))
         {
-            if (ind == NULL)
+            if (ind == nullptr)
             {
                 throw soci_error(
                     "Null value fetched and no indicator defined.");
@@ -173,7 +172,7 @@ void odbc_standard_into_type_backend::post_fetch(
         }
         else
         {
-            if (ind != NULL)
+            if (ind != nullptr)
             {
                 *ind = i_ok;
             }
@@ -251,6 +250,6 @@ void odbc_standard_into_type_backend::clean_up()
     if (buf_)
     {
         delete [] buf_;
-        buf_ = 0;
+        buf_ = nullptr;
     }
 }

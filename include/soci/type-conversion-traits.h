@@ -73,11 +73,6 @@ private:
 namespace details
 {
 
-#if !defined(_MSC_VER) || (_MSC_VER >= 1910)
-    // MSVC 2015 and earlier don't support SFINAE on return types
-    #define SOCI_HAS_RET_TYPE_SFINAE
-#endif
-
 template<typename T>
 using from_base_check_t = decltype(T::from_base_check::value);
 template<typename T>
@@ -87,8 +82,6 @@ template<typename T>
 using supports_from_base_check = is_detected<from_base_check_t, T>;
 template<typename T>
 using supports_move_from_base_check = is_detected<move_from_base_check_t, T>;
-
-#ifdef SOCI_HAS_RET_TYPE_SFINAE
 
 template<typename Trait>
 constexpr auto can_use_from_base()
@@ -120,27 +113,6 @@ constexpr auto can_use_move_from_base()
     // move_from_base implementation
     return false;
 }
-
-#undef SOCI_HAS_RET_TYPE_SFINAE
-
-#else
-
-// Always return true - if it doesn't work the user will get a cryptic compiler error but at least
-// it will compile properly for cases in which things do indeed work
-
-template<typename Trait>
-constexpr auto can_use_from_base()
-{
-    return true;
-}
-
-template<typename Trait>
-constexpr auto can_use_move_from_base()
-{
-    return true;
-}
-
-#endif
 
 }
 

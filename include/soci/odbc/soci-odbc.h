@@ -18,12 +18,10 @@
 
 #include <vector>
 #include <soci/soci-backend.h>
-#include <sstream>
 #if defined(_MSC_VER) || defined(__MINGW32__)
 #include <windows.h>
 #endif
 #include <sqlext.h> // ODBC
-#include <string.h> // strcpy()
 
 namespace soci
 {
@@ -58,8 +56,16 @@ namespace details
 // Option allowing to specify the "driver completion" parameter of
 // SQLDriverConnect(). Its possible values are the same as the allowed values
 // for this parameter in the official ODBC, i.e. one of SQL_DRIVER_XXX (in
-// string form as all options are strings currently).
+// string form as all options are strings currently), possible "OR"ed with
+// the special odbc_option_remember_completed value.
 extern SOCI_ODBC_DECL char const * odbc_option_driver_complete;
+
+constexpr int odbc_option_remember_completed = 0x100;
+
+// Option allowing to specify the parent HWND for ODBC dialogs on Windows.
+// The value of this option is supposed to be a string representation of
+// a pointer to HWND, either in decimal or hexadecimal form (with "0x" prefix).
+extern SOCI_ODBC_DECL char const * odbc_option_parent_window;
 
 struct odbc_statement_backend;
 
@@ -100,7 +106,7 @@ struct odbc_standard_into_type_backend : details::standard_into_type_backend,
                                          private odbc_standard_type_backend_base
 {
     odbc_standard_into_type_backend(odbc_statement_backend &st)
-        : odbc_standard_type_backend_base(st), buf_(0)
+        : odbc_standard_type_backend_base(st), buf_(nullptr)
     {}
 
     void define_by_pos(int &position,
@@ -127,7 +133,7 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
 {
     odbc_vector_into_type_backend(odbc_statement_backend &st)
         : odbc_standard_type_backend_base(st),
-          data_(NULL), buf_(NULL), position_(0) {}
+          data_(nullptr), buf_(nullptr), position_(0) {}
 
     void define_by_pos(int &position,
         void *data, details::exchange_type type) override;
@@ -168,7 +174,7 @@ struct odbc_standard_use_type_backend : details::standard_use_type_backend,
 {
     odbc_standard_use_type_backend(odbc_statement_backend &st)
         : odbc_standard_type_backend_base(st),
-          position_(-1), data_(0), buf_(0), indHolder_(0) {}
+          position_(-1), data_(nullptr), buf_(nullptr), indHolder_(0) {}
 
     void bind_by_pos(int &position,
         void *data, details::exchange_type type, bool readOnly) override;
@@ -213,7 +219,7 @@ struct odbc_vector_use_type_backend : details::vector_use_type_backend,
 {
     odbc_vector_use_type_backend(odbc_statement_backend &st)
         : odbc_standard_type_backend_base(st),
-          data_(NULL), buf_(NULL) {}
+          data_(nullptr), buf_(nullptr) {}
 
     // helper function for preparing indicators
     // (as part of the define_by_pos)
@@ -332,7 +338,7 @@ struct SOCI_ODBC_DECL odbc_session_backend : details::session_backend
 {
     odbc_session_backend(connection_parameters const & parameters);
 
-    ~odbc_session_backend() override;
+    ~odbc_session_backend() noexcept(false) override;
 
     bool is_connected() override;
 
@@ -377,8 +383,33 @@ struct SOCI_ODBC_DECL odbc_session_backend : details::session_backend
     // Return full ODBC connection string.
     std::string get_connection_string() const { return connection_string_; }
 
-    SQLHENV henv_;
-    SQLHDBC hdbc_;
+    // Simple RAII wrapper for ODBC handles.
+    template <int HANDLE_TYPE>
+    struct auto_handle
+    {
+        ~auto_handle()
+        {
+            if (h_ != nullptr)
+            {
+                // Ignore errors in destructor, we can't throw from here.
+                reset();
+            }
+        }
+
+        SQLRETURN reset()
+        {
+            SQLRETURN const rc = SQLFreeHandle(HANDLE_TYPE, h_);
+            h_ = nullptr;
+            return rc;
+        }
+
+        operator SQLHANDLE() const { return h_; }
+
+        SQLHANDLE h_ = nullptr;
+    };
+
+    auto_handle<SQL_HANDLE_ENV> henv_;
+    auto_handle<SQL_HANDLE_DBC> hdbc_;
 
     std::string connection_string_;
 

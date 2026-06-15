@@ -6,12 +6,11 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_SOURCE
-
 #include "soci/error.h"
 
-#include <sstream>
 #include <vector>
+
+#include <fmt/format.h>
 
 namespace soci
 {
@@ -40,11 +39,10 @@ public:
                     full_message_.erase(full_message_.size() - 1);
 
                 // Now do append all the extra context we have.
-                typedef std::vector<std::string>::const_iterator iter_type;
-                for (iter_type i = contexts_.begin(); i != contexts_.end(); ++i)
+                for (auto const& context : contexts_)
                 {
                     full_message_ += " ";
-                    full_message_ += *i;
+                    full_message_ += context;
                 }
 
                 // It seems better to always terminate the full message with a
@@ -83,14 +81,14 @@ soci_error_extra_info *make_safe_copy(soci_error_extra_info* info)
 {
     try
     {
-        return info ? new soci_error_extra_info(*info) : NULL;
+        return info ? new soci_error_extra_info(*info) : nullptr;
     }
     catch (...)
     {
         // Copy ctor of an exception class shouldn't throw to avoid program
         // termination, so it's better to lose the extra information than allow
         // an exception to except from here.
-        return NULL;
+        return nullptr;
     }
 }
 
@@ -99,7 +97,21 @@ soci_error_extra_info *make_safe_copy(soci_error_extra_info* info)
 soci_error::soci_error(std::string const & msg)
      : std::runtime_error(msg)
 {
-    info_ = NULL;
+}
+
+soci_error::soci_error(char const* format, std::string const& arg)
+    : std::runtime_error(fmt::vformat(format, fmt::make_format_args(arg)))
+{
+}
+
+soci_error::soci_error(char const* format, int arg)
+    : std::runtime_error(fmt::vformat(format, fmt::make_format_args(arg)))
+{
+}
+
+soci_error::soci_error(char const* format, size_t arg)
+    : std::runtime_error(fmt::vformat(format, fmt::make_format_args(arg)))
+{
 }
 
 soci_error::soci_error(soci_error const& e) noexcept

@@ -1,5 +1,5 @@
-# Continuous integration workflow for SOCI.
-name: GitHub CI
+# Continuous integration workflow for SOCI Unix builds.
+name: Unix CI
 
 on:
   push:
@@ -9,6 +9,7 @@ on:
     paths-ignore:
       - .circleci/**
       - .cirrus.yml
+      - .github/workflows/ci_msw.yml
       - .github/workflows/codeql.yml
       - appveyor.yml
   pull_request:
@@ -17,6 +18,7 @@ on:
     paths-ignore:
       - .circleci/**
       - .cirrus.yml
+      - .github/workflows/ci_msw.yml
       - .github/workflows/codeql.yml
       - appveyor.yml
   workflow_dispatch:
@@ -119,6 +121,7 @@ jobs:
             backend: Valgrind
             runner: ubuntu-24.04
             name: Valgrind
+            cxxstd: 20
           - lib_type: shared
             backend: MySQL
             runner: ubuntu-24.04
@@ -138,7 +141,9 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          submodules: 'recursive'
 
       - name: Set environment variables
         shell: bash

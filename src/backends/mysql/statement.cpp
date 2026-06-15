@@ -6,10 +6,8 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_MYSQL_SOURCE
 #include "soci/mysql/soci-mysql.h"
 #include <cctype>
-#include <ciso646>
 
 using namespace soci;
 using namespace soci::details;
@@ -18,7 +16,7 @@ using std::string;
 
 mysql_statement_backend::mysql_statement_backend(
     mysql_session_backend &session)
-    : session_(session), result_(NULL),
+    : session_(session), result_(nullptr),
        rowsAffectedBulk_(-1LL), justDescribed_(false)
 {
 }
@@ -34,10 +32,10 @@ void mysql_statement_backend::clean_up()
     // potential new execution.
     rowsAffectedBulk_ = -1;
 
-    if (result_ != NULL)
+    if (result_ != nullptr)
     {
         mysql_free_result(result_);
-        result_ = NULL;
+        result_ = nullptr;
     }
 }
 
@@ -153,9 +151,9 @@ mysql_statement_backend::execute(int number)
         }
 
         std::string query;
-        if (not useByPosBuffers_.empty() or not useByNameBuffers_.empty())
+        if (!useByPosBuffers_.empty() || !useByNameBuffers_.empty())
         {
-            if (not useByPosBuffers_.empty() and not useByNameBuffers_.empty())
+            if (!useByPosBuffers_.empty() && !useByNameBuffers_.empty())
             {
                 throw soci_error(
                     "Binding for use elements must be either by position "
@@ -166,18 +164,15 @@ mysql_statement_backend::execute(int number)
             {
                 std::vector<char *> paramValues;
 
-                if (not useByPosBuffers_.empty())
+                if (!useByPosBuffers_.empty())
                 {
                     // use elements bind by position
                     // the map of use buffers can be traversed
                     // in its natural order
 
-                    for (UseByPosBuffersMap::iterator
-                             it = useByPosBuffers_.begin(),
-                             end = useByPosBuffers_.end();
-                         it != end; ++it)
+                    for (auto const& kv : useByPosBuffers_)
                     {
-                        char **buffers = it->second;
+                        char **buffers = kv.second;
                         //cerr<<"i: "<<i<<", buffers[i]: "<<buffers[i]<<endl;
                         paramValues.push_back(buffers[i]);
                     }
@@ -186,17 +181,15 @@ mysql_statement_backend::execute(int number)
                 {
                     // use elements bind by name
 
-                    for (std::vector<std::string>::iterator
-                             it = names_.begin(), end = names_.end();
-                         it != end; ++it)
+                    for (auto const& s : names_)
                     {
                         UseByNameBuffersMap::iterator b
-                            = useByNameBuffers_.find(*it);
+                            = useByNameBuffers_.find(s);
                         if (b == useByNameBuffers_.end())
                         {
                             std::string msg(
                                 "Missing use element for bind by name (");
-                            msg += *it;
+                            msg += s;
                             msg += ").";
                             throw soci_error(msg);
                         }
@@ -207,19 +200,17 @@ mysql_statement_backend::execute(int number)
                 //cerr << "queryChunks_.size(): "<<queryChunks_.size()<<endl;
                 //cerr << "paramValues.size(): "<<paramValues.size()<<endl;
                 if (queryChunks_.size() != paramValues.size()
-                    and queryChunks_.size() != paramValues.size() + 1)
+                    && queryChunks_.size() != paramValues.size() + 1)
                 {
                     throw soci_error("Wrong number of parameters.");
                 }
 
                 std::vector<std::string>::const_iterator ci
                     = queryChunks_.begin();
-                for (std::vector<char*>::const_iterator
-                         pi = paramValues.begin(), end = paramValues.end();
-                     pi != end; ++ci, ++pi)
+                for (auto p : paramValues)
                 {
-                    query += *ci;
-                    query += *pi;
+                    query += *ci++;
+                    query += p;
                 }
                 if (ci != queryChunks_.end())
                 {
@@ -273,12 +264,12 @@ mysql_statement_backend::execute(int number)
                 mysql_errno(session_.conn_));
         }
         result_ = mysql_store_result(session_.conn_);
-        if (result_ == NULL and mysql_field_count(session_.conn_) != 0)
+        if (result_ == nullptr && mysql_field_count(session_.conn_) != 0)
         {
             throw mysql_soci_error(mysql_error(session_.conn_),
                 mysql_errno(session_.conn_));
         }
-        if (result_ != NULL)
+        if (result_ != nullptr)
         {
             // Cache the rows offsets to have random access to the rows later.
             // [mysql_data_seek() is O(n) so we don't want to use it].
@@ -296,7 +287,7 @@ mysql_statement_backend::execute(int number)
         justDescribed_ = false;
     }
 
-    if (result_ != NULL)
+    if (result_ != nullptr)
     {
         currentRow_ = 0;
         rowsToConsume_ = 0;
@@ -323,6 +314,7 @@ mysql_statement_backend::execute(int number)
     else
     {
         // it was not a SELECT
+        numberOfRows_ = 0;
         return ef_no_data;
     }
 }
@@ -330,6 +322,13 @@ mysql_statement_backend::execute(int number)
 statement_backend::exec_fetch_result
 mysql_statement_backend::fetch(int number)
 {
+    if (numberOfRows_ == 0)
+    {
+        // There is nothing to fetch and normally we shouldn't be even called
+        // in this case, but don't do anything stupid if we are.
+        return ef_no_data;
+    }
+
     // Note: This function does not actually fetch anything from anywhere
     // - the data was already retrieved from the server in the execute()
     // function, and the actual consumption of this data will take place

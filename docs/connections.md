@@ -23,12 +23,6 @@ Above, the `sql` object is a local (automatic) object that encapsulates the conn
 
 This `session` constructor either connects successfully, or throws an exception.
 
-### Portability note
-
-In case of SOCI linked against DLLs on Windows, the factory objects are not exported from the DLLs.
-In order to avoid linker errors, access factory objects via dedicated backend functions
-provided (eg. `factory_postgresql()`).
-
 ## Using loadable backends
 
 Dynamically loadable backends are compiled as shared libraries and allow to select backends at run-time by name.

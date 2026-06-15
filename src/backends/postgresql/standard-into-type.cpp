@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_POSTGRESQL_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci-cstrtod.h"
@@ -25,7 +24,6 @@
 #include <cstring>
 #include <cstdlib>
 #include <ctime>
-#include <sstream>
 
 using namespace soci;
 using namespace soci::details;
@@ -63,7 +61,7 @@ void postgresql_standard_into_type_backend::post_fetch(
         // first, deal with indicators
         if (PQgetisnull(statement_.result_, statement_.currentRow_, pos) != 0)
         {
-            if (ind == NULL)
+            if (ind == nullptr)
             {
                 throw soci_error(
                     "Null value fetched and no indicator defined.");
@@ -76,7 +74,7 @@ void postgresql_standard_into_type_backend::post_fetch(
         }
         else
         {
-            if (ind != NULL)
+            if (ind != nullptr)
             {
                 *ind = i_ok;
             }

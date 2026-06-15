@@ -14,7 +14,6 @@
 #include "soci/row-exchange.h"
 // std
 #include <cstddef>
-#include <sstream>
 #include <string>
 #include <vector>
 
@@ -56,22 +55,22 @@ public:
 
     std::string get_name() const override
     {
-        std::ostringstream oss;
+        std::string s;
 
-        oss << "(";
+        s += "(";
 
         std::size_t const num_columns = v_.get_number_of_columns();
         for (std::size_t n = 0; n < num_columns; ++n)
         {
             if (n != 0)
-                oss << ", ";
+                s += ", ";
 
-            oss << v_.get_properties(n).get_name();
+            s += v_.get_properties(n).get_name();
         }
 
-        oss << ")";
+        s += ")";
 
-        return oss.str();
+        return s;
     }
 
     void dump_value(std::ostream& os, int /* index */) const override

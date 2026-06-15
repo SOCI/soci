@@ -14,11 +14,7 @@
 #include "soci-compiler.h"
 
 #include <catch.hpp>
-
-#if defined(_MSC_VER) && (_MSC_VER < 1500)
-#undef SECTION
-#define SECTION(name) INTERNAL_CATCH_SECTION(name, "dummy-for-vc8")
-#endif
+#include <fmt/format.h>
 
 #include <algorithm>
 #include <clocale>
@@ -329,9 +325,9 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                for (std::size_t i = 0; i != vec.size(); ++i)
+                for (char i : vec)
                 {
-                    CHECK(c2 == vec[i]);
+                    CHECK(c2 == i);
                     ++c2;
                 }
 
@@ -363,11 +359,10 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         int const rowsToTest = 10;
         for (int i = 0; i != rowsToTest; ++i)
         {
-            std::ostringstream ss;
-            ss << "Hello_" << i;
+            std::string s = fmt::format("Hello_{}", i);
 
             sql << "insert into soci_test(str) values(\'"
-                << ss.str() << "\')";
+                << s << "\')";
         }
 
         int count;
@@ -383,9 +378,7 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                std::ostringstream ss;
-                ss << "Hello_" << i;
-                CHECK(s == ss.str());
+                CHECK(s == fmt::format("Hello_{}", i));
                 ++i;
             }
             CHECK(i == rowsToTest);
@@ -399,11 +392,9 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                for (std::size_t j = 0; j != vec.size(); ++j)
+                for (const auto & j : vec)
                 {
-                    std::ostringstream ss;
-                    ss << "Hello_" << i;
-                    CHECK(ss.str() == vec[j]);
+                    CHECK(fmt::format("Hello_{}", i) == j);
                     ++i;
                 }
 
@@ -449,9 +440,9 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                for (std::size_t i = 0; i != vec.size(); ++i)
+                for (short i : vec)
                 {
-                    CHECK(sh2 == vec[i]);
+                    CHECK(sh2 == i);
                     ++sh2;
                 }
 
@@ -515,9 +506,9 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                for (std::size_t n = 0; n != vec.size(); ++n)
+                for (int n : vec)
                 {
-                    CHECK(i2 == vec[n]);
+                    CHECK(i2 == n);
                     ++i2;
                 }
 
@@ -563,9 +554,9 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                for (std::size_t i = 0; i != vec.size(); ++i)
+                for (unsigned int i : vec)
                 {
-                    CHECK(ul2 == vec[i]);
+                    CHECK(ul2 == i);
                     ++ul2;
                 }
 
@@ -611,9 +602,9 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                for (std::size_t i = 0; i != vec.size(); ++i)
+                for (unsigned long long i : vec)
                 {
-                    CHECK(ul2 == vec[i]);
+                    CHECK(ul2 == i);
                     ++ul2;
                 }
 
@@ -684,12 +675,10 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
         int const rowsToTest = 8;
         for (int i = 0; i != rowsToTest; ++i)
         {
-            std::ostringstream ss;
-            ss << 2000 + i << "-0" << 1 + i << '-' << 20 - i << ' '
-                << 15 + i << ':' << 50 - i << ':' << 40 + i;
+            std::string s = fmt::format("{}-0{}-{} {}:{}:{}", 2000 + i, 1 + i, 20 - i, 15 + i, 50 - i, 40 + i);
 
             sql << "insert into soci_test(id, tm) values(" << i
-            << ", " << tc_.to_date_time(ss.str()) << ")";
+            << ", " << tc_.to_date_time(s) << ")";
         }
 
         int count;
@@ -726,14 +715,14 @@ TEST_CASE_METHOD(common_tests, "Repeated and bulk fetch", "[core][bulk]")
             st.execute();
             while (st.fetch())
             {
-                for (std::size_t j = 0; j != vec.size(); ++j)
+                for (auto & j : vec)
                 {
-                    CHECK(vec[j].tm_year == 2000 - 1900 + i);
-                    CHECK(vec[j].tm_mon == i);
-                    CHECK(vec[j].tm_mday == 20 - i);
-                    CHECK(vec[j].tm_hour == 15 + i);
-                    CHECK(vec[j].tm_min == 50 - i);
-                    CHECK(vec[j].tm_sec == 40 + i);
+                    CHECK(j.tm_year == 2000 - 1900 + i);
+                    CHECK(j.tm_mon == i);
+                    CHECK(j.tm_mday == 20 - i);
+                    CHECK(j.tm_hour == 15 + i);
+                    CHECK(j.tm_min == 50 - i);
+                    CHECK(j.tm_sec == 40 + i);
 
                     ++i;
                 }
@@ -1509,6 +1498,96 @@ TEST_CASE_METHOD(common_tests, "Use type conversion", "[core][use]")
         CHECK(t.tm_hour == 21);
         CHECK(t.tm_min  == 39);
         CHECK(t.tm_sec  == 57);
+    }
+}
+
+// "values" tests
+TEST_CASE_METHOD(common_tests, "Use values", "[core][use][values]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    const int u_id = 1;
+    const char u_c('a');
+    const std::string u_s = "Hello SOCI!";
+    const double u_d = 2.0;
+
+    SECTION("Named with all i_ok indicators")
+    {
+        soci::values use_values;
+
+        use_values.set ("id", u_id, i_ok);
+        use_values.set ("c", u_c, i_ok);
+        use_values.set ("str", u_s, i_ok);
+        use_values.set ("d", u_d, i_ok);
+
+        CHECK (i_ok == use_values.get_indicator ("id"));
+        CHECK (i_ok == use_values.get_indicator ("c"));
+        CHECK (i_ok == use_values.get_indicator ("str"));
+        CHECK (i_ok == use_values.get_indicator ("d"));
+
+        sql << "insert into soci_test(id, c, str, d) values(:id, :c, :str, :d)",
+            use(use_values);
+
+        int i_id{};
+        char i_c{};
+        std::string i_s{};
+        double i_d{};
+
+        sql << "select id, c, str, d from soci_test",
+            into(i_id), into(i_c), into(i_s), into(i_d);
+
+        CHECK(i_id == 1);
+        CHECK(i_c == 'a');
+        CHECK(i_s == "Hello SOCI!");
+        CHECK(i_d == 2.0);
+    }
+
+    SECTION("Named with all i_null indicators")
+    {
+        soci::values use_values;
+
+        use_values.set ("id", u_id, i_null);
+        use_values.set ("c", u_c, i_null);
+        use_values.set ("str", u_s, i_null);
+        use_values.set ("d", u_d, i_null);
+
+        CHECK (i_null == use_values.get_indicator ("id"));
+        CHECK (i_null == use_values.get_indicator ("c"));
+        CHECK (i_null == use_values.get_indicator ("str"));
+        CHECK (i_null == use_values.get_indicator ("d"));
+
+        sql << "insert into soci_test(id, c, str, d) values(:id, :c, :str, :d)",
+            use(use_values);
+
+        int i_id{};
+        char i_c{};
+        std::string i_s{};
+        double i_d{};
+
+        indicator id_ind;
+        indicator c_ind;
+        indicator s_ind;
+        indicator d_ind;
+
+        sql << "select id, c, str, d from soci_test",
+            into(i_id, id_ind), into(i_c, c_ind), into(i_s, s_ind),
+            into(i_d, d_ind);
+
+        CHECK (int{} == i_id);
+        /*
+            Skip checking i_c, because char processing differs between backends:
+            Oracle backend returns ' ' instead of char{} or not touching the
+            value at all.
+        */
+        CHECK (std::string{} == i_s);
+        CHECK (double{} == i_d);
+
+        CHECK(id_ind == i_null);
+        CHECK(c_ind == i_null);
+        CHECK(s_ind == i_null);
+        CHECK(d_ind == i_null);
     }
 }
 
@@ -2329,7 +2408,7 @@ TEST_CASE_METHOD(common_tests, "Basic logging support", "[core][logging]")
     CHECK(sql.get_last_query() == "drop table soci_test1");
     CHECK(sql.get_last_query_context() == "");
 
-    sql.set_log_stream(NULL);
+    sql.set_log_stream(nullptr);
 
     {
         auto_table_creator tableCreator(tc_.table_creator_1(sql));
@@ -3409,7 +3488,7 @@ namespace {
         explicit tz_setter(const std::string& time_zone)
         {
             char* tz_value = getenv("TZ");
-            if (tz_value != NULL)
+            if (tz_value != nullptr)
             {
                 original_tz_value_ = tz_value;
             }
@@ -3519,7 +3598,7 @@ TEST_CASE_METHOD(common_tests, "Insert error", "[core][insert][exception]")
 
     SECTION("SQL queries parameters appear in the error message")
     {
-        char const* const names[] = { "John", "Paul", "George", "John", NULL };
+        char const* const names[] = { "John", "Paul", "George", "John", nullptr };
         int const ages[] = { 74, 72, 72, 74, 0 };
 
         std::string name;

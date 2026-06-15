@@ -376,9 +376,8 @@ TEST_CASE("DB2 test 3", "[db2]")
 
     i = 0;
     rowset<row> rs = (sql.prepare<<"SELECT ID, DATA, DT FROM DB2INST1.SOCI_TEST");
-    for (rowset<row>::const_iterator it = rs.begin(); it != rs.end(); it++)
+    for (row const& r : rs)
     {
-        const row & r = *it;
         const long long id = r.get<long long>(0);
         const std::string data = r.get<std::string>(1);
         const std::tm dt = r.get<std::tm>(2);

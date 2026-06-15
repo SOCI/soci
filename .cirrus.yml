@@ -3,6 +3,7 @@
 # This is currently used for testing under FreeBSD, which is not available at
 # the other CI providers already used by SOCI.
 env:
+  CIRRUS_CLONE_SUBMODULES: true
   SOCI_CI: true
   SOCI_CI_BRANCH: ${CIRRUS_BRANCH}
   SOCI_SOURCE_DIR: /tmp/cirrus-ci-build
@@ -10,6 +11,7 @@ env:
   WITH_BOOST: OFF
 
 task:
+  skip: "changesIncludeOnly('.github/workflows/*', '.circleci/config.yml')"
   matrix:
     - name: Cirrus CI / Empty FreeBSD
       env:
@@ -18,7 +20,7 @@ task:
       env:
         SOCI_CI_BACKEND: sqlite3
   freebsd_instance:
-    image_family: freebsd-14-2
+    image_family: freebsd-14-3
   install_script: ./scripts/ci/install.sh
   before_build_script: ./scripts/ci/before_build.sh
   build_script: ./scripts/ci/build.sh

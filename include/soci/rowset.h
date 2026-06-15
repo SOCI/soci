@@ -58,7 +58,8 @@ public:
         return &(operator*());
     }
 
-    // Iteration operators
+    // Iteration operator: as this is an input operator, it only supports
+    // pre-increment
 
     rowset_iterator & operator++()
     {
@@ -72,13 +73,6 @@ public:
         }
 
         return (*this);
-    }
-
-    rowset_iterator operator++(int)
-    {
-        rowset_iterator tmp(*this);
-        ++(*this);
-        return tmp;
     }
 
     // Comparison operators

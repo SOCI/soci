@@ -6,14 +6,12 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_MYSQL_SOURCE
 #include "soci/mysql/soci-mysql.h"
 #include "common.h"
 #include "soci/soci-platform.h"
 #include "soci-dtocstr.h"
 #include "soci-mktime.h"
 // std
-#include <ciso646>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -53,10 +51,10 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind)
         char *buf;
 
         // the data in vector can be either i_ok or i_null
-        if (ind != NULL && ind[i] == i_null)
+        if (ind != nullptr && ind[i] == i_null)
         {
             buf = new char[5];
-            std::strcpy(buf, "NULL");
+            strncpy(buf, "NULL", 5);
         }
         else
         {
@@ -196,7 +194,7 @@ void mysql_vector_use_type_backend::pre_use(indicator const *ind)
                     std::string const s = double_to_cstring(v[i]);
 
                     buf = new char[s.size() + 1];
-                    std::strcpy(buf, s.c_str());
+                    strncpy(buf, s.c_str(), s.size() + 1);
                 }
                 break;
             case x_stdtm:

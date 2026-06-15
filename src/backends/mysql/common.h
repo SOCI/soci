@@ -10,12 +10,13 @@
 
 #include "soci/mysql/soci-mysql.h"
 #include "soci-cstrtod.h"
+#include "soci-cstrtoi.h"
 #include "soci-compiler.h"
 // std
 #include <cstddef>
 #include <ctime>
 #include <locale>
-#include <sstream>
+#include <type_traits>
 #include <vector>
 
 namespace soci
@@ -48,12 +49,19 @@ bool is_infinity_or_nan(T x)
     SOCI_GCC_WARNING_RESTORE(float-equal)
 }
 
-template <typename T>
+template <typename T, std::enable_if_t<std::is_signed<T>::value, int> = 0>
 void parse_num(char const *buf, T &x)
 {
-    std::istringstream iss(buf);
-    iss >> x;
-    if (iss.fail() || (iss.eof() == false))
+    if (!cstring_to_integer(x, buf))
+    {
+        throw soci_error("Cannot convert data.");
+    }
+}
+
+template <typename T, std::enable_if_t<std::is_unsigned<T>::value, int> = 0>
+void parse_num(char const *buf, T &x)
+{
+    if (!cstring_to_unsigned(x, buf))
     {
         throw soci_error("Cannot convert data.");
     }

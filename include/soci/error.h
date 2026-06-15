@@ -22,6 +22,12 @@ class SOCI_DECL soci_error : public std::runtime_error
 public:
     explicit soci_error(std::string const & msg);
 
+    // Provide a simple way to construct the message from a format (using fmt
+    // syntax, i.e. with {} placeholders) and one argument of the given type.
+    soci_error(char const* format, std::string const& arg);
+    soci_error(char const* format, int arg);
+    soci_error(char const* format, size_t arg);
+
     soci_error(soci_error const& e) noexcept;
     soci_error& operator=(soci_error const& e) noexcept;
 
@@ -71,7 +77,7 @@ public:
 
 private:
     // Optional extra information (currently just the context data).
-    class soci_error_extra_info* info_;
+    class soci_error_extra_info* info_ = nullptr;
 };
 
 } // namespace soci

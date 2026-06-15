@@ -5,9 +5,7 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
-#include "error.h"
 #include "handle.h"
 #include "soci/soci-backend.h"
 #include <cctype>
@@ -15,11 +13,6 @@
 #include <cstring>
 #include <ctime>
 #include <limits>
-#include <sstream>
-
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
 
 using namespace soci;
 using namespace soci::details;
@@ -35,14 +28,14 @@ T get_oci_attr(OCIHandle* hp, int attr, OCIError* errhp)
     sword res = OCIAttrGet(hp,
         oci_traits<OCIHandle>::type,
         &value,
-        0,
+        nullptr,
         attr,
         errhp
     );
 
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, errhp);
+        throw oracle_soci_error(res, errhp);
     }
 
     return value;
@@ -58,7 +51,7 @@ T get_oci_attr(handle<OCIHandle>& hp, int attr, OCIError* errhp)
 
 
 oracle_statement_backend::oracle_statement_backend(oracle_session_backend &session)
-    : session_(session), stmtp_(NULL), boundByName_(false), boundByPos_(false),
+    : session_(session), stmtp_(nullptr), boundByName_(false), boundByPos_(false),
       noData_(false)
 {
 }
@@ -67,7 +60,7 @@ void oracle_statement_backend::alloc()
 {
     sword res = OCIHandleAlloc(session_.envhp_,
         reinterpret_cast<dvoid**>(&stmtp_),
-        OCI_HTYPE_STMT, 0, 0);
+        OCI_HTYPE_STMT, 0, nullptr);
     if (res != OCI_SUCCESS)
     {
         throw soci_error("Cannot allocate statement handle");
@@ -77,10 +70,10 @@ void oracle_statement_backend::alloc()
 void oracle_statement_backend::clean_up()
 {
     // deallocate statement handle
-    if (stmtp_ != NULL)
+    if (stmtp_ != nullptr)
     {
         OCIHandleFree(stmtp_, OCI_HTYPE_STMT);
-        stmtp_ = NULL;
+        stmtp_ = nullptr;
     }
 
     boundByName_ = false;
@@ -97,7 +90,7 @@ void oracle_statement_backend::prepare(std::string const &query,
         stmtLen, OCI_V7_SYNTAX, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, session_.errhp_);
+        throw oracle_soci_error(res, session_.errhp_);
     }
 }
 
@@ -120,7 +113,7 @@ statement_backend::exec_fetch_result oracle_statement_backend::execute(int numbe
     }
 
     sword res = OCIStmtExecute(session_.svchp_, stmtp_, session_.errhp_,
-        static_cast<ub4>(number), 0, 0, 0, mode);
+        static_cast<ub4>(number), 0, nullptr, nullptr, mode);
 
     // For bulk operations, "success with info" is used even when some rows
     // resulted in errors, so check for this and return error in this case.
@@ -145,11 +138,11 @@ statement_backend::exec_fetch_result oracle_statement_backend::execute(int numbe
             );
             if (res2 != OCI_SUCCESS)
             {
-                throw_oracle_soci_error(res2, errhTmp);
+                throw oracle_soci_error(res2, errhTmp);
             }
 
             error_row_ = get_oci_attr<ub4>(errhRow, OCI_ATTR_DML_ROW_OFFSET, errhTmp);
-            throw_oracle_soci_error(res, errhRow);
+            throw oracle_soci_error(res, errhRow);
         }
         //else: No errors, handle as success below.
     }
@@ -166,8 +159,15 @@ statement_backend::exec_fetch_result oracle_statement_backend::execute(int numbe
     }
     else
     {
-        throw_oracle_soci_error(res, session_.errhp_);
-        return ef_no_data; // unreachable dummy return to please the compiler
+        oracle_soci_error err(res, session_.errhp_);
+
+        // Special case of ORA-24333 error given when executing non-SELECT
+        // statements with 0 rows.
+        if (err.get_backend_error_code() != 24333)
+            throw err;
+
+        noData_ = true;
+        return ef_no_data;
     }
 }
 
@@ -192,7 +192,7 @@ statement_backend::exec_fetch_result oracle_statement_backend::fetch(int number)
     }
     else
     {
-        throw_oracle_soci_error(res, session_.errhp_);
+        throw oracle_soci_error(res, session_.errhp_);
         return ef_no_data; // unreachable dummy return to please the compiler
     }
 }
@@ -220,12 +220,12 @@ std::string oracle_statement_backend::get_parameter_name(int index) const
     // one of them, but for now keep it simple it and get them one by one, even
     // if it's probably a bit slower.
     sb4 signedCount = 0;
-    OraText* name = NULL;
+    OraText* name = nullptr;
     ub1 len = 0;
 
     // We don't need the remaining outputs, but we still must specify them as
     // otherwise the function just fails with a non-existent ORA-24999.
-    OraText* indName = NULL;
+    OraText* indName = nullptr;
     ub1 indLen = 0;
     ub1 duplicate = 0;
 
@@ -239,12 +239,12 @@ std::string oracle_statement_backend::get_parameter_name(int index) const
         &indName,       // Indicator name.
         &indLen,        // Length of the indicator name.
         &duplicate,     // Is the parameter a duplicate?
-        NULL            // The bind handle -- not needed and can be omitted.
+        nullptr            // The bind handle -- not needed and can be omitted.
     );
 
     if ( res != OCI_SUCCESS )
     {
-        throw_oracle_soci_error(res, session_.errhp_);
+        throw oracle_soci_error(res, session_.errhp_);
     }
 
     return std::string(reinterpret_cast<const char*>(name), len);
@@ -267,10 +267,10 @@ int oracle_statement_backend::prepare_for_describe()
         return 0;
 
     sword res = OCIStmtExecute(session_.svchp_, stmtp_, session_.errhp_,
-        1, 0, 0, 0, OCI_DESCRIBE_ONLY);
+        1, 0, nullptr, nullptr, OCI_DESCRIBE_ONLY);
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, session_.errhp_);
+        throw oracle_soci_error(res, session_.errhp_);
     }
 
     return get_statement_attr<ub4>(OCI_ATTR_PARAM_COUNT);
@@ -297,7 +297,7 @@ void oracle_statement_backend::describe_column(int colNum,
         static_cast<ub4>(colNum));
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, session_.errhp_);
+        throw oracle_soci_error(res, session_.errhp_);
     }
 
     // Get the column name
@@ -309,43 +309,43 @@ void oracle_statement_backend::describe_column(int colNum,
         reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, session_.errhp_);
+        throw oracle_soci_error(res, session_.errhp_);
     }
 
     // Get the column type
     res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd),
         static_cast<ub4>(OCI_DTYPE_PARAM),
         reinterpret_cast<dvoid*>(&dbtype),
-        0,
+        nullptr,
         static_cast<ub4>(OCI_ATTR_DATA_TYPE),
         reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, session_.errhp_);
+        throw oracle_soci_error(res, session_.errhp_);
     }
 
     // get the data size
     res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd),
         static_cast<ub4>(OCI_DTYPE_PARAM),
         reinterpret_cast<dvoid*>(&dbsize),
-        0,
+        nullptr,
         static_cast<ub4>(OCI_ATTR_DATA_SIZE),
         reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, session_.errhp_);
+        throw oracle_soci_error(res, session_.errhp_);
     }
 
     // get the precision
     res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd),
         static_cast<ub4>(OCI_DTYPE_PARAM),
         reinterpret_cast<dvoid*>(&dbprec),
-        0,
+        nullptr,
         static_cast<ub4>(OCI_ATTR_PRECISION),
         reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, session_.errhp_);
+        throw oracle_soci_error(res, session_.errhp_);
     }
 
     // get the scale if necessary, i.e. if not using just NUMBER, for which
@@ -355,12 +355,12 @@ void oracle_statement_backend::describe_column(int colNum,
         res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd),
             static_cast<ub4>(OCI_DTYPE_PARAM),
             reinterpret_cast<dvoid*>(&dbscale),
-            0,
+            nullptr,
             static_cast<ub4>(OCI_ATTR_SCALE),
             reinterpret_cast<OCIError*>(session_.errhp_));
         if (res != OCI_SUCCESS)
         {
-            throw_oracle_soci_error(res, session_.errhp_);
+            throw oracle_soci_error(res, session_.errhp_);
         }
     }
     else // precision is 0, meaning that this is the default number type
@@ -426,10 +426,10 @@ std::size_t oracle_statement_backend::column_size(int position)
     int colSize(0);
 
     sword res = OCIStmtExecute(session_.svchp_, stmtp_,
-         session_.errhp_, 1, 0, 0, 0, OCI_DESCRIBE_ONLY);
+         session_.errhp_, 1, 0, nullptr, nullptr, OCI_DESCRIBE_ONLY);
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, session_.errhp_);
+        throw oracle_soci_error(res, session_.errhp_);
     }
 
     // Get The Column Handle
@@ -441,19 +441,19 @@ std::size_t oracle_statement_backend::column_size(int position)
          static_cast<ub4>(position));
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, session_.errhp_);
+        throw oracle_soci_error(res, session_.errhp_);
     }
 
      // Get The Data Size
     res = OCIAttrGet(reinterpret_cast<dvoid*>(colhd),
          static_cast<ub4>(OCI_DTYPE_PARAM),
          reinterpret_cast<dvoid*>(&colSize),
-         0,
+         nullptr,
          static_cast<ub4>(OCI_ATTR_DATA_SIZE),
          reinterpret_cast<OCIError*>(session_.errhp_));
     if (res != OCI_SUCCESS)
     {
-        throw_oracle_soci_error(res, session_.errhp_);
+        throw oracle_soci_error(res, session_.errhp_);
     }
 
     return static_cast<std::size_t>(colSize);

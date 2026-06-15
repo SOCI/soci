@@ -10,6 +10,9 @@
 
 #include "soci-compiler.h"
 
+#include <climits>
+#include <stdexcept>
+
 // Many headers define std::ssize(), include this one because it's the most
 // commonly included ones, so it doesn't cost much to include it even when not
 // using C++20.
@@ -24,16 +27,54 @@ using std::ssize;
 
 #else // !C++20
 
+#include <type_traits>
+
+using ssize_t = std::make_signed<std::size_t>::type;
+
 // Provide simple implementation of C++20 std::ssize() sufficient for our needs
 // ourselves.
 
 template <typename C>
-constexpr int ssize(C const& c)
+constexpr ssize_t ssize(C const& c)
 {
-    return static_cast<int>(c.size());
+    return static_cast<ssize_t>(c.size());
+}
+
+template <typename T, int N>
+constexpr ssize_t ssize(T (&)[N]) noexcept
+{
+    return N;
 }
 
 #endif // C++20/!C++20
+
+/**
+    Cast size_t to integer safely, raising exception if the value is out of
+    range.
+ */
+constexpr
+inline int icast(size_t n)
+{
+    if ( n >= INT_MAX )
+    {
+        // The error message here is poor, but this is never supposed to
+        // happen, i.e. if there is any possibility of the input parameter
+        // really being out of range of int type, caller should check for it on
+        // its own and provide a better error.
+        throw std::runtime_error("Invalid integer cast.");
+    }
+
+    return static_cast<int>(n);
+}
+
+// Define a function returning size as int: this should be safe as we should
+// never have any collections of size greater than INT_MAX, but check for it
+// just in case.
+template <typename C>
+constexpr inline int isize(C const& c)
+{
+    return icast(ssize(c));
+}
 
 } // namespace soci
 

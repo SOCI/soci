@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_SQLITE3_SOURCE
 #include "soci/sqlite3/soci-sqlite3.h"
 #include "soci-ssize.h"
 // std
@@ -18,10 +17,6 @@
 
 #include "soci-case.h"
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
-
 using namespace soci;
 using namespace soci::details;
 using namespace sqlite_api;
@@ -29,7 +24,7 @@ using namespace sqlite_api;
 sqlite3_statement_backend::sqlite3_statement_backend(
     sqlite3_session_backend &session)
     : session_(session)
-    , stmt_(0)
+    , stmt_(nullptr)
     , dataCache_()
     , useData_(0)
     , databaseReady_(false)
@@ -51,7 +46,7 @@ void sqlite3_statement_backend::clean_up()
     if (stmt_)
     {
         sqlite3_finalize(stmt_);
-        stmt_ = 0;
+        stmt_ = nullptr;
         databaseReady_ = false;
     }
 }
@@ -61,10 +56,10 @@ void sqlite3_statement_backend::prepare(std::string const & query,
 {
     clean_up();
 
-    char const* tail = 0; // unused;
+    char const* tail = nullptr; // unused;
     int const res = sqlite3_prepare_v2(session_.conn_,
                               query.c_str(),
-                              ssize(query),
+                              isize(query),
                               &stmt_,
                               &tail);
     if (res != SQLITE_OK)
@@ -113,7 +108,7 @@ sqlite3_statement_backend::load_rowset(int totalRows)
             describe_column(c, dbtype, name);
     }
     else
-        numCols = ssize(columns_);
+        numCols = isize(columns_);
 
 
     if (!databaseReady_)
@@ -124,10 +119,9 @@ sqlite3_statement_backend::load_rowset(int totalRows)
     {
         // make the vector big enough to hold the data we need
         dataCache_.resize(totalRows);
-        for (sqlite3_recordset::iterator it = dataCache_.begin(),
-            end = dataCache_.end(); it != end; ++it)
+        for (sqlite3_row& row : dataCache_)
         {
-            (*it).resize(numCols);
+            row.resize(numCols);
         }
 
         for (i = 0; i < totalRows && databaseReady_; ++i)
@@ -197,7 +191,7 @@ sqlite3_statement_backend::load_rowset(int totalRows)
 
                         case db_blob:
                             col.buffer_.size_ = sqlite3_column_bytes(stmt_, c);
-                            col.buffer_.data_ = (col.buffer_.size_ > 0 ? new char[col.buffer_.size_] : NULL);
+                            col.buffer_.data_ = (col.buffer_.size_ > 0 ? new char[col.buffer_.size_] : nullptr);
                             memcpy(col.buffer_.data_, sqlite3_column_blob(stmt_, c), col.buffer_.size_);
                             break;
 
@@ -254,12 +248,12 @@ sqlite3_statement_backend::bind_and_execute(int number)
 
     rowsAffectedBulk_ = 0;
 
-    int const rows = ssize(useData_);
+    int const rows = isize(useData_);
     for (current_row_ = 0; current_row_ < rows; ++current_row_)
     {
         sqlite3_reset(stmt_);
 
-        int const totalPositions = ssize(useData_[0]);
+        int const totalPositions = isize(useData_[0]);
         for (int pos = 1; pos <= totalPositions; ++pos)
         {
             int bindRes = SQLITE_OK;
@@ -273,7 +267,7 @@ sqlite3_statement_backend::bind_and_execute(int number)
                 switch (col.dataType_)
                 {
                     case db_string:
-                        bindRes = sqlite3_bind_text(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), NULL);
+                        bindRes = sqlite3_bind_text(stmt_, pos, col.buffer_.constData_, static_cast<int>(col.buffer_.size_), nullptr);
                         break;
 
                     case db_date:
@@ -340,13 +334,17 @@ sqlite3_statement_backend::bind_and_execute(int number)
         rowsAffectedBulk_ += sqlite3_changes(session_.conn_);
     }
 
+    // Don't leave invalid (out of range) value in current_row_, this can't be
+    // useful and can cause problems when using multiple batch inserts.
+    current_row_ = -1;
+
     return retVal;
 }
 
 statement_backend::exec_fetch_result
 sqlite3_statement_backend::execute(int number)
 {
-    if (stmt_ == NULL)
+    if (stmt_ == nullptr)
     {
         throw soci_error("SQLite statement wasn't created");
     }
@@ -389,7 +387,7 @@ long long sqlite3_statement_backend::get_affected_rows()
 
 int sqlite3_statement_backend::get_number_of_rows()
 {
-    return ssize(dataCache_);
+    return isize(dataCache_);
 }
 
 std::string sqlite3_statement_backend::get_parameter_name(int index) const
@@ -514,7 +512,7 @@ void sqlite3_statement_backend::describe_column(int colNum,
     // used in the create table statement
     char const* declType = sqlite3_column_decltype(stmt_, colNum-1);
 
-    if ( declType == NULL )
+    if ( declType == nullptr )
     {
         static char const* s_char = "char";
         declType = s_char;

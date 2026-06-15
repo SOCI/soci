@@ -34,7 +34,7 @@ signs.
 * `nocreate` - open an existing database without creating a new one if it doesn't already exist (by default, a new database file is created).
 * `synchronous` - set the pragma synchronous flag ([link](https://www.sqlite.org/pragma.html#pragma_synchronous))
 * `shared_cache` - enable or disabled shared pager cache ([link](https://www.sqlite.org/c3ref/enable_shared_cache.html))
-* `vfs` - set the SQLite VFS used to as OS interface. The VFS should be registered before opening the connection, see [the documenation](https://www.sqlite.org/vfs.html)
+* `vfs` - set the SQLite VFS used to as OS interface. The VFS should be registered before opening the connection, see [the documentation](https://www.sqlite.org/vfs.html)
 * `foreign_keys` - set the pragma `foreign_keys` flag ([link](https://www.sqlite.org/pragma.html#pragma_foreign_keys)).
 
 Boolean options `readonly`, `nocreate`, and `shared_cache` can be either
@@ -134,9 +134,9 @@ Stored procedures are not supported by SQLite3 backend
 
 ## Native API Access
 
-SOCI provides access to underlying datbabase APIs via several `get_backend()` functions, as described in the [beyond SOCI](../beyond.md) documentation.
+SOCI provides access to underlying database APIs via several `get_backend()` functions, as described in the [beyond SOCI](../beyond.md) documentation.
 
-The SQLite3 backend provides the following concrete classes for navite API access:
+The SQLite3 backend provides the following concrete classes for native API access:
 
 |Accessor Function|Concrete Class|
 |--- |--- |

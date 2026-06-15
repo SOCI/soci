@@ -16,11 +16,12 @@
 #include <cstring>
 #include <ctime>
 #include <limits>
-#include <sstream>
 #include <iomanip>
 #include <string>
 #include <vector>
 #include <algorithm>
+
+#include <fmt/format.h>
 
 namespace soci
 {
@@ -115,7 +116,11 @@ template<> struct cond_to_isc<false>
 };
 template<> struct cond_to_isc<true>
 {
-    static void checkInteger(short scale,short type) { SOCI_UNUSED(scale) SOCI_UNUSED(type) }
+    static void checkInteger(short scale,short type)
+    {
+        SOCI_UNUSED(scale);
+        SOCI_UNUSED(type);
+    }
 };
 
 template<typename T1>
@@ -189,9 +194,7 @@ template<typename IntType>
 std::string format_decimal(const void *sqldata, int sqlscale)
 {
     IntType x = *reinterpret_cast<const IntType *>(sqldata);
-    std::stringstream out;
-    out << x;
-    std::string r = out.str();
+    std::string r = fmt::format("{}", x);
     if (sqlscale < 0)
     {
         if (ssize(r) - (x < 0) <= -sqlscale)
@@ -211,15 +214,12 @@ template<bool cond> struct cond_from_isc {};
 template<> struct cond_from_isc<true> {
     static void checkInteger(short scale)
     {
-        std::ostringstream msg;
-        msg << "Can't convert value with scale " << -scale
-            << " to integral type";
-        throw soci_error(msg.str());
+        throw soci_error(fmt::format("Can't convert value with scale {} to integral type", -scale));
     }
 };
 template<> struct cond_from_isc<false>
 {
-    static void checkInteger(short scale) { SOCI_UNUSED(scale) }
+    static void checkInteger(short scale) { SOCI_UNUSED(scale); }
 };
 
 template<typename T1>

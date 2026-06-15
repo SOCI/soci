@@ -18,7 +18,7 @@ public:
     ~type_ptr() { delete p_; }
 
     T * get() const { return p_; }
-    void release() const { p_ = 0; }
+    void release() const { p_ = nullptr; }
 
 private:
     mutable T * p_;

@@ -5,13 +5,14 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_SOURCE
 #include "soci/session.h"
 #include "soci/connection-parameters.h"
 #include "soci/connection-pool.h"
 #include "soci/soci-backend.h"
 #include "soci/query_transformation.h"
 #include "soci/log-context.h"
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -28,7 +29,7 @@ namespace soci
 
 void ensureConnected(session_backend * backEnd)
 {
-    if (backEnd == NULL)
+    if (backEnd == nullptr)
     {
         throw soci_error("Session is not connected.");
     }
@@ -40,14 +41,14 @@ class standard_logger_impl : public logger_impl
 public:
     standard_logger_impl()
     {
-        logStream_ = NULL;
+        logStream_ = nullptr;
     }
 
     virtual void start_query(std::string const & query) override
     {
         logger_impl::start_query(query);
 
-        if (logStream_ != NULL)
+        if (logStream_ != nullptr)
         {
             *logStream_ << query << '\n';
         }
@@ -235,13 +236,22 @@ schema_table_name& session::alloc_schema_table_name(const std::string & tableNam
 
 session::~session()
 {
-    if (isFromPool_)
+    try
     {
-        pool_->give_back(poolPosition_);
+        if (isFromPool_)
+        {
+            pool_->give_back(poolPosition_);
+        }
+        else
+        {
+            delete backEnd_;
+        }
     }
-    else
+    catch (...)
     {
-        delete backEnd_;
+        // Do not throw from a destructor and just ignore the exception
+        // because, while not ideal, it's still preferable to immediately
+        // terminating the program.
     }
 }
 
@@ -255,13 +265,13 @@ void session::open(connection_parameters const & parameters)
     }
     else
     {
-        if (backEnd_ != NULL)
+        if (backEnd_ != nullptr)
         {
             throw soci_error("Cannot open already connected session.");
         }
 
         backend_factory const * const factory = parameters.get_factory();
-        if (factory == NULL)
+        if (factory == nullptr)
         {
             throw soci_error("Cannot connect without a valid backend.");
         }
@@ -290,15 +300,16 @@ void session::open(std::string const & connectString)
 
 void session::close()
 {
+    auto* const backEnd = backEnd_;
+    backEnd_ = nullptr;
+
     if (isFromPool_)
     {
         pool_->at(poolPosition_).close();
-        backEnd_ = NULL;
     }
     else
     {
-        delete backEnd_;
-        backEnd_ = NULL;
+        delete backEnd;
     }
 }
 
@@ -313,12 +324,12 @@ void session::reconnect()
     else
     {
         backend_factory const * const lastFactory = lastConnectParameters_.get_factory();
-        if (lastFactory == NULL)
+        if (lastFactory == nullptr)
         {
             throw soci_error("Cannot reconnect without previous connection.");
         }
 
-        if (backEnd_ != NULL)
+        if (backEnd_ != nullptr)
         {
             close();
         }
@@ -745,4 +756,14 @@ blob_backend * session::make_blob_backend()
     ensureConnected(backEnd_);
 
     return backEnd_->make_blob_backend();
+}
+
+std::string soci::details::make_varchar_type(int precision)
+{
+    return fmt::format("varchar({})", precision);
+}
+
+std::string soci::details::make_number_type(const char* name, int precision, int scale)
+{
+    return fmt::format("{}({}, {})", name, precision, scale);
 }

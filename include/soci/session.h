@@ -17,11 +17,13 @@
 
 // std
 #include <cstddef>
+#include <cstdint>
 #include <memory>
 #include <ostream>
 #include <sstream>
 #include <string>
 #include <forward_list>
+#include <type_traits>
 
 namespace soci
 {
@@ -133,10 +135,30 @@ public:
     // get_last_insert_id() after the insertion in this case.
     bool get_next_sequence_value(std::string const & sequence, long long & value);
 
+    // Overload provided for platforms where std::int64_t is not long long.
+    template<typename T = std::int64_t, typename = std::enable_if_t<! std::is_same<T, long long>::value>>
+    bool get_next_sequence_value(std::string const & sequence, std::int64_t & value)
+    {
+        long long tmp = -1;
+        const bool result = get_next_sequence_value(sequence, tmp);
+        value = tmp;
+        return result;
+    }
+
     // If true is returned, value is filled with the last auto-generated value
     // for this table (although some backends ignore the table argument and
     // return the last value auto-generated in this session).
     bool get_last_insert_id(std::string const & table, long long & value);
+
+    // Overload provided for platforms where std::int64_t is not long long.
+    template<typename T = std::int64_t, typename = std::enable_if_t<! std::is_same<T, long long>::value>>
+    bool get_last_insert_id(std::string const & table, std::int64_t & value)
+    {
+        long long tmp = -1;
+        const bool result = get_last_insert_id(table, tmp);
+        value = tmp;
+        return result;
+    }
 
     // Returns once_temp_type for the internally composed query
     // for the list of tables in the current schema.

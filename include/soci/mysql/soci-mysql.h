@@ -93,7 +93,7 @@ struct mysql_vector_into_type_backend : details::vector_into_type_backend
 struct mysql_standard_use_type_backend : details::standard_use_type_backend
 {
     mysql_standard_use_type_backend(mysql_statement_backend &st)
-        : statement_(st), position_(0), buf_(NULL) {}
+        : statement_(st), position_(0), buf_(nullptr) {}
 
     void bind_by_pos(int &position,
         void *data, details::exchange_type type, bool readOnly) override;

@@ -5,12 +5,10 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_FIREBIRD_SOURCE
 #include "soci/firebird/soci-firebird.h"
 #include "firebird/error-firebird.h"
 #include "soci/session.h"
 #include <map>
-#include <sstream>
 #include <string>
 
 using namespace soci;
@@ -92,14 +90,14 @@ void firebird_session_backend::begin()
     if (trhp_ == 0)
     {
         ISC_STATUS stat[ISC_STATUS_LENGTH];
-        if (isc_start_transaction(stat, &trhp_, 1, &dbhp_, 0, NULL))
+        if (isc_start_transaction(stat, &trhp_, 1, &dbhp_, 0, nullptr))
         {
             throw_iscerror(stat);
         }
     }
 }
 
-firebird_session_backend::~firebird_session_backend()
+firebird_session_backend::~firebird_session_backend() noexcept(false)
 {
     cleanUp();
 }

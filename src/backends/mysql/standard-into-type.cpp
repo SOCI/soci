@@ -7,7 +7,6 @@
 //
 
 #include "soci-cstrtoi.h"
-#define SOCI_MYSQL_SOURCE
 #include "soci/mysql/soci-mysql.h"
 #include "soci/soci-platform.h"
 #include "common.h"
@@ -15,16 +14,11 @@
 #include "soci-mktime.h"
 #include "soci/blob.h"
 // std
-#include <ciso646>
 #include <cstdint>
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
 #include <string>
-
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
 
 using namespace soci;
 using namespace soci::details;
@@ -61,9 +55,9 @@ void mysql_standard_into_type_backend::post_fetch(
         mysql_row_seek(statement_.result_,
             statement_.resultRowOffsets_[statement_.currentRow_]);
         MYSQL_ROW row = mysql_fetch_row(statement_.result_);
-        if (row[pos] == NULL)
+        if (row[pos] == nullptr)
         {
-            if (ind == NULL)
+            if (ind == nullptr)
             {
                 throw soci_error(
                     "Null value fetched and no indicator defined.");
@@ -73,12 +67,12 @@ void mysql_standard_into_type_backend::post_fetch(
         }
         else
         {
-            if (ind != NULL)
+            if (ind != nullptr)
             {
                 *ind = i_ok;
             }
         }
-        const char *buf = row[pos] != NULL ? row[pos] : "";
+        const char *buf = row[pos] != nullptr ? row[pos] : "";
         switch (type_)
         {
         case x_char:
@@ -93,28 +87,10 @@ void mysql_standard_into_type_backend::post_fetch(
             }
             break;
         case x_int8:
-            {
-                int32_t tmp = 0;
-                parse_num(buf, tmp);
-                if (tmp < (std::numeric_limits<int8_t>::min)() ||
-                    tmp > (std::numeric_limits<int8_t>::max)())
-                {
-                    throw soci_error("Cannot convert data.");
-                }
-                exchange_type_cast<x_int8>(data_) = static_cast<int8_t>(tmp);
-            }
+            parse_num(buf, exchange_type_cast<x_int8>(data_));
             break;
         case x_uint8:
-            {
-                uint32_t tmp = 0;
-                parse_num(buf, tmp);
-                if (tmp < (std::numeric_limits<uint8_t>::min)() ||
-                    tmp > (std::numeric_limits<uint8_t>::max)())
-                {
-                    throw soci_error("Cannot convert data.");
-                }
-                exchange_type_cast<x_uint8>(data_) = static_cast<uint8_t>(tmp);
-            }
+            parse_num(buf, exchange_type_cast<x_uint8>(data_));
             break;
         case x_int16:
             parse_num(buf, exchange_type_cast<x_int16>(data_));

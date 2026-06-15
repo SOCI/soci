@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_POSTGRESQL_SOURCE
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci/callbacks.h"
 #include "soci/connection-parameters.h"
@@ -30,7 +29,8 @@ soci_error::error_category postgresql_soci_error::get_error_category() const
     {
         return connection_error;
     }
-    else if (std::memcmp(sqlstate_, "42501", 5) == 0)
+    else if (std::memcmp(sqlstate_, "42501", 5) == 0 ||
+             std::memcmp(sqlstate_, "25006", 5) == 0)
     {
         return no_privilege;
     }
@@ -102,7 +102,7 @@ details::postgresql_result::check_for_data(char const* errMsg) const
                 // call the failover callback, if registered
 
                 failover_callback * callback = sessionBackend_.failoverCallback_;
-                if (callback != NULL)
+                if (callback != nullptr)
                 {
                     bool reconnected = false;
 

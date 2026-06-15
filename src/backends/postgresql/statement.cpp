@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_POSTGRESQL_SOURCE
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci/soci-platform.h"
 #include "soci-cstrtoi.h"
@@ -18,7 +17,8 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
-#include <sstream>
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -32,7 +32,7 @@ void wait_until_operation_complete(postgresql_session_backend & session)
     for (;;)
     {
         PGresult * result = PQgetResult(session.conn_);
-        if (result == NULL)
+        if (result == nullptr)
         {
             break;
         }
@@ -58,7 +58,7 @@ void throw_soci_error(PGconn * conn, const char * msg)
 postgresql_statement_backend::postgresql_statement_backend(
     postgresql_session_backend &session, bool single_row_mode)
     : session_(session), single_row_mode_(single_row_mode),
-      result_(session, NULL),
+      result_(session, nullptr),
       rowsAffectedBulk_(-1LL), justDescribed_(false)
 {
 }
@@ -182,9 +182,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
             {
                 names_.push_back(name);
                 name.clear();
-                std::ostringstream ss;
-                ss << '$' << position++;
-                query_ += ss.str();
+                query_ += fmt::format("${}", position++);
                 query_ += *it;
                 state = normal;
 
@@ -209,9 +207,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
     if (state == in_name)
     {
         names_.push_back(name);
-        std::ostringstream ss;
-        ss << '$' << position++;
-        query_ += ss.str();
+        query_ += fmt::format("${}", position++);
     }
 
     if (stType == st_repeatable_query)
@@ -230,7 +226,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
             // prepare for single-row retrieval
 
             int result = PQsendPrepare(session_.conn_, statementName.c_str(),
-                query_.c_str(), ssize(names_), NULL);
+                query_.c_str(), isize(names_), nullptr);
             if (result != 1)
             {
                 throw_soci_error(session_.conn_,
@@ -245,7 +241,7 @@ void postgresql_statement_backend::prepare(std::string const & query,
 
             postgresql_result result(session_,
                 PQprepare(session_.conn_, statementName.c_str(),
-                    query_.c_str(), ssize(names_), NULL));
+                    query_.c_str(), isize(names_), nullptr));
             result.check_for_errors("Cannot prepare statement.");
         }
 
@@ -322,12 +318,9 @@ postgresql_statement_backend::execute(int number)
                     // the map of use buffers can be traversed
                     // in its natural order
 
-                    for (UseByPosBuffersMap::iterator
-                             it = useByPosBuffers_.begin(),
-                             end = useByPosBuffers_.end();
-                         it != end; ++it)
+                    for (auto const& kv : useByPosBuffers_)
                     {
-                        char ** buffers = it->second;
+                        char ** buffers = kv.second;
                         paramValues.push_back(buffers[current_row_]);
                     }
                 }
@@ -335,17 +328,15 @@ postgresql_statement_backend::execute(int number)
                 {
                     // use elements bind by name
 
-                    for (std::vector<std::string>::iterator
-                             it = names_.begin(), end = names_.end();
-                         it != end; ++it)
+                    for (auto const& s : names_)
                     {
                         UseByNameBuffersMap::iterator b
-                            = useByNameBuffers_.find(*it);
+                            = useByNameBuffers_.find(s);
                         if (b == useByNameBuffers_.end())
                         {
                             std::string msg(
                                 "Missing use element for bind by name (");
-                            msg += *it;
+                            msg += s;
                             msg += ").";
                             throw soci_error(msg);
                         }
@@ -362,8 +353,8 @@ postgresql_statement_backend::execute(int number)
                     {
                         int result = PQsendQueryPrepared(session_.conn_,
                             statementName_.c_str(),
-                            ssize(paramValues),
-                            &paramValues[0], NULL, NULL, 0);
+                            isize(paramValues),
+                            &paramValues[0], nullptr, nullptr, 0);
                         if (result != 1)
                         {
                             throw_soci_error(session_.conn_,
@@ -383,8 +374,8 @@ postgresql_statement_backend::execute(int number)
 
                         result_.reset(PQexecPrepared(session_.conn_,
                                 statementName_.c_str(),
-                                ssize(paramValues),
-                                &paramValues[0], NULL, NULL, 0));
+                                isize(paramValues),
+                                &paramValues[0], nullptr, nullptr, 0));
                     }
                 }
                 else // stType_ == st_one_time_query
@@ -395,8 +386,8 @@ postgresql_statement_backend::execute(int number)
                     if (single_row_mode_)
                     {
                         int result = PQsendQueryParams(session_.conn_, query_.c_str(),
-                            ssize(paramValues),
-                            NULL, &paramValues[0], NULL, NULL, 0);
+                            isize(paramValues),
+                            nullptr, &paramValues[0], nullptr, nullptr, 0);
                         if (result != 1)
                         {
                             throw_soci_error(session_.conn_,
@@ -415,8 +406,8 @@ postgresql_statement_backend::execute(int number)
                         // default multi-row execution
 
                         result_.reset(PQexecParams(session_.conn_, query_.c_str(),
-                                ssize(paramValues),
-                                NULL, &paramValues[0], NULL, NULL, 0));
+                                isize(paramValues),
+                                nullptr, &paramValues[0], nullptr, nullptr, 0));
                     }
                 }
 
@@ -452,7 +443,7 @@ postgresql_statement_backend::execute(int number)
                 if (single_row_mode_)
                 {
                     int result = PQsendQueryPrepared(session_.conn_,
-                        statementName_.c_str(), 0, NULL, NULL, NULL, 0);
+                        statementName_.c_str(), 0, nullptr, nullptr, nullptr, 0);
                     if (result != 1)
                     {
                         throw_soci_error(session_.conn_,
@@ -471,7 +462,7 @@ postgresql_statement_backend::execute(int number)
                     // default multi-row execution
 
                     result_.reset(PQexecPrepared(session_.conn_,
-                            statementName_.c_str(), 0, NULL, NULL, NULL, 0));
+                            statementName_.c_str(), 0, nullptr, nullptr, nullptr, 0));
                 }
             }
             else // stType_ == st_one_time_query
@@ -553,6 +544,7 @@ postgresql_statement_backend::execute(int number)
     }
     else
     {
+        numberOfRows_ = 0;
         return ef_no_data;
     }
 }
@@ -563,6 +555,13 @@ postgresql_statement_backend::fetch(int number)
     if (single_row_mode_ && (number > 1))
     {
         throw soci_error("Bulk operations are not supported with single-row mode.");
+    }
+
+    if (numberOfRows_ == 0)
+    {
+        // There is nothing to fetch and normally we shouldn't be even called
+        // in this case, but don't do anything stupid if we are.
+        return ef_no_data;
     }
 
     // Note:
@@ -583,7 +582,7 @@ postgresql_statement_backend::fetch(int number)
             PGresult* res = PQgetResult(session_.conn_);
             result_.reset(res);
 
-            if (res == NULL)
+            if (res == nullptr)
             {
                 return ef_no_data;
             }
@@ -690,17 +689,14 @@ int postgresql_statement_backend::prepare_for_describe()
 
 void throw_soci_type_error(Oid typeOid, int colNum, char category, const char* typeName )
 {
-    std::stringstream message;
-    message << "unknown data type"
-        << " for column number: " << colNum
-        << " with type oid: " << (int)typeOid;
+    std::string message = fmt::format("unknown data type for column number: {} with type oid: {}", colNum, (int)typeOid);
     if( category != '\0' )
     {
-        message << " with category: " << category;
+        message += fmt::format(" with category: {}", category);
     }
-    message << " with name: " << typeName;
+    message += fmt::format(" with name: {}", typeName);
 
-    throw soci_error(message.str());
+    throw soci_error(message);
 }
 
 void postgresql_statement_backend::describe_column(int colNum,
@@ -778,10 +774,9 @@ void postgresql_statement_backend::describe_column(int colNum,
         auto typeCategoryIt = categoryByColumnOID_.find(typeOid);
         if ( typeCategoryIt == categoryByColumnOID_.end() )
         {
-            std::stringstream query;
-            query << "SELECT typcategory FROM pg_type WHERE oid=" << (int)typeOid;
+            std::string query = fmt::format("SELECT typcategory FROM pg_type WHERE oid={}", (int)typeOid);
 
-            soci::details::postgresql_result res(session_, PQexec(session_.conn_, query.str().c_str()));
+            soci::details::postgresql_result res(session_, PQexec(session_.conn_, query.c_str()));
             if ( PQresultStatus(res.get_result()) != PGRES_TUPLES_OK )
             {
                 throw_soci_type_error(typeOid, colNum, '\0', PQfname(result_, pos));

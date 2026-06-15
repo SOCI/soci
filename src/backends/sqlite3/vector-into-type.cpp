@@ -5,11 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#ifdef _MSC_VER
-#pragma warning(disable : 4512)
-#endif
-
-#define SOCI_SQLITE3_SOURCE
 #include "soci-cstrtoi.h"
 #include "soci-dtocstr.h"
 #include "soci-exchange-cast.h"
@@ -27,8 +22,9 @@
 #include <cstdlib>
 #include <ctime>
 #include <string>
-#include <sstream>
 #include <vector>
+
+#include <fmt/format.h>
 
 namespace soci
 {
@@ -49,23 +45,12 @@ void sqlite3_vector_into_type_backend::pre_fetch()
 namespace // anonymous
 {
 
-// MSVS 2015 (only) gives a bogus warning about unreachable code here, suppress
-// it to allow compilation with /WX in the CI builds.
-#ifdef _MSC_VER
-#pragma warning(push)
-#pragma warning(disable:4702) // unreachable code
-#endif
-
 template <typename T>
 void set_in_vector(void* p, int indx, T const& val)
 {
     std::vector<T> &v = *static_cast<std::vector<T>*>(p);
     v[indx] = val;
 }
-
-#if defined(_MSC_VER)
-#pragma warning(pop)
-#endif
 
 template <typename T>
 T parse_number_from_string(const char* str)
@@ -149,14 +134,14 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
         return;
     }
 
-    int const endRow = ssize(statement_.dataCache_);
+    int const endRow = isize(statement_.dataCache_);
     for (int i = 0; i < endRow; ++i)
     {
         sqlite3_column &col = statement_.dataCache_[i][position_-1];
 
         if (col.isNull_)
         {
-            if (ind == NULL)
+            if (ind == nullptr)
             {
                 throw soci_error(
                     "Null value fetched and no indicator defined.");
@@ -167,7 +152,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
             continue;
         }
 
-        if (ind != NULL)
+        if (ind != nullptr)
             ind[i] = i_ok;
 
         // conversion
@@ -188,61 +173,29 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                         break;
 
                     case db_int8:
-                    {
-                        std::ostringstream ss;
-                        ss << col.int8_;
-                        set_in_vector(data_, i, ss.str()[0]);
+                        set_in_vector(data_, i, fmt::format("{}", col.int8_)[0]);
                         break;
-                    }
                     case db_uint8:
-                    {
-                        std::ostringstream ss;
-                        ss << col.uint8_;
-                        set_in_vector(data_, i, ss.str()[0]);
+                        set_in_vector(data_, i, fmt::format("{}", col.uint8_)[0]);
                         break;
-                    }
                     case db_int16:
-                    {
-                        std::ostringstream ss;
-                        ss << col.int16_;
-                        set_in_vector(data_, i, ss.str()[0]);
+                        set_in_vector(data_, i, fmt::format("{}", col.int16_)[0]);
                         break;
-                    }
                     case db_uint16:
-                    {
-                        std::ostringstream ss;
-                        ss << col.uint16_;
-                        set_in_vector(data_, i, ss.str()[0]);
+                        set_in_vector(data_, i, fmt::format("{}", col.uint16_)[0]);
                         break;
-                    }
                     case db_int32:
-                    {
-                        std::ostringstream ss;
-                        ss << col.int32_;
-                        set_in_vector(data_, i, ss.str()[0]);
+                        set_in_vector(data_, i, fmt::format("{}", col.int32_)[0]);
                         break;
-                    }
                     case db_uint32:
-                    {
-                        std::ostringstream ss;
-                        ss << col.uint32_;
-                        set_in_vector(data_, i, ss.str()[0]);
+                        set_in_vector(data_, i, fmt::format("{}", col.uint32_)[0]);
                         break;
-                    }
                     case db_int64:
-                    {
-                        std::ostringstream ss;
-                        ss << col.int64_;
-                        set_in_vector(data_, i, ss.str()[0]);
+                        set_in_vector(data_, i, fmt::format("{}", col.int64_)[0]);
                         break;
-                    }
                     case db_uint64:
-                    {
-                        std::ostringstream ss;
-                        ss << col.uint64_;
-                        set_in_vector(data_, i, ss.str()[0]);
+                        set_in_vector(data_, i, fmt::format("{}", col.uint64_)[0]);
                         break;
-                    }
 
                     case db_xml:
                         throw soci_error("XML data type is not supported");
@@ -267,61 +220,29 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                         break;
 
                     case db_int8:
-                    {
-                        std::ostringstream ss;
-                        ss << col.int8_;
-                        set_in_vector(data_, i, ss.str());
+                        set_in_vector(data_, i, fmt::format("{}", col.int8_));
                         break;
-                    }
                     case db_uint8:
-                    {
-                        std::ostringstream ss;
-                        ss << col.uint8_;
-                        set_in_vector(data_, i, ss.str());
+                        set_in_vector(data_, i, fmt::format("{}", col.uint8_));
                         break;
-                    }
                     case db_int16:
-                    {
-                        std::ostringstream ss;
-                        ss << col.int16_;
-                        set_in_vector(data_, i, ss.str());
+                        set_in_vector(data_, i, fmt::format("{}", col.int16_));
                         break;
-                    }
                     case db_uint16:
-                    {
-                        std::ostringstream ss;
-                        ss << col.uint16_;
-                        set_in_vector(data_, i, ss.str());
+                        set_in_vector(data_, i, fmt::format("{}", col.uint16_));
                         break;
-                    }
                     case db_int32:
-                    {
-                        std::ostringstream ss;
-                        ss << col.int32_;
-                        set_in_vector(data_, i, ss.str());
+                        set_in_vector(data_, i, fmt::format("{}", col.int32_));
                         break;
-                    }
                     case db_uint32:
-                    {
-                        std::ostringstream ss;
-                        ss << col.uint32_;
-                        set_in_vector(data_, i, ss.str());
+                        set_in_vector(data_, i, fmt::format("{}", col.uint32_));
                         break;
-                    }
                     case db_int64:
-                    {
-                        std::ostringstream ss;
-                        ss << col.int64_;
-                        set_in_vector(data_, i, ss.str());
+                        set_in_vector(data_, i, fmt::format("{}", col.int64_));
                         break;
-                    }
                     case db_uint64:
-                    {
-                        std::ostringstream ss;
-                        ss << col.uint64_;
-                        set_in_vector(data_, i, ss.str());
+                        set_in_vector(data_, i, fmt::format("{}", col.uint64_));
                         break;
-                    }
 
                     case db_xml:
                     {
@@ -330,7 +251,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
                         set_in_vector(data_, i, xml);
                         break;
                     }
-                    
+
                     case db_wstring:
                         throw soci_error("Wide string data type is not supported");
                 };
@@ -437,7 +358,7 @@ void sqlite3_vector_into_type_backend::post_fetch(bool gotData, indicator * ind)
             case db_string:
             case db_blob:
                 delete[] col.buffer_.data_;
-                col.buffer_.data_ = NULL;
+                col.buffer_.data_ = nullptr;
                 break;
 
             case db_double:

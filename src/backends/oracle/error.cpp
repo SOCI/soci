@@ -5,22 +5,30 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_ORACLE_SOURCE
 #include "soci/oracle/soci-oracle.h"
-#include "error.h"
 #include <limits>
-#include <sstream>
-
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
 
 using namespace soci;
 using namespace soci::details;
-using namespace soci::details::oracle;
+
+namespace
+{
+
+// Oracle errors seem to always come with a new line at the end, which is
+// inconsistent with the other backends and SOCI internal errors, so strip it.
+std::string chomp(std::string const & msg)
+{
+    std::string result{msg};
+    while (!result.empty() && result.back() == '\n')
+        result.pop_back();
+
+    return result;
+}
+
+} // anonymous namespace
 
 oracle_soci_error::oracle_soci_error(std::string const & msg, int errNum)
-    : soci_error(msg), err_num_(errNum)
+    : soci_error(chomp(msg)), err_num_(errNum)
 {
 }
 
@@ -62,9 +70,13 @@ soci_error::error_category oracle_soci_error::get_error_category() const
     return unknown;
 }
 
-void soci::details::oracle::get_error_details(sword res, OCIError *errhp,
-    std::string &msg, int &errNum)
+namespace
 {
+
+std::string do_get_error_details(sword res, OCIError *errhp, int& errNum)
+{
+    std::string msg;
+
     text errbuf[512];
     sb4 errcode;
     errNum = 0;
@@ -76,7 +88,7 @@ void soci::details::oracle::get_error_details(sword res, OCIError *errhp,
         break;
     case OCI_ERROR:
     case OCI_SUCCESS_WITH_INFO:
-        OCIErrorGet(errhp, 1, 0, &errcode,
+        OCIErrorGet(errhp, 1, nullptr, &errcode,
              errbuf, sizeof(errbuf), OCI_HTYPE_ERROR);
         msg = reinterpret_cast<char*>(errbuf);
         errNum = static_cast<int>(errcode);
@@ -87,13 +99,13 @@ void soci::details::oracle::get_error_details(sword res, OCIError *errhp,
     default:
         msg = "soci error: Unknown error code";
     }
+
+    return msg;
 }
 
-void soci::details::oracle::throw_oracle_soci_error(sword res, OCIError *errhp)
-{
-    std::string msg;
-    int errNum;
+} // anonymous namespace
 
-    get_error_details(res, errhp, msg, errNum);
-    throw oracle_soci_error(msg, errNum);
+oracle_soci_error::oracle_soci_error(sword res, OCIError *errhp)
+    : soci_error(do_get_error_details(res, errhp, err_num_))
+{
 }

@@ -33,6 +33,7 @@ target_link_libraries(soci_tests_common
   PUBLIC
     soci_compiler_interface
     SOCI::Core
+    ${soci_fmt}
 )
 
 target_include_directories(soci_tests_common

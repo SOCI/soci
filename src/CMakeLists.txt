@@ -1,33 +1,18 @@
 add_library(soci_interface INTERFACE)
-add_library(SOCI::soci ALIAS soci_interface)
+add_library(SOCI::SOCI ALIAS soci_interface)
+
+if (SOCI_VERSION VERSION_LESS 5)
+  add_library(soci_interface_deprecated INTERFACE)
+  target_link_libraries(soci_interface_deprecated INTERFACE soci_interface)
+  set_target_properties(soci_interface_deprecated PROPERTIES DEPRECATION "Use SOCI::SOCI (all-uppercase) instead of SOCI::soci")
+  add_library(SOCI::soci ALIAS soci_interface_deprecated)
+endif()
 
 set(SOCI_GENERATED_INCLUDES_DIR "${CMAKE_BINARY_DIR}/include")
 file(MAKE_DIRECTORY "${SOCI_GENERATED_INCLUDES_DIR}/soci")
 
 add_subdirectory(core)
 add_subdirectory(backends)
-
-
-###############################################################################
-# platform-dependent settings
-###############################################################################
-
-include(CheckTypeSize)
-check_type_size(long SOCI_SIZEOF_LONG LANGUAGE CXX)
-
-soci_are_types_same(TYPES "int64_t" "long" OUTPUT_VARIABLE SOCI_INT64_T_IS_LONG)
-soci_are_types_same(TYPES "int8_t" "char" OUTPUT_VARIABLE SOCI_INT8_T_IS_CHAR)
-
-include(CheckCXXSourceCompiles)
-check_cxx_source_compiles(
-  "
-      __attribute__ (( visibility(\"default\") )) int f1() { return 0; }
-      __attribute__ (( visibility(\"hidden\") ))  int f2() { return 1; }
-
-      int main(int argc, char* argv[]) { f1(); f2(); return 0; }
-  "
-  SOCI_VISIBILITY_ATTRIBUTE_SUPPORTED
-)
 
 
 # Generate the soci-config.h file
@@ -43,10 +28,6 @@ set(CONFIG_VARS
   SOCI_ORACLE
   SOCI_POSTGRESQL
   SOCI_SQLITE3
-  SOCI_VISIBILITY_ATTRIBUTE_SUPPORTED
-  SOCI_SIZEOF_LONG
-  SOCI_INT64_T_IS_LONG
-  SOCI_INT8_T_IS_CHAR
 )
 set(CONFIG_MACROS
   SOCI_HAVE_EMPTY
@@ -57,10 +38,6 @@ set(CONFIG_MACROS
   SOCI_HAVE_ORACLE
   SOCI_HAVE_POSTGRESQL
   SOCI_HAVE_SQLITE3
-  SOCI_HAVE_VISIBILITY_SUPPORT
-  SOCI_SIZEOF_LONG
-  SOCI_INT64_T_IS_LONG
-  SOCI_INT8_T_IS_CHAR
 )
 
 list(LENGTH CONFIG_MACROS N_CONFIGS)
@@ -87,18 +64,18 @@ list(APPEND CONFIG_LINES "#endif")
 
 list(JOIN CONFIG_LINES "\n" CONFIG_CONTENT)
 
-string(MD5 CONFIG_CONTENT_HASH "${CONFIG_CONTENT}")
-if (EXISTS "${SOCI_GENERATED_INCLUDES_DIR}/soci/soci-config.h")
-  file(MD5 "${SOCI_GENERATED_INCLUDES_DIR}/soci/soci-config.h" CONFIG_FILE_HASH)
-else()
-  set(CONFIG_FILE_HASH 0)
-endif()
-
-# Only overwrite the soci-config.h file if the generated content is different from the
-# file's content in order to avoid needless rebuilding
-if (NOT (CONFIG_CONTENT_HASH STREQUAL CONFIG_FILE_HASH))
-  file(WRITE "${SOCI_GENERATED_INCLUDES_DIR}/soci/soci-config.h" "${CONFIG_CONTENT}")
-endif()
+# We use file(GENERATE) to only overwrite soci-config.h if the generated
+# content to be written has differed from the file's content. Note that we do
+# *not* use file(WRITE) because the line endings would be CRLF on Windows, so
+# the file MD5 hash would *never* equal that of the content hash, as the string
+# content is of course using standard LF line endings. Using file(WRITE) would
+# mean that soci-config.h is updated on each configure, so each subsequent
+# cmake --build would result in the needless rebuilding we wanted to avoid.
+#
+file(GENERATE
+  OUTPUT "${SOCI_GENERATED_INCLUDES_DIR}/soci/soci-config.h"
+  CONTENT "${CONFIG_CONTENT}" NEWLINE_STYLE LF
+)
 
 # Append the generated config header to the public headers of the core target
 target_sources(soci_core

@@ -97,13 +97,13 @@ if (NOT TARGET MySQL::MySQL)
     endif()
   endif()
 
-  if (NOT MySQL_LIBRARIES)
+  # Under Windows, it's normal to not have neither pkg-config nor mysql_config,
+  # so don't warn about it, it's just annoying.
+  if (NOT MySQL_LIBRARIES AND NOT WIN32)
     message(WARNING "Falling back to manual MySQL search -> this might miss dependencies")
   endif()
 
   set(MySQL_COMPILE_DEFINITIONS "")
-
-  include(CheckCXXSourceCompiles)
 
   if(WIN32)
     find_path(MySQL_INCLUDE_DIRS mysql.h
@@ -230,11 +230,10 @@ find_package_handle_standard_args(MySQL
 )
 
 if (MySQL_FOUND AND NOT TARGET MySQL::MySQL)
-  add_library(MySQL INTERFACE)
-  target_link_libraries(MySQL INTERFACE ${MySQL_LIBRARIES})
-  target_include_directories(MySQL SYSTEM INTERFACE ${MySQL_INCLUDE_DIRS})
-  target_compile_options(MySQL INTERFACE ${MySQL_CFLAGS})
-  target_link_options(MySQL INTERFACE ${MySQL_LDFLAGS})
-  target_compile_definitions(MySQL INTERFACE ${MySQL_COMPILE_DEFINITIONS})
-  add_library(MySQL::MySQL ALIAS MySQL)
+  add_library(MySQL::MySQL UNKNOWN IMPORTED)
+  set_target_properties(MySQL::MySQL PROPERTIES IMPORTED_LOCATION "${MySQL_LIBRARIES}")
+  target_include_directories(MySQL::MySQL SYSTEM INTERFACE ${MySQL_INCLUDE_DIRS})
+  target_compile_options(MySQL::MySQL INTERFACE ${MySQL_CFLAGS})
+  target_link_options(MySQL::MySQL INTERFACE ${MySQL_LDFLAGS})
+  target_compile_definitions(MySQL::MySQL INTERFACE ${MySQL_COMPILE_DEFINITIONS})
 endif()

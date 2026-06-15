@@ -6,7 +6,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_MYSQL_SOURCE
 #include "soci/mysql/soci-mysql.h"
 #include "common.h"
 #include "soci/soci-platform.h"
@@ -15,7 +14,6 @@
 #include "soci-mktime.h"
 #include "soci/blob.h"
 // std
-#include <ciso646>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -44,10 +42,10 @@ void mysql_standard_use_type_backend::bind_by_name(
 
 void mysql_standard_use_type_backend::pre_use(indicator const *ind)
 {
-    if (ind != NULL && *ind == i_null)
+    if (ind != nullptr && *ind == i_null)
     {
         buf_ = new char[5];
-        std::strcpy(buf_, "NULL");
+        strncpy(buf_, "NULL", 5);
     }
     else
     {
@@ -146,7 +144,7 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                 std::string const s = double_to_cstring(d);
 
                 buf_ = new char[s.size() + 1];
-                std::strcpy(buf_, s.c_str());
+                strncpy(buf_, s.c_str(), s.size() + 1);
             }
             break;
         case x_stdtm:
@@ -185,7 +183,7 @@ void mysql_standard_use_type_backend::pre_use(indicator const *ind)
                     // way of using the MySQL API).
                     buf_ = new char[hex_size + 1];
                     bbe->write_hex_str(buf_, hex_size);
-                    // Add NULL terminator
+                    // Add NUL terminator
                     buf_[hex_size] = '\0';
                 }
             }
@@ -226,9 +224,9 @@ void mysql_standard_use_type_backend::post_use(bool /*gotData*/, indicator* /*in
 
 void mysql_standard_use_type_backend::clean_up()
 {
-    if (buf_ != NULL)
+    if (buf_ != nullptr)
     {
         delete [] buf_;
-        buf_ = NULL;
+        buf_ = nullptr;
     }
 }

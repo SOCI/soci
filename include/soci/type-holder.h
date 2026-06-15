@@ -16,7 +16,6 @@
 #include <cstdint>
 #include <ctime>
 #include <limits>
-#include <sstream>
 #include <type_traits>
 #include <typeinfo>
 #include <vector>
@@ -74,7 +73,7 @@ T* checked_ptr_cast(U* ptr)
 
     if (&ti_ptr != &ti_ret && std::strcmp(ti_ptr.name(), ti_ret.name()) != 0)
     {
-        return NULL;
+        return nullptr;
     }
 
     return static_cast<T*>(ptr);
@@ -276,37 +275,15 @@ struct type_holder_trait<uint64_t>
     static const db_type type = db_uint64;
 };
 
-#if defined(SOCI_INT64_T_IS_LONG)
 template <>
-struct type_holder_trait<long long> : type_holder_trait<int64_t>
+struct type_holder_trait<soci_l_or_ll_t> : type_holder_trait<soci_l_or_ll_int_t>
 {
 };
 
 template <>
-struct type_holder_trait<unsigned long long> : type_holder_trait<uint64_t>
+struct type_holder_trait<soci_ul_or_ull_t> : type_holder_trait<soci_ul_or_ull_int_t>
 {
 };
-#elif defined(SOCI_LONG_IS_64_BIT)
-template <>
-struct type_holder_trait<long> : type_holder_trait<int64_t>
-{
-};
-
-template <>
-struct type_holder_trait<unsigned long> : type_holder_trait<uint64_t>
-{
-};
-#else
-template <>
-struct type_holder_trait<long> : type_holder_trait<int32_t>
-{
-};
-
-template <>
-struct type_holder_trait<unsigned long> : type_holder_trait<uint32_t>
-{
-};
-#endif
 
 template <>
 struct type_holder_trait<double>
@@ -386,12 +363,6 @@ public:
         }
     }
 
-#ifdef _MSC_VER
-// MSVC complains about "unreachable code" even though all
-// code here can be reached.
-#pragma warning(push)
-#pragma warning(disable:4702)
-#endif
     template <typename T>
     T get(value_cast_tag)
     {
@@ -465,9 +436,6 @@ public:
 
         throw std::bad_cast();
     }
-#ifdef _MSC_VER
-#pragma warning(pop)
-#endif
 
 private:
     holder(db_type dt, void* val) : dt_(dt)
@@ -517,9 +485,7 @@ private:
         }
 
         // This should be unreachable
-        std::ostringstream ss;
-        ss << "Created holder with unsupported type " << std::to_string(dt);
-        throw soci_error(ss.str());
+        throw soci_error("Created holder with unsupported type {}", static_cast<int>(dt));
     }
 
     const db_type dt_;

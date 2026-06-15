@@ -8,15 +8,7 @@
 #ifndef SOCI_NORETURN_H_INCLUDED
 #define SOCI_NORETURN_H_INCLUDED
 
-// Define a portable SOCI_NORETURN macro.
-//
-// TODO-C++11: Use [[noreturn]] attribute.
-#if defined(__GNUC__)
-#   define SOCI_NORETURN __attribute__((noreturn)) void
-#elif defined(_MSC_VER)
-#   define SOCI_NORETURN __declspec(noreturn) void
-#else
-#   define SOCI_NORETURN void
-#endif
+// This is defined only for compatibility, don't use it any longer.
+#define SOCI_NORETURN [[noreturn]] void
 
 #endif // SOCI_NORETURN_H_INCLUDED

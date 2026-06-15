@@ -71,9 +71,9 @@ details::use_container<const T, indicator> use(T const &t, indicator & ind, std:
 
 // vector containers
 template <typename T>
-details::use_container<T, std::vector<indicator> >
-    use(T &t, std::vector<indicator> & ind, const std::string &name = std::string())
-{ return details::use_container<T, std::vector<indicator> >(t, ind, name); }
+details::use_container<std::vector<T>, std::vector<indicator> >
+    use(std::vector<T> &t, std::vector<indicator> & ind, const std::string &name = std::string())
+{ return details::use_container<std::vector<T>, std::vector<indicator> >(t, ind, name); }
 
 template <typename T>
 details::use_container<std::vector<T>, details::no_indicator >

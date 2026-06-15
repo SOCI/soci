@@ -5,8 +5,8 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_ODBC_SOURCE
 #include "soci/odbc/soci-odbc.h"
+#include <fmt/format.h>
 
 using namespace soci;
 
@@ -47,7 +47,7 @@ odbc_soci_error::interpret_odbc_error(SQLSMALLINT htype,
                                       SQLHANDLE hndl,
                                       std::string const& msg)
 {
-    const char* socierror = NULL;
+    const char* socierror = nullptr;
 
     SQLSMALLINT length, i = 1;
     switch ( SQLGetDiagRecA(htype, hndl, i, sqlstate_, &sqlcode_,
@@ -79,21 +79,21 @@ odbc_soci_error::interpret_odbc_error(SQLSMALLINT htype,
         break;
     }
 
+    auto* const message = reinterpret_cast<char*>(message_);
+    auto* const sqlstate = reinterpret_cast<char*>(sqlstate_);
+
     if (socierror)
     {
         // Use our own error message if we failed to retrieve the ODBC one.
-        strcpy(reinterpret_cast<char*>(message_), socierror);
+        strncpy(message, socierror, sizeof(message_));
 
         // Use "General warning" SQLSTATE code.
-        strcpy(reinterpret_cast<char*>(sqlstate_), "01000");
+        strncpy(sqlstate, "01000", sizeof(sqlstate_));
 
         sqlcode_ = 0;
     }
 
-    std::ostringstream ss;
-    ss << "Error " << msg << ": " << message_ << " (SQL state " << sqlstate_ << ")";
-
-    return ss.str();
+    return fmt::format("Error {}: {} (SQL state {})", msg, message, sqlstate);
 }
 
 odbc_soci_error::odbc_soci_error(SQLSMALLINT htype,

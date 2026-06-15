@@ -26,7 +26,7 @@ SOCI_DECL time_t timegm_impl_soci ( struct tm* tb );
 template <typename T>
 auto timegm_impl(T* t) -> decltype(timegm(t))
 {
-    return timegm(t);    
+    return timegm(t);
 }
 
 template <typename T>

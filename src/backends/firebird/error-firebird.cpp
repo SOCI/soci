@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_FIREBIRD_SOURCE
 #include "soci/firebird/soci-firebird.h"
 #include "firebird/error-firebird.h"
 
@@ -18,7 +17,7 @@ namespace soci
 firebird_soci_error::firebird_soci_error(std::string const & msg, ISC_STATUS const * status)
     : soci_error(msg)
 {
-    if (status != 0)
+    if (status != nullptr)
     {
         std::size_t i = 0;
         while (i < ISC_STATUS_LENGTH && status[i] != isc_arg_end)
@@ -89,6 +88,7 @@ soci_error::error_category firebird_soci_error::get_error_category() const
         case isc_foreign_key:
         case isc_primary_key_ref:
         case isc_primary_key_notnull:
+        case isc_unique_key_violation:
             return constraint_violation;
 
         case isc_tra_state:

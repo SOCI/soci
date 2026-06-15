@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_SOURCE
 #include "soci/blob.h"
 #include "soci/blob-exchange.h"
 #include "soci/statement.h"
@@ -20,7 +19,8 @@
 #include <cctype>
 #include <cstdint>
 #include <string>
-#include <sstream>
+
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -41,7 +41,7 @@ std::string get_name(const details::use_type_base &param, std::size_t position,
 
 
 statement_impl::statement_impl(session & s)
-    : session_(s), refCount_(1), row_(0),
+    : session_(s), refCount_(1), row_(nullptr),
       fetchSize_(1), initialFetchSize_(1),
       alreadyDescribed_(false)
 {
@@ -50,7 +50,7 @@ statement_impl::statement_impl(session & s)
 
 statement_impl::statement_impl(prepare_temp_type const & prep)
     : session_(prep.get_prepare_info()->session_),
-      refCount_(1), row_(0), fetchSize_(1), alreadyDescribed_(false)
+      refCount_(1), row_(nullptr), fetchSize_(1), alreadyDescribed_(false)
 {
     backEnd_ = session_.make_statement_backend();
 
@@ -106,7 +106,7 @@ void statement_impl::bind(values & values)
             {
                 // positional use element
 
-                int position = ssize(uses_);
+                int position = isize(uses_);
                 (*it)->bind(*this, position);
                 uses_.push_back(*it);
                 indicators_.push_back(values.indicators_[cnt]);
@@ -132,7 +132,7 @@ void statement_impl::bind(values & values)
                     }
                     else
                     {
-                        int position = ssize(uses_);
+                        int position = isize(uses_);
                         (*it)->bind(*this, position);
                         uses_.push_back(*it);
                         indicators_.push_back(values.indicators_[cnt]);
@@ -192,22 +192,22 @@ void statement_impl::bind_clean_up()
     for (std::size_t i = 0; i != indsize; ++i)
     {
         delete indicators_[i];
-        indicators_[i] = NULL;
+        indicators_[i] = nullptr;
     }
     indicators_.clear();
 
-    row_ = NULL;
+    row_ = nullptr;
     alreadyDescribed_ = false;
 }
 
 void statement_impl::clean_up()
 {
     bind_clean_up();
-    if (backEnd_ != NULL)
+    if (backEnd_ != nullptr)
     {
         backEnd_->clean_up();
         delete backEnd_;
-        backEnd_ = NULL;
+        backEnd_ = nullptr;
     }
 }
 
@@ -229,24 +229,34 @@ void statement_impl::prepare(std::string const & query,
 
 void statement_impl::define_and_bind()
 {
-    int definePosition = 1;
-    std::size_t const isize = intos_.size();
-    for (std::size_t i = 0; i != isize; ++i)
+    const char* context = "defining output parameters";
+    try
     {
-        intos_[i]->define(*this, definePosition);
+      int definePosition = 1;
+      std::size_t const isize = intos_.size();
+      for (std::size_t i = 0; i != isize; ++i)
+      {
+          intos_[i]->define(*this, definePosition);
+      }
+
+      // if there are some implicit into elements
+      // injected by the row description process,
+      // they should be defined in the later phase,
+      // starting at the position where the above loop finished
+      definePositionForRow_ = definePosition;
+
+      context = "binding input parameters";
+
+      int bindPosition = 1;
+      std::size_t const usize = uses_.size();
+      for (std::size_t i = 0; i != usize; ++i)
+      {
+          uses_[i]->bind(*this, bindPosition);
+      }
     }
-
-    // if there are some implicite into elements
-    // injected by the row description process,
-    // they should be defined in the later phase,
-    // starting at the position where the above loop finished
-    definePositionForRow_ = definePosition;
-
-    int bindPosition = 1;
-    std::size_t const usize = uses_.size();
-    for (std::size_t i = 0; i != usize; ++i)
+    catch (...)
     {
-        uses_[i]->bind(*this, bindPosition);
+        rethrow_current_exception_with_context(context);
     }
 }
 
@@ -304,7 +314,7 @@ bool statement_impl::execute(bool withDataExchange)
         // and *before* the into elements are touched, so that the row
         // description process can inject more into elements for
         // implicit data exchange
-        if (row_ != NULL && alreadyDescribed_ == false)
+        if (row_ != nullptr && alreadyDescribed_ == false)
         {
             describe();
         }
@@ -335,7 +345,7 @@ bool statement_impl::execute(bool withDataExchange)
         // number of columns before calling execute() as happens with at least
         // the ODBC backend for some complex queries (see #1151), so call it
         // again in this case
-        if (row_ != NULL && alreadyDescribed_ == false)
+        if (row_ != nullptr && alreadyDescribed_ == false)
         {
             describe();
         }
@@ -480,13 +490,8 @@ std::size_t statement_impl::intos_size()
         }
         else if (intos_size != intos_[i]->size())
         {
-            std::ostringstream msg;
-            msg << "Bind variable size mismatch (into["
-                << static_cast<unsigned long>(i) << "] has size "
-                << static_cast<unsigned long>(intos_[i]->size())
-                << ", into[0] has size "
-                << static_cast<unsigned long>(intos_size);
-            throw soci_error(msg.str());
+            throw soci_error(fmt::format("Bind variable size mismatch (into[{}] has size {}, into[0] has size {})",
+                                         i, intos_[i]->size(), intos_size));
         }
     }
     return intos_size;
@@ -509,13 +514,8 @@ std::size_t statement_impl::uses_size()
         }
         else if (usesSize != uses_[i]->size())
         {
-            std::ostringstream msg;
-            msg << "Bind variable size mismatch (use["
-                << static_cast<unsigned long>(i) << "] has size "
-                << static_cast<unsigned long>(uses_[i]->size())
-                << ", use[0] has size "
-                << static_cast<unsigned long>(usesSize);
-            throw soci_error(msg.str());
+            throw soci_error(fmt::format("Bind variable size mismatch (use[{}] has size {}, use[0] has size {})",
+                                         i, uses_[i]->size(), usesSize));
         }
     }
     return usesSize;
@@ -596,7 +596,7 @@ void statement_impl::do_add_query_parameters()
     for (std::size_t i = 0; i != usize; ++i)
     {
         std::string name = get_name(*uses_[i], i, backEnd_);
-        std::stringstream value;
+        std::ostringstream value;
         uses_[i]->dump_value(value, backEnd_->get_row_to_dump());
         session_.add_query_parameter(std::move(name), value.str());
     }
@@ -642,9 +642,7 @@ void statement_impl::post_fetch(bool gotData, bool calledFromFetch)
             // Provide the parameter number in the error message as the
             // exceptions thrown by the backend only say what went wrong, but
             // not where.
-            std::ostringstream oss;
-            oss << "for the parameter number " << i + 1;
-            e.add_context(oss.str());
+            e.add_context(fmt::format("for the parameter number {}", i + 1));
 
             throw;
         }
@@ -813,10 +811,8 @@ void statement_impl::describe()
             bind_into<db_date>();
             break;
         default:
-            std::ostringstream msg;
-            msg << "db column type " << dbtype
-                <<" not supported for dynamic selects"<<std::endl;
-            throw soci_error(msg.str());
+            throw soci_error(fmt::format("db column type {} not supported for dynamic selects\n",
+                             fmt::underlying(dbtype)));
         }
         row_->add_properties(props);
     }
@@ -837,7 +833,7 @@ void statement_impl::describe()
 
 void statement_impl::set_row(row * r)
 {
-    if (row_ != NULL)
+    if (row_ != nullptr)
     {
         throw soci_error(
             "Only one Row element allowed in a single statement.");
@@ -897,7 +893,8 @@ statement_impl::make_vector_use_type_backend()
     return backEnd_->make_vector_use_type_backend();
 }
 
-SOCI_NORETURN
+[[noreturn]]
+void
 statement_impl::rethrow_current_exception_with_context(char const* operation)
 {
     try
@@ -908,8 +905,7 @@ statement_impl::rethrow_current_exception_with_context(char const* operation)
     {
         if (!query_.empty())
         {
-            std::ostringstream oss;
-            oss << "while " << operation << " \"" << query_ << "\"";
+            std::string ctx = fmt::format("while {} \"{}\"", operation, query_);
 
             if (!uses_.empty() && session_.get_query_context_logging_mode() != log_context::never)
             {
@@ -921,10 +917,10 @@ statement_impl::rethrow_current_exception_with_context(char const* operation)
 
                 do_add_query_parameters();
 
-                oss << " with " << session_.get_last_query_context();
+                ctx += fmt::format(" with {}", session_.get_last_query_context());
             }
 
-            e.add_context(oss.str());
+            e.add_context(ctx);
         }
 
         throw;

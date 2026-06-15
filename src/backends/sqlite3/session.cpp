@@ -5,22 +5,18 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_SQLITE3_SOURCE
 #include "soci/sqlite3/soci-sqlite3.h"
 
 #include "soci/connection-parameters.h"
 
 #include "soci-cstrtoi.h"
 
-#include <functional>
-#include <memory>
 #include <sqlite3.h>
-#include <sstream>
-#include <string>
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
+#include <fmt/format.h>
+
+#include <memory>
+#include <string>
 
 using namespace soci;
 using namespace soci::details;
@@ -29,59 +25,29 @@ using namespace sqlite_api;
 namespace // anonymous
 {
 
-// Callback function used to construct the error message in the provided stream.
-//
-// SQLite3 own error message will be appended to it.
-using error_callback = std::function<void (std::ostream& ostr)>;
-
 // helper function for hardcoded queries: this is a simple wrapper for
 // sqlite3_exec() which throws an exception on error.
 void execute_hardcoded(sqlite_api::sqlite3* conn, char const* const query,
-                       error_callback const& errCallback,
-                       int (*callback)(void*, int, char**, char**) = NULL,
-                       void* callback_arg = NULL)
+                       char const* const errMsg,
+                       int (*callback)(void*, int, char**, char**) = nullptr,
+                       void* callback_arg = nullptr)
 {
-    char *zErrMsg = 0;
+    char *zErrMsg = nullptr;
     int const res = sqlite3_exec(conn, query, callback, callback_arg, &zErrMsg);
 
     std::unique_ptr<char, void(*)(void*)> zErrMsgPtr(zErrMsg, sqlite3_free);
     if (res != SQLITE_OK)
     {
-        std::ostringstream ss;
-        errCallback(ss);
-
-        throw sqlite3_soci_error(conn, ss.str(), zErrMsg);
+        throw sqlite3_soci_error(conn, errMsg, zErrMsg);
     }
 }
 
-// Simpler to use overload which uses a hard coded error message.
-void execute_hardcoded(sqlite_api::sqlite3* conn, char const* const query, char const* const errMsg,
-                       int (*callback)(void*, int, char**, char**) = NULL,
-                       void* callback_arg = NULL)
+// overload allowing to pass std::string instead of const char*
+void execute_hardcoded(sqlite_api::sqlite3* conn,
+                       std::string const& query,
+                       std::string const& errMsg)
 {
-    return execute_hardcoded(conn, query,
-        [errMsg](std::ostream& ostr) { ostr << errMsg; },
-        callback, callback_arg
-    );
-}
-
-void check_sqlite_err(sqlite_api::sqlite3* conn, int res,
-                      error_callback const& errCallback)
-{
-    if (SQLITE_OK != res)
-    {
-        std::ostringstream ss;
-        errCallback(ss);
-
-        sqlite3_soci_error const error(conn, ss.str());
-        sqlite3_close(conn); // connection must be closed here
-        throw error;
-    }
-}
-
-void check_sqlite_err(sqlite_api::sqlite3* conn, int res, char const* const errMsg)
-{
-    return check_sqlite_err(conn, res, [errMsg](std::ostream& ostr) { ostr << errMsg; });
+    execute_hardcoded(conn, query.c_str(), errMsg.c_str());
 }
 
 } // namespace anonymous
@@ -138,8 +104,8 @@ sqlite3_session_backend::sqlite3_session_backend(
     }
     if (params.get_option("timeout", val))
     {
-        std::istringstream converter(val);
-        converter >> timeout;
+        if (!cstring_to_integer(timeout, val.c_str()) || timeout < 0)
+            throw soci_error("Invalid value for timeout option: {}", val);
     }
     if (params.get_option("synchronous", val))
     {
@@ -165,39 +131,42 @@ sqlite3_session_backend::sqlite3_session_backend(
         throw soci_error("Database name must be specified");
     }
 
-    int res = sqlite3_open_v2(dbname.c_str(), &conn_, connection_flags, (vfs.empty()?NULL:vfs.c_str()));
-    check_sqlite_err(conn_, res,
-        [&dbname](std::ostream& ostr)
-        {
-            ostr << "Cannot establish connection to \"" << dbname << "\"";
-        }
-    );
+    sqlite_api::sqlite3* conn = nullptr;
+    int res = sqlite3_open_v2(dbname.c_str(), &conn, connection_flags, (vfs.empty()?nullptr:vfs.c_str()));
+
+    // Ensure that the database connection is closed if any errors occur.
+    std::unique_ptr<sqlite_api::sqlite3, int(*)(sqlite_api::sqlite3*)>
+        conn_ptr(conn, sqlite3_close);
+
+    if (res != SQLITE_OK)
+        throw sqlite3_soci_error(conn, fmt::format(R"(Cannot establish connection to "{}")", dbname));
 
     // Set the timeout first to have effect on the following queries.
-    res = sqlite3_busy_timeout(conn_, timeout * 1000);
-    check_sqlite_err(conn_, res, "Failed to set busy timeout for connection. ");
+    res = sqlite3_busy_timeout(conn, timeout * 1000);
+    if (res != SQLITE_OK)
+        throw sqlite3_soci_error(conn, "Failed to set busy timeout for connection.");
 
     if (!synchronous.empty())
     {
-        std::string const query("pragma synchronous=" + synchronous);
-        execute_hardcoded(conn_, query.c_str(),
-            [&synchronous](std::ostream& ostr)
-            {
-                ostr << "Setting synchronous pragma to \"" << synchronous << "\" failed";
-            }
+        execute_hardcoded
+        (
+            conn,
+            fmt::format("pragma synchronous={}", synchronous),
+            fmt::format(R"(Setting synchronous pragma to "{}" failed)", synchronous)
         );
     }
 
     if (!foreignKeys.empty())
     {
-        std::string const query("pragma foreign_keys=" + foreignKeys);
-        execute_hardcoded(conn_, query.c_str(),
-            [&foreignKeys](std::ostream& ostr)
-            {
-                ostr << "Setting foreign_keys pragma to \"" << foreignKeys << "\" failed";
-            }
+        execute_hardcoded
+        (
+            conn,
+            fmt::format("pragma foreign_keys={}", foreignKeys),
+            fmt::format(R"(Setting foreign_keys pragma to "{}" failed)", foreignKeys)
         );
     }
+
+    conn_ = conn_ptr.release();
 }
 
 sqlite3_session_backend::~sqlite3_session_backend()
@@ -247,11 +216,11 @@ static std::string sanitize_table_name(std::string const& table)
 {
     std::string ret;
     ret.reserve(table.length());
-    for (std::string::size_type pos = 0; pos < table.size(); ++pos)
+    for (char pos : table)
     {
-        if (isspace(table[pos]))
+        if (isspace(pos))
             throw soci_error("Table name must not contain whitespace");
-        const char c = table[pos];
+        const char c = pos;
         ret += c;
         if (c == '\'')
             ret += '\'';

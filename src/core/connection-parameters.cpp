@@ -5,12 +5,12 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_SOURCE
 #include "soci/connection-parameters.h"
 #include "soci/soci-backend.h"
 #include "soci/backend-loader.h"
 
 #include "soci-case.h"
+#include <fmt/format.h>
 
 char const * soci::option_reconnect = "reconnect";
 
@@ -81,13 +81,13 @@ private:
 } // namespace details
 
 connection_parameters::connection_parameters()
-    : factory_(NULL), backendRef_(NULL)
+    : factory_(nullptr), backendRef_(nullptr)
 {
 }
 
 connection_parameters::connection_parameters(backend_factory const & factory,
     std::string const & connectString)
-    : factory_(&factory), connectString_(connectString), backendRef_(NULL)
+    : factory_(&factory), connectString_(connectString), backendRef_(nullptr)
 {
 }
 
@@ -190,13 +190,7 @@ connection_parameters::is_true_value(char const* name, std::string const& value)
     if (val == "0" || val == "no" || val == "false" || val == "off")
         return false;
 
-    std::ostringstream os;
-    os << R"(Invalid value ")"
-       << value
-       << R"(" for boolean option ")"
-       << name
-       << '"';
-    throw soci_error(os.str());
+    throw soci_error(fmt::format(R"(Invalid value "{}" for boolean option "{}")", value, name));
 }
 
 namespace
@@ -263,15 +257,7 @@ getPossiblyQuotedWord(std::string const &s, std::string::const_iterator &i)
         {
             if (++i == end)
             {
-                std::ostringstream os;
-                os << "Expected closing quote '" << quote << "' "
-                      "matching opening quote at position "
-                   << startPos
-                   << " not found before the end of the string "
-                      "in the connection string \""
-                   << s << "\".";
-
-                throw soci_error(os.str());
+                throw soci_error(fmt::format("Expected closing quote '{}' matching opening quote at position {} not found before the end of the string in the connection string \"{}\".", quote, startPos, s));
             }
 
             if (*i == quote)
@@ -320,16 +306,7 @@ void connection_parameters::extract_options_from_space_separated_string()
             {
                 if (name.empty())
                 {
-                    std::ostringstream os;
-                    os << "Unexpected '"
-                       << delim
-                       << "' without a name at position "
-                       << (i - connectString_.begin() + 1)
-                       << " in the connection string \""
-                       << connectString_
-                       << "\".";
-
-                    throw soci_error(os.str());
+                    throw soci_error(fmt::format("Unexpected '{}' without a name at position {} in the connection string \"{}\".", delim, (i - connectString_.begin() + 1), connectString_));
                 }
 
                 ++i;    // Skip the delimiter itself.

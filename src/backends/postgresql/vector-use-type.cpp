@@ -5,7 +5,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_POSTGRESQL_SOURCE
 #include "soci/soci-platform.h"
 #include "soci/postgresql/soci-postgresql.h"
 #include "soci-dtocstr.h"
@@ -21,7 +20,6 @@
 #include <cstring>
 #include <ctime>
 #include <limits>
-#include <sstream>
 
 using namespace soci;
 using namespace soci::details;
@@ -58,7 +56,7 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
 {
     std::size_t vend;
 
-    if (end_ != NULL && *end_ != 0)
+    if (end_ != nullptr && *end_ != 0)
     {
         vend = *end_;
     }
@@ -72,9 +70,9 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
         char * buf;
 
         // the data in vector can be either i_ok or i_null
-        if (ind != NULL && ind[i] == i_null)
+        if (ind != nullptr && ind[i] == i_null)
         {
-            buf = NULL;
+            buf = nullptr;
         }
         else
         {
@@ -99,7 +97,7 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                     std::vector<std::string> & v = *pv;
 
                     buf = new char[v[i].size() + 1];
-                    std::strcpy(buf, v[i].c_str());
+                    strncpy(buf, v[i].c_str(), v[i].size() + 1);
                 }
                 break;
             case x_int8:
@@ -209,7 +207,7 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                     std::string const s = double_to_cstring(v[i]);
 
                     buf = new char[s.size() + 1];
-                    std::strcpy(buf, s.c_str());
+                    strncpy(buf, s.c_str(), s.size() + 1);
                 }
                 break;
             case x_stdtm:
@@ -231,7 +229,7 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                     std::vector<xml_type> & v = *pv;
 
                     buf = new char[v[i].value.size() + 1];
-                    std::strcpy(buf, v[i].value.c_str());
+                    strncpy(buf, v[i].value.c_str(), v[i].value.size() + 1);
                 }
                 break;
             case x_longstring:
@@ -241,7 +239,7 @@ void postgresql_vector_use_type_backend::pre_use(indicator const * ind)
                     std::vector<long_string> & v = *pv;
 
                     buf = new char[v[i].value.size() + 1];
-                    std::strcpy(buf, v[i].value.c_str());
+                    strncpy(buf, v[i].value.c_str(), v[i].value.size() + 1);
                 }
                 break;
 
@@ -277,7 +275,7 @@ std::size_t postgresql_vector_use_type_backend::size() const
         return actual_size;
     }
 
-    if (end_ != NULL && *end_ != 0)
+    if (end_ != nullptr && *end_ != 0)
     {
         return *end_ - begin_;
     }

@@ -51,7 +51,7 @@ double cstring_to_double(char const* s)
         // don't seem to be used in practice, so for now keep things simple.
         size_t const bufSize = strlen(s) + 1;
         char* const buf = new char[bufSize];
-        strcpy(buf, s);
+        strncpy(buf, s, bufSize);
         buf[end - s] = ',';
         d = strtod(buf, &end);
         parsedOK = end != buf && *end == '\0';

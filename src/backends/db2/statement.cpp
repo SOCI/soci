@@ -6,7 +6,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_DB2_SOURCE
 #include "soci/db2/soci-db2.h"
 #include <cctype>
 
@@ -99,9 +98,7 @@ void db2_statement_backend::prepare(std::string const &  query ,
             {
                 names_.push_back(name);
                 name.clear();
-                std::ostringstream ss;
-                ss << '?';
-                query_ += ss.str();
+                query_ += '?';
                 query_ += *it;
                 state = normal;
 
@@ -113,9 +110,7 @@ void db2_statement_backend::prepare(std::string const &  query ,
     if (state == in_name)
     {
         names_.push_back(name);
-        std::ostringstream ss;
-        ss << '?';
-        query_ += ss.str();
+        query_ += '?';
     }
 
     SQLRETURN cliRC = SQLPrepare(hStmt, const_cast<SQLCHAR *>((const SQLCHAR *) query_.c_str()), SQL_NTS);

@@ -6,17 +6,13 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_DB2_SOURCE
 #include "soci/db2/soci-db2.h"
 #include "soci/connection-parameters.h"
 
 #include "soci-autostatement.h"
 
 #include <cstdio>
-
-#ifdef _MSC_VER
-#pragma warning(disable:4355)
-#endif
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
@@ -24,9 +20,6 @@ using namespace soci::details;
 const char* soci::db2_option_driver_complete = "db2.driver_complete";
 
 const std::string db2_soci_error::sqlState(std::string const & msg,const SQLSMALLINT htype,const SQLHANDLE hndl) {
-    std::ostringstream ss(msg, std::ostringstream::app);
-
-
     SQLCHAR message[SQL_MAX_MESSAGE_LENGTH + 1];
     SQLCHAR sqlstate[SQL_SQLSTATE_SIZE + 1];
     SQLINTEGER sqlcode;
@@ -40,10 +33,9 @@ const std::string db2_soci_error::sqlState(std::string const & msg,const SQLSMAL
                        message,
                        SQL_MAX_MESSAGE_LENGTH + 1,
                        &length) == SQL_SUCCESS ) {
-        ss<<" SQLMESSAGE: ";
-        ss<<message;
+        return fmt::format("{} SQLMESSAGE: {}", msg, message);
     }
-    return ss.str();
+    return msg;
 }
 
 void db2_session_backend::parseKeyVal(std::string const & keyVal) {
@@ -118,7 +110,7 @@ db2_session_backend::db2_session_backend(
     // Prompt the user for any missing information (typically UID/PWD) in the
     // connection string by default but allow overriding this using "prompt"
     // option.
-    SQLHWND hwnd_for_prompt = NULL;
+    SQLHWND hwnd_for_prompt = nullptr;
     unsigned completion = SQL_DRIVER_COMPLETE;
     std::string completionString;
     if (parameters.get_option(db2_option_driver_complete, completionString))
@@ -127,7 +119,7 @@ db2_session_backend::db2_session_backend(
       // one of SQL_DRIVER_XXX constants but don't check for the exact value in
       // case more of them are added in the future, the ODBC driver will return
       // an error if we pass it an invalid value anyhow.
-      if (std::sscanf(completionString.c_str(), "%u", &completion) != 1)
+      if (soci::sscanf(completionString.c_str(), "%u", &completion) != 1)
       {
         throw soci_error("Invalid non-numeric driver completion option value \"" +
                           completionString + "\".");

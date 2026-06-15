@@ -3,7 +3,11 @@ include(soci_utils)
 # Defines a CMake target for a database backend.
 #
 # This function takes care of orchestrating the boilerplate that is needed in order to set up
-# a library target as used for different DB backends. Accepted arguments are
+# a library target as used for different DB backends. The corresponding
+# SOCI_<uppercase-name>_SOURCE macro is defined during compilation to control
+# symbol visibility and for build-time use for conditional compilation.
+#
+# Accepted arguments are the following:
 #
 # NAME <name>                              Name of the backend. This function will create an alias target using this name with "SOCI::" prefix.
 # MISSING_DEPENDENCY_BEHAVIOR <behavior>   What to do if a dependency is not found. Valid values are "ERROR", "DISABLE" and "BUILTIN".
@@ -81,6 +85,22 @@ function(soci_define_backend_target)
 
     list(GET CURRENT_DEP_SEARCH 0 CURRENT_DEP)
 
+    # Don't search for the dependency if it had been already predefined.
+    set(SKIP_DEP_SEARCH ON)
+    foreach (CURRENT IN LISTS CURRENT_DEP_TARGETS)
+      if(NOT TARGET ${CURRENT})
+        set(SKIP_DEP_SEARCH OFF)
+        break()
+      endif()
+    endforeach()
+
+    if(SKIP_DEP_SEARCH)
+      list(APPEND PUBLIC_DEP_CALL_ARGS
+        "NAME ${CURRENT_DEP} DEP_TARGETS ${CURRENT_DEP_TARGETS} TARGET SOCI::${DEFINE_BACKEND_NAME}"
+      )
+      continue()
+    endif()
+
     find_package(${CURRENT_DEP_SEARCH} ${REQUIRE_FLAG})
 
     if (NOT ${CURRENT_DEP}_FOUND)
@@ -99,7 +119,7 @@ function(soci_define_backend_target)
       else()
         message(FATAL_ERROR "Unspecified handling of unmet dependency")
       endif()
-    else()
+    else() # Dependency was found.
       # This is wasteful, but do it again without "QUIET" flag to show the result if it succeeded.
       if (REQUIRE_FLAG STREQUAL "QUIET")
         find_package(${CURRENT_DEP_SEARCH})
@@ -119,6 +139,8 @@ function(soci_define_backend_target)
 
   add_library(${DEFINE_BACKEND_TARGET_NAME} ${SOCI_LIB_TYPE} ${DEFINE_BACKEND_SOURCE_FILES})
   add_library(SOCI::${DEFINE_BACKEND_NAME} ALIAS ${DEFINE_BACKEND_TARGET_NAME})
+  # defined during compilation to control symbol visibility/export
+  target_compile_definitions(${DEFINE_BACKEND_TARGET_NAME} PRIVATE SOCI_${BACKEND_UPPER}_SOURCE)
 
   foreach(CURRENT_ARG_SET IN LISTS PUBLIC_DEP_CALL_ARGS)
     # Convert space-separated string to list
@@ -129,20 +151,21 @@ function(soci_define_backend_target)
   # Set settings common to all backends.
   target_link_libraries(${DEFINE_BACKEND_TARGET_NAME} PUBLIC SOCI::Core)
   target_include_directories(${DEFINE_BACKEND_TARGET_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/include/private")
+  soci_private_dependency(
+    NAME fmt
+    DEP_TARGETS "${soci_fmt}"
+    TARGET "SOCI::${DEFINE_BACKEND_NAME}"
+  )
+
+  soci_build_library_name(full_backend_target_name "${DEFINE_BACKEND_TARGET_NAME}")
 
   set_target_properties(${DEFINE_BACKEND_TARGET_NAME}
     PROPERTIES
+      OUTPUT_NAME ${full_backend_target_name}
       SOVERSION ${PROJECT_VERSION_MAJOR}
       VERSION ${PROJECT_VERSION}
       EXPORT_NAME ${DEFINE_BACKEND_NAME}
   )
-
-  if (DEFINED ABI_SUFFIX)
-    set_target_properties(${DEFINE_BACKEND_TARGET_NAME}
-      PROPERTIES
-        OUTPUT_NAME "${DEFINE_BACKEND_TARGET_NAME}${ABI_SUFFIX}"
-    )
-  endif()
 
   if (DEFINE_BACKEND_HEADER_FILES)
     target_sources(${DEFINE_BACKEND_TARGET_NAME}
@@ -156,6 +179,9 @@ function(soci_define_backend_target)
 
   target_link_libraries(soci_interface INTERFACE SOCI::${DEFINE_BACKEND_NAME})
 
+  if (NOT SOCI_INSTALL)
+    return()
+  endif()
 
   # Setup installation rules for this backend
   install(

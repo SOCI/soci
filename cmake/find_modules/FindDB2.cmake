@@ -94,7 +94,8 @@ find_package_handle_standard_args(DB2
   REQUIRED_VARS DB2_INCLUDE_DIRS DB2_LIBRARIES
 )
 
-add_library(DB2 INTERFACE)
-target_link_libraries(DB2 INTERFACE ${DB2_LIBRARIES})
-target_include_directories(DB2 SYSTEM INTERFACE ${DB2_INCLUDE_DIRS})
-add_library(DB2::DB2 ALIAS DB2)
+if (DB2_FOUND AND NOT TARGET DB2:DB2)
+  add_library(DB2::DB2 UNKNOWN IMPORTED)
+  set_target_properties(DB2::DB2 PROPERTIES IMPORTED_LOCATION "${DB2_LIBRARIES}")
+  target_include_directories(DB2::DB2 SYSTEM INTERFACE ${DB2_INCLUDE_DIRS})
+endif()

@@ -410,6 +410,29 @@ TEST_CASE_METHOD(common_tests, "NULL expected exception", "[core][exception][nul
     CHECK_THROWS_AS( std::for_each(rs.begin(), rs.end(), THelper()), soci_error );
 }
 
+// See #1328: this used to misbehave at least with PostgreSQL backend.
+TEST_CASE_METHOD(common_tests, "Fetch into a row without result", "[core][row]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    sql << "insert into soci_test(val) values(1)";
+
+    soci::row row;
+    soci::statement
+        st = (sql.prepare << "update soci_test set val=2", soci::into(row));
+
+    REQUIRE_NOTHROW( st.execute(false) );
+
+    std::size_t count = 0;
+    while (st.fetch())
+    {
+        ++count;
+    }
+
+    CHECK( row.size() == 0 );
+    CHECK( count == 0 );
+}
 } // namespace tests
 
 } // namespace soci

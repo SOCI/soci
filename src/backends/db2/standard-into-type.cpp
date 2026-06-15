@@ -6,7 +6,6 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_DB2_SOURCE
 #include "soci/db2/soci-db2.h"
 #include "soci-exchange-cast.h"
 #include "soci-mktime.h"
@@ -126,7 +125,7 @@ void db2_standard_into_type_backend::post_fetch(
         // first, deal with indicators
         if (SQL_NULL_DATA == valueLen)
         {
-            if (ind == NULL)
+            if (ind == nullptr)
             {
                 throw soci_error(
                     "Null value fetched and no indicator defined.");
@@ -137,7 +136,7 @@ void db2_standard_into_type_backend::post_fetch(
         }
         else
         {
-            if (ind != NULL)
+            if (ind != nullptr)
             {
                 *ind = i_ok;
             }

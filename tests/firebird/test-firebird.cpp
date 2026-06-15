@@ -13,13 +13,14 @@
 #include "firebird/common.h"
 #include "test-assert.h"
 #include "test-context.h"
-#include <iostream>
 #include <string>
 #include <ctime>
 #include <cstring>
 #include <cmath>
 
 #include <catch.hpp>
+
+#include <fmt/format.h>
 
 using namespace soci;
 
@@ -144,7 +145,7 @@ TEST_CASE("Firebird char types", "[firebird][string]")
         char buf[20];
         std::string buf_str;
         sql << "select p1 from test2", into(buf_str);
-        std::strcpy(buf, buf_str.c_str());
+        soci::strncpy(buf, buf_str.c_str(), sizeof(buf));
 
         CHECK(std::strncmp(buf, msg, 5) == 0);
         // This test works only for charset none
@@ -176,7 +177,7 @@ TEST_CASE("Firebird date and time", "[firebird][datetime]")
     std::tm t1 = std::tm();
     std::tm t2 = std::tm();
     std::tm t3 = std::tm();
-    std::time_t now = std::time(NULL);
+    std::time_t now = std::time(nullptr);
     std::tm t = *std::localtime(&now);
     sql << "insert into test3(p1, p2, p3) "
     << "values (?,?,?)", use(t), use(t), use(t);
@@ -440,10 +441,7 @@ TEST_CASE("Firebird bulk operations", "[firebird][bulk]")
     int const rowsToTest = 10;
     for (int i = 0; i != rowsToTest; ++i)
     {
-        std::ostringstream ss;
-        ss << "Hello_" << i;
-
-        std::string const &x = ss.str();
+        std::string const &x = fmt::format("Hello_{}", i);
 
         sql << "insert into test6(p1, p2) values(\'"
         << x << "\', \'" << x << "\')";
@@ -462,13 +460,10 @@ TEST_CASE("Firebird bulk operations", "[firebird][bulk]")
         st.execute();
         while (st.fetch())
         {
-            std::ostringstream ss;
-            ss << "Hello_" << i;
-            std::string const &x = ss.str();
+            std::string const &x = fmt::format("Hello_{}", i);
 
             // Note: CHAR fields are always padded with whitespaces
-            ss << "   ";
-            CHECK(s1 == ss.str());
+            CHECK(s1 == x +  "   ");
             CHECK(s2 == x);
             ++i;
         }
@@ -486,14 +481,11 @@ TEST_CASE("Firebird bulk operations", "[firebird][bulk]")
         {
             for (std::size_t j = 0; j != s1.size(); ++j)
             {
-                std::ostringstream ss;
-                ss << "Hello_" << i;
-                std::string const &x = ss.str();
+                std::string const &x = fmt::format("Hello_{}", i);
 
                 // Note: CHAR fields are always padded with whitespaces
-                ss << "   ";
-                CHECK(ss.str() == s1[j]);
-                CHECK(x == s2[j]);
+                CHECK(s1[j] == x +  "   ");
+                CHECK(s2[j] == x);
                 ++i;
             }
         }
@@ -1098,6 +1090,26 @@ TEST_CASE("Firebird decimals as strings", "[firebird][decimal][string]")
     CHECK(r.get_indicator(2) == i_ok);
 
     sql << "drop table test13";
+}
+
+TEST_CASE("Firebird next value", "[firebird][get_next_sequence_value()]")
+{
+    soci::session sql(backEnd, connectString);
+    sql << "create sequence seqtest";
+
+    {
+        long long val = -1;
+        CHECK(sql.get_next_sequence_value("seqtest", val));
+        CHECK(val == 1);
+    }
+
+    {
+        std::int64_t val = -1;
+        CHECK(sql.get_next_sequence_value("seqtest", val));
+        CHECK(val == 2);
+    }
+
+    sql << "drop sequence seqtest";
 }
 
 //

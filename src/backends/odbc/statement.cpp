@@ -5,21 +5,20 @@
 // https://www.boost.org/LICENSE_1_0.txt)
 //
 
-#define SOCI_ODBC_SOURCE
 #include "soci/odbc/soci-odbc.h"
 #include "soci/soci-unicode.h"
 #include "soci/type-holder.h"
 
 #include <cctype>
-#include <sstream>
 #include <cstring>
+#include <fmt/format.h>
 
 using namespace soci;
 using namespace soci::details;
 
 
 odbc_statement_backend::odbc_statement_backend(odbc_session_backend &session)
-    : session_(session), hstmt_(0), numRowsFetched_(0), fetchVectorByRows_(false),
+    : session_(session), hstmt_(nullptr), numRowsFetched_(0), fetchVectorByRows_(false),
       boundByName_(false), boundByPos_(false),
       rowsAffected_(-1LL)
 {
@@ -57,65 +56,64 @@ void odbc_statement_backend::prepare(std::string const & query,
     std::string name;
     query_.reserve(query.length());
 
-    for (std::string::const_iterator it = query.begin(), end = query.end();
-         it != end; ++it)
+    for (char it : query)
     {
         switch (state)
         {
         case eNormal:
-            if (*it == '\'')
+            if (it == '\'')
             {
-                query_ += *it;
+                query_ += it;
                 state = eInQuotes;
             }
-            else if (*it == '#')
+            else if (it == '#')
             {
-                query_ += *it;
+                query_ += it;
                 state = eInAccessDate;
             }
-            else if (*it == ':')
+            else if (it == ':')
             {
                 state = eInName;
             }
             else // regular character, stay in the same state
             {
-                query_ += *it;
+                query_ += it;
             }
             break;
         case eInQuotes:
-            if (*it == '\'')
+            if (it == '\'')
             {
-                query_ += *it;
+                query_ += it;
                 state = eNormal;
             }
             else // regular quoted character
             {
-                query_ += *it;
+                query_ += it;
             }
             break;
         case eInName:
-            if (std::isalnum(*it) || *it == '_')
+            if (std::isalnum(it) || it == '_')
             {
-                name += *it;
+                name += it;
             }
             else // end of name
             {
                 names_.push_back(name);
                 name.clear();
                 query_ += "?";
-                query_ += *it;
+                query_ += it;
                 state = eNormal;
             }
             break;
         case eInAccessDate:
-            if (*it == '#')
+            if (it == '#')
             {
-                query_ += *it;
+                query_ += it;
                 state = eNormal;
             }
             else // regular quoted character
             {
-                query_ += *it;
+                query_ += it;
             }
             break;
         }
@@ -130,9 +128,7 @@ void odbc_statement_backend::prepare(std::string const & query,
     SQLRETURN rc = SQLPrepare(hstmt_, sqlchar_cast(query_), (SQLINTEGER)query_.size());
     if (is_odbc_error(rc))
     {
-        std::ostringstream ss;
-        ss << "preparing query \"" << query_ << "\"";
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, ss.str());
+        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, fmt::format("preparing query \"{}\"", query_));
     }
 
     // reset any old into buffers, they will be added later if they're used
@@ -270,9 +266,9 @@ odbc_statement_backend::do_fetch(int beginRow, int endRow)
         throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, "fetching data");
     }
 
-    for (std::size_t j = 0; j != intos_.size(); ++j)
+    for (auto & into : intos_)
     {
-        intos_[j]->do_post_fetch_rows(beginRow, endRow);
+        into->do_post_fetch_rows(beginRow, endRow);
     }
 
     return ef_success;
@@ -283,9 +279,9 @@ odbc_statement_backend::fetch(int number)
 {
     numRowsFetched_ = 0;
 
-    for (std::size_t i = 0; i != intos_.size(); ++i)
+    for (auto & into : intos_)
     {
-        intos_[i]->resize(number);
+        into->resize(number);
     }
 
     SQLSetStmtAttr(hstmt_, SQL_ATTR_ROW_BIND_TYPE, SQL_BIND_BY_COLUMN, 0);
@@ -320,9 +316,9 @@ odbc_statement_backend::fetch(int number)
             // Note that we need to do it even for row == 0 as this might not
             // be the first call to fetch() and so the current bindings might
             // not be the same as initial ones.
-            for (std::size_t j = 0; j != intos_.size(); ++j)
+            for (auto & into : intos_)
             {
-                intos_[j]->rebind_row(row);
+                into->rebind_row(row);
             }
 
             res = do_fetch(row, row + 1);
@@ -386,9 +382,7 @@ void odbc_statement_backend::describe_column(int colNum,
 
     if (is_odbc_error(rc))
     {
-        std::ostringstream ss;
-        ss << "getting description of column at position " << colNum;
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, ss.str());
+        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, fmt::format("getting description of column at position {}", colNum));
     }
 
     char const *name = reinterpret_cast<char const *>(colNameBuffer);
@@ -396,13 +390,11 @@ void odbc_statement_backend::describe_column(int colNum,
 
     SQLLEN is_unsigned = 0;
     SQLRETURN rc_colattr = SQLColAttribute(hstmt_, static_cast<SQLUSMALLINT>(colNum),
-                                           SQL_DESC_UNSIGNED, 0, 0, 0, &is_unsigned);
+                                           SQL_DESC_UNSIGNED, nullptr, 0, nullptr, &is_unsigned);
 
     if (is_odbc_error(rc_colattr))
     {
-        std::ostringstream ss;
-        ss << "getting \"unsigned\" column attribute of the column at position " << colNum;
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, ss.str());
+        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, fmt::format("getting \"unsigned\" column attribute of the column at position {}", colNum));
     }
 
     switch (dataType)
@@ -473,9 +465,7 @@ std::size_t odbc_statement_backend::column_size(int colNum)
 
     if (is_odbc_error(rc))
     {
-        std::ostringstream ss;
-        ss << "getting size of column at position " << colNum;
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, ss.str());
+        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, fmt::format("getting size of column at position {}", colNum));
     }
 
     return colSize;
