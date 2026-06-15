@@ -166,6 +166,7 @@ function(soci_declare_dependency_impl)
 
     set(FOUND_ONE ON)
 
+    get_target_property(TGT_TYPE "${TGT}" TYPE)
     if ("${TGT_TYPE}" STREQUAL "INTERFACE_LIBRARY")
       get_target_property(TGT_LIBS "${TGT}" INTERFACE_LINK_LIBRARIES)
       if (NOT TGT_LIBS)
@@ -173,7 +174,6 @@ function(soci_declare_dependency_impl)
       endif()
     endif()
 
-    get_target_property(TGT_TYPE "${TGT}" TYPE)
     if (NOT TGT_HEADER_ONLY AND ((NOT "${SOCI_DEP_SCOPE}" STREQUAL "PRIVATE") OR
       "${UNDERLYING_TYPE}" STREQUAL "STATIC_LIBRARY" OR NOT "${TGT_TYPE}" STREQUAL "STATIC_LIBRARY"))
       # - Header-only dependencies never have to be propagated
