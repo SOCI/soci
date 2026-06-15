@@ -153,7 +153,7 @@ function(soci_define_backend_target)
   target_include_directories(${DEFINE_BACKEND_TARGET_NAME} PRIVATE "${PROJECT_SOURCE_DIR}/include/private")
   soci_private_dependency(
     NAME fmt
-    DEP_TARGETS fmt::fmt
+    DEP_TARGETS "${soci_fmt}"
     TARGET "SOCI::${DEFINE_BACKEND_NAME}"
   )
 

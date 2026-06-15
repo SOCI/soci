@@ -127,7 +127,7 @@ endif()
 
 soci_private_dependency(
   NAME fmt
-  DEP_TARGETS fmt::fmt
+  DEP_TARGETS "${soci_fmt}"
   TARGET SOCI::Core
 )
 

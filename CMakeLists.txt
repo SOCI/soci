@@ -139,6 +139,10 @@ elseif(NOT SOCI_FMT_BUILTIN)
   endif()
 endif()
 
+
+# Name of the library to link with.
+set(soci_fmt fmt::fmt)
+
 if(soci_use_bundled_fmt)
   if (NOT EXISTS ${PROJECT_SOURCE_DIR}/3rdparty/fmt/CMakeLists.txt)
     message(
@@ -148,11 +152,11 @@ if(soci_use_bundled_fmt)
     )
   endif()
 
-  set(FMT_INSTALL ${SOCI_INSTALL})
   if (CMAKE_VERSION VERSION_GREATER_EQUAL 3.25)
     set(SYSTEM_FLAG "SYSTEM")
   endif()
   add_subdirectory(3rdparty/fmt ${SYSTEM_FLAG})
+  set(soci_fmt "fmt::fmt-header-only")
 endif()
 
 # Helper function appending prefix and suffix to the library name.

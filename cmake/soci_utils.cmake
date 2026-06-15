@@ -166,9 +166,17 @@ function(soci_declare_dependency_impl)
 
     set(FOUND_ONE ON)
 
+    if ("${TGT_TYPE}" STREQUAL "INTERFACE_LIBRARY")
+      get_target_property(TGT_LIBS "${TGT}" INTERFACE_LINK_LIBRARIES)
+      if (NOT TGT_LIBS)
+        set(TGT_HEADER_ONLY TRUE)
+      endif()
+    endif()
+
     get_target_property(TGT_TYPE "${TGT}" TYPE)
-    if ((NOT "${SOCI_DEP_SCOPE}" STREQUAL "PRIVATE") OR
-      "${UNDERLYING_TYPE}" STREQUAL "STATIC_LIBRARY" OR NOT "${TGT_TYPE}" STREQUAL "STATIC_LIBRARY")
+    if (NOT TGT_HEADER_ONLY AND ((NOT "${SOCI_DEP_SCOPE}" STREQUAL "PRIVATE") OR
+      "${UNDERLYING_TYPE}" STREQUAL "STATIC_LIBRARY" OR NOT "${TGT_TYPE}" STREQUAL "STATIC_LIBRARY"))
+      # - Header-only dependencies never have to be propagated
       # - Public (aka: non-private) dependencies are always required
       # - If SOCI is built as a static library, all dependencies (including static private) are required
       #   at link time and hence must be find_package'd by the installed config file
