@@ -125,7 +125,11 @@ if (SOCI_SHARED)
   target_compile_definitions(soci_core PUBLIC SOCI_DLL)
 endif()
 
-target_link_libraries(soci_core PRIVATE ${soci_fmt})
+soci_private_dependency(
+  NAME fmt
+  DEP_TARGETS "${soci_fmt}"
+  TARGET SOCI::Core
+)
 
 if (WITH_BOOST)
   # Try and find Boost with the date_time component.
@@ -160,20 +164,19 @@ if (WITH_BOOST)
   endif()
 endif()
 
-target_link_libraries(soci_core
-  PRIVATE
-    $<BUILD_INTERFACE:soci_compiler_interface>
-)
-
 if (NOT MSVC)
-  find_package(Threads REQUIRED)
-
-  target_link_libraries(soci_core
-    PRIVATE
-      Threads::Threads
-      ${CMAKE_DL_LIBS}
+  soci_private_dependency(
+    NAME Threads
+    DEP_TARGETS Threads::Threads
+    TARGET SOCI::Core
   )
 endif()
+
+target_link_libraries(soci_core
+  PRIVATE
+    ${CMAKE_DL_LIBS}
+    $<BUILD_INTERFACE:soci_compiler_interface>
+)
 
 target_compile_definitions(soci_core
   PRIVATE
