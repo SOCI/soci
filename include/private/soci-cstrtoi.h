@@ -29,6 +29,7 @@ template <typename T>
 bool cstring_to_integer(T& result, char const* buf)
 {
     char * end;
+    errno = 0;
     const long long t = strtoll(buf, &end, 10);
 
     if (end == buf || *end != '\0' || errno == ERANGE)
@@ -52,6 +53,7 @@ template <typename T>
 bool cstring_to_unsigned(T& result, char const* buf)
 {
     char * end;
+    errno = 0;
     const unsigned long long t = strtoull(buf, &end, 10);
 
     if (end == buf || *end != '\0' || errno == ERANGE)

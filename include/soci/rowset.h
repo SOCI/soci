@@ -58,8 +58,7 @@ public:
         return &(operator*());
     }
 
-    // Iteration operator: as this is an input operator, it only supports
-    // pre-increment
+    // Iteration operators
 
     rowset_iterator & operator++()
     {
@@ -73,6 +72,14 @@ public:
         }
 
         return (*this);
+    }
+
+    void operator++(int)
+    {
+        // This type is an input iterator and only satisfies "weakly
+        // incrementable" requirement, so we don't have to return the previous
+        // value which wouldn't make sense for it.
+        ++(*this);
     }
 
     // Comparison operators
