@@ -14,6 +14,14 @@ INCOMPATIBLE CHANGES IN SOCI 4.1 SINCE 4.0
   during run-time, but now this doesn't compile any longer. Please
   create a temporary variable holding the value if necessary (#1070).
 
+Version 4.1.4 (released on 2026-06-20) differs from 4.1.3 in the following ways:
+
+- Fix regression in integer parsing in PostgreSQL backend in 4.1.3.
+- Undo removal of rowset_iterator postfix increment operator.
+
+
+History of the changes in the previous versions:
+
 Version 4.1.3 (released on 2026-06-15) differs from 4.1.2 in the following ways:
 
 Changes affecting all or multiple backends:
@@ -47,13 +55,10 @@ Backend-specific changes:
 - SQLite3
  - Fix exception with multiple batch operations (#1308).
 
-
 Version 4.1.2 (released on 2025-05-17) differs from 4.1.1 in the following ways:
 
 - Fix loading SOCI backends by name under Windows broken in 4.1.1 (#1248).
 - SQLite3: Fix using "synchronous" parameter concurrently (#1253).
-
-History of the changes in the previous versions:
 
 Version 4.1.1 (released on 2025-05-13) differs from 4.0.3 in the following ways:
 
