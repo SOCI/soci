@@ -87,6 +87,8 @@ public:
     std::string get_dummy_from_table() const;
     std::string get_dummy_from_clause() const;
 
+    database_engine get_database_engine() const;
+
     details::session_backend * get_backend();
 
     std::string get_backend_name() const;
@@ -135,6 +137,7 @@ sql << "drop table persons";
 * `get_last_query` retrieves the text of the last used query.
 * `uppercase_column_names` allows to force all column names to uppercase in dynamic row description; this function is particularly useful for portability, since various database servers report column names differently (some preserve case, some change it).
 * `get_dummy_from_table` and `get_dummy_from_clause()`: helpers for writing portable DML statements, see [DML helpers](../utilities.md#dml) for more details.
+* `get_database_engine` returns the database engine type of the current session, which can be useful if database-specific SQL dialect needs to be used. Avoid this function if possible to keep the code portable across different database engines.
 * `get_backend` returns the internal pointer to the concrete backend implementation of the session. This is provided for advanced users that need access to the functionality that is not otherwise available.
 * `get_backend_name` is a convenience forwarder to the same function of the backend object.
 

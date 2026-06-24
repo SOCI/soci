@@ -320,6 +320,8 @@ struct SOCI_SQLITE3_DECL sqlite3_session_backend : details::session_backend
 
     std::string get_dummy_from_table() const override { return std::string(); }
 
+    database_engine get_database_engine() const override { return database_engine::sqlite3; }
+
     std::string get_backend_name() const override { return "sqlite3"; }
 
     void clean_up();

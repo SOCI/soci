@@ -730,6 +730,13 @@ void session::set_failover_callback(failover_callback & callback)
     backEnd_->set_failover_callback(callback, *this);
 }
 
+database_engine session::get_database_engine() const
+{
+    ensureConnected(backEnd_);
+
+    return backEnd_->get_database_engine();
+}
+
 std::string session::get_backend_name() const
 {
     ensureConnected(backEnd_);

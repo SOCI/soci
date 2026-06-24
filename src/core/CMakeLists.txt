@@ -91,6 +91,7 @@ target_sources(soci_core
       "${PROJECT_SOURCE_DIR}/include/soci/rowset.h"
       "${PROJECT_SOURCE_DIR}/include/soci/session.h"
       "${PROJECT_SOURCE_DIR}/include/soci/soci-backend.h"
+      "${PROJECT_SOURCE_DIR}/include/soci/soci-defs.h"
       "${PROJECT_SOURCE_DIR}/include/soci/soci-platform.h"
       "${PROJECT_SOURCE_DIR}/include/soci/soci-simple.h"
       "${PROJECT_SOURCE_DIR}/include/soci/soci-types.h"

@@ -568,6 +568,41 @@ std::string odbc_session_backend::get_dummy_from_table() const
     return table;
 }
 
+database_engine odbc_session_backend::get_database_engine() const
+{
+    switch ( get_database_product() )
+    {
+        case prod_db2:
+            return database_engine::db2;
+
+        case prod_firebird:
+            return database_engine::firebird;
+
+        case prod_mssql:
+            return database_engine::mssql;
+
+        case prod_mysql:
+            return database_engine::mysql;
+
+        case prod_oracle:
+            return database_engine::oracle;
+
+        case prod_postgresql:
+            return database_engine::postgresql;
+
+        case prod_sqlite:
+            return database_engine::sqlite3;
+
+            // These cases are here just to make the switch exhaustive, we
+            // can't really do anything about them anyhow.
+        case prod_unknown:
+        case prod_uninitialized:
+            break;
+    }
+
+    return database_engine::unknown;
+}
+
 void odbc_session_backend::reset_transaction()
 {
     SQLRETURN rc = SQLSetConnectAttr( hdbc_, SQL_ATTR_AUTOCOMMIT,

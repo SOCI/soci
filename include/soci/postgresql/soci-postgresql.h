@@ -423,6 +423,8 @@ struct SOCI_POSTGRESQL_DECL postgresql_session_backend : details::session_backen
 
     std::string get_dummy_from_table() const override { return std::string(); }
 
+    database_engine get_database_engine() const override { return database_engine::postgresql; }
+
     std::string get_backend_name() const override { return "postgresql"; }
 
     void clean_up();

@@ -256,6 +256,8 @@ struct SOCI_DB2_DECL db2_session_backend : details::session_backend
 
     std::string get_dummy_from_table() const override { return "sysibm.sysdummy1"; }
 
+    database_engine get_database_engine() const override { return database_engine::db2; }
+
     std::string get_backend_name() const override { return "DB2"; }
 
     void clean_up();

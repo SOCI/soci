@@ -294,6 +294,7 @@ public:
     virtual bool get_next_sequence_value(session&, std::string const&, long long&);
     virtual bool get_last_insert_id(session&, std::string const&, long long&);
 
+    virtual database_engine get_database_engine() const = 0;
     virtual std::string get_backend_name() const = 0;
 
     virtual statement_backend * make_statement_backend() = 0;
@@ -306,6 +307,7 @@ The object of the class derived from `session_backend` implements the internals 
 
 * `begin`, `commit`, `rollback` - Forward-called when the same functions of `session` are called by user.
 * `get_next_sequence_value`, `get_last_insert_id` - Called to retrieve sequences or auto-generated values and every backend should define at least one of them to allow the code using auto-generated values to work.
+* `get_database_engine`, `get_backend_name` - Must be overridden to return information about the database being used. Note that some backends may support multiple database engines, e.g. ODBC backend may be used with any engine.
 * `make_statement_backend`, `make_rowid_backend`, `make_blob_backend` - Called to create respective implementations for the `statement`, `rowid` and `blob` classes.
 
 ```cpp

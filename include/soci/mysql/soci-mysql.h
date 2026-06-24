@@ -246,6 +246,8 @@ struct SOCI_MYSQL_DECL mysql_session_backend : details::session_backend
     // syntaxes, but there doesn't seem to be any reason to use the longer one.
     std::string get_dummy_from_table() const override { return std::string(); }
 
+    database_engine get_database_engine() const override { return database_engine::mysql; }
+
     std::string get_backend_name() const override { return "mysql"; }
 
     void clean_up();

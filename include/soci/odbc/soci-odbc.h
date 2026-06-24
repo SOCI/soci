@@ -353,6 +353,8 @@ struct SOCI_ODBC_DECL odbc_session_backend : details::session_backend
 
     std::string get_dummy_from_table() const override;
 
+    database_engine get_database_engine() const override;
+
     std::string get_backend_name() const override { return "odbc"; }
 
     void configure_connection();

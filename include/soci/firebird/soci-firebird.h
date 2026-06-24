@@ -315,6 +315,8 @@ struct SOCI_FIREBIRD_DECL firebird_session_backend : details::session_backend
 
     std::string get_dummy_from_table() const override { return "rdb$database"; }
 
+    database_engine get_database_engine() const override { return database_engine::firebird; }
+
     std::string get_backend_name() const override { return "firebird"; }
 
     void cleanUp();

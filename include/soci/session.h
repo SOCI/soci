@@ -9,6 +9,7 @@
 #define SOCI_SESSION_H_INCLUDED
 
 #include "soci/soci-platform.h"
+#include "soci/soci-defs.h"
 #include "soci/once-temp-type.h"
 #include "soci/query_transformation.h"
 #include "soci/connection-parameters.h"
@@ -212,6 +213,11 @@ public:
 
     // Sets the failover callback object.
     void set_failover_callback(failover_callback & callback);
+
+
+    // This function should be avoided if possible, but may sometimes be useful
+    // for writing database-specific code not covered by the existing SOCI API.
+    database_engine get_database_engine() const;
 
     // for diagnostics and advanced users
     // (downcast it to expected back-end session class)

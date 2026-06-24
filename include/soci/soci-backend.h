@@ -9,6 +9,7 @@
 #define SOCI_BACKEND_H_INCLUDED
 
 #include "soci/soci-platform.h"
+#include "soci/soci-defs.h"
 #include "soci/error.h"
 // std
 #include <cstddef>
@@ -554,6 +555,8 @@ public:
         failoverCallback_ = &callback;
         session_ = &sql;
     }
+
+    virtual database_engine get_database_engine() const = 0;
 
     virtual std::string get_backend_name() const = 0;
 
