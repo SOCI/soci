@@ -26,6 +26,17 @@ using namespace soci::tests;
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_oracle();
 
+static std::tm Localtime(std::time_t t)
+{
+  std::tm local;
+#ifdef _MSC_VER
+  localtime_s(&local, &t);
+#else
+  local = *localtime(&t);
+#endif
+  return local;
+}
+
 // Helpers for creating tables for different tests.
 struct table_creator_one : public table_creator_base
 {
@@ -117,8 +128,7 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
 
     {
         std::time_t now = std::time(nullptr);
-        std::tm t1, t2;
-        t2 = *std::localtime(&now);
+        std::tm t1, t2 = Localtime(now);
 
         sql << "select t from (select :t as t from dual)",
             into(t1), use(t2);
@@ -148,8 +158,7 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
     {
         // date and time - before year 2000
         std::time_t then = std::time(nullptr) - 17*365*24*60*60;
-        std::tm t1, t2;
-        t2 = *std::localtime(&then);
+        std::tm t1, t2 = Localtime(then);
 
         sql << "select t from (select :t as t from dual)",
              into(t1), use(t2);
@@ -178,8 +187,6 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
 
     {
         // date and time - between years 1- 2201
-        soci::session sql(backEnd, connectString);
-
         table_creator_for_timestamp tableCreator(sql);
 
         for(int i = 100; i <= 2201; i = i + 50)
@@ -353,14 +360,16 @@ TEST_CASE("Oracle stored procedure", "[oracle][stored-procedure]")
     soci::session sql(backEnd, connectString);
     procedure_creator procedure_creator(sql);
 
-    std::string in("my message");
-    std::string out;
-    statement st = (sql.prepare <<
-        "begin soci_test(:output, :input); end;",
-        use(out, "output"),
-        use(in, "input"));
-    st.execute(1);
-    CHECK(out == in);
+    {
+      std::string in("my message");
+      std::string out;
+      statement st = (sql.prepare <<
+          "begin soci_test(:output, :input); end;",
+          use(out, "output"),
+          use(in, "input"));
+      st.execute(1);
+      CHECK(out == in);
+    }
 
     // explicit procedure syntax
     {

@@ -2525,7 +2525,7 @@ TEST_CASE("soci_error is nothrow", "[core][exception][nothrow]")
 
 // test for handling NULL values with std::optional
 // (both into and use)
-TEST_CASE_METHOD(common_tests, "NULL with std optional", "[core][null]")
+TEST_CASE_METHOD(common_tests, "NULL with std optional", "[core][optional][null]")
 {
 
     soci::session sql(backEndFactory_, connectString_);
@@ -2997,7 +2997,51 @@ TEST_CASE_METHOD(common_tests, "NULL with std optional", "[core][null]")
         }
     }
 }
-#endif
+
+TEST_CASE_METHOD(common_tests, "optional-bulk", "[core][optional][null]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    // create and populate the test table
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    constexpr int N = 10;
+    std::vector<int> ids(N);
+    std::vector<std::optional<std::string>> in(N);
+    for (int i = 0; i < N; ++i)
+    {
+        ids[i] = i;
+
+        if (i % 2 == 0)
+            in[i] = std::string(1, static_cast<char>('a' + i / 2));
+    }
+
+    sql << "insert into soci_test(id, str) values(:ids, :str)", use(ids), use(in);
+
+    std::vector<std::optional<std::string>> out(10);
+    sql << "select str from soci_test order by id", into(out);
+
+    REQUIRE(out.size() == in.size());
+    for (int i = 0; i < N; ++i)
+    {
+        INFO("i = " << i);
+
+        if (in[i].has_value())
+        {
+            CHECK(out[i].has_value());
+            if (out[i].has_value())
+            {
+                CHECK(out[i].value() == in[i].value());
+            }
+        }
+        else
+        {
+            CHECK(!out[i].has_value());
+        }
+    }
+}
+
+#endif // SOCI_HAVE_CXX17
 
 // connection and reconnection tests
 TEST_CASE_METHOD(common_tests, "Connection and reconnection", "[core][connect]")

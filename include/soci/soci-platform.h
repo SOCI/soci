@@ -160,8 +160,12 @@ inline int sscanf(const char* str, const char* format, ...)
 
 inline char* strncpy(char* dest, const char* src, size_t n)
 {
-  strncpy_s(dest, n, src, _TRUNCATE);
-  return dest;
+  #pragma warning(push)
+  #pragma warning(disable:4996)
+
+  return std::strncpy(dest, src, n);
+
+  #pragma warning(pop)
 }
 
 #else // !_MSC_VER
