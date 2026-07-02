@@ -6,3 +6,10 @@
    fun:nss_parse_service_list
    fun:__nss_database_lookup
 }
+# There are a lot of conditions using uninitialized values in the Oracle
+# libraries that we can do nothing about.
+{
+   uninitialized Oracle conditions
+   Memcheck:Cond
+   obj:*libclntsh*.so*
+}
