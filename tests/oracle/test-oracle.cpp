@@ -178,8 +178,6 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
 
     {
         // date and time - between years 1- 2201
-        soci::session sql(backEnd, connectString);
-
         table_creator_for_timestamp tableCreator(sql);
 
         for(int i = 100; i <= 2201; i = i + 50)
@@ -353,14 +351,16 @@ TEST_CASE("Oracle stored procedure", "[oracle][stored-procedure]")
     soci::session sql(backEnd, connectString);
     procedure_creator procedure_creator(sql);
 
-    std::string in("my message");
-    std::string out;
-    statement st = (sql.prepare <<
-        "begin soci_test(:output, :input); end;",
-        use(out, "output"),
-        use(in, "input"));
-    st.execute(1);
-    CHECK(out == in);
+    {
+      std::string in("my message");
+      std::string out;
+      statement st = (sql.prepare <<
+          "begin soci_test(:output, :input); end;",
+          use(out, "output"),
+          use(in, "input"));
+      st.execute(1);
+      CHECK(out == in);
+    }
 
     // explicit procedure syntax
     {
