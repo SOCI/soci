@@ -26,6 +26,17 @@ using namespace soci::tests;
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_oracle();
 
+static std::tm Localtime(std::time_t t)
+{
+  std::tm local;
+#ifdef _MSC_VER
+  localtime_s(&local, &t);
+#else
+  local = *localtime(&t);
+#endif
+  return local;
+}
+
 // Helpers for creating tables for different tests.
 struct table_creator_one : public table_creator_base
 {
@@ -117,8 +128,7 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
 
     {
         std::time_t now = std::time(nullptr);
-        std::tm t1, t2;
-        t2 = *std::localtime(&now);
+        std::tm t1, t2 = Localtime(now);
 
         sql << "select t from (select :t as t from dual)",
             into(t1), use(t2);
@@ -148,8 +158,7 @@ TEST_CASE("Oracle datetime", "[oracle][datetime]")
     {
         // date and time - before year 2000
         std::time_t then = std::time(nullptr) - 17*365*24*60*60;
-        std::tm t1, t2;
-        t2 = *std::localtime(&then);
+        std::tm t1, t2 = Localtime(then);
 
         sql << "select t from (select :t as t from dual)",
              into(t1), use(t2);
