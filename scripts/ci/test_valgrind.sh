@@ -7,4 +7,4 @@
 #
 source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
-valgrind --leak-check=full --suppressions=${SOCI_SOURCE_DIR}/valgrind.suppress --error-exitcode=1 --trace-children=yes ctest -V --output-on-failure "$@" .
+valgrind --leak-check=full --suppressions=${SOCI_SOURCE_DIR}/scripts/suppressions/valgrind --error-exitcode=1 --trace-children=yes ctest -V --output-on-failure "$@" .
