@@ -1,0 +1,20 @@
+# This file can be used with git blame --ignore-revs-file option or used as
+# the value of blame.ignoreRevsFile in git config to ignore the changes done by
+# the following "not interesting" commits.
+#
+# It's supported by Git 2.23 or later and to use it by default for all the
+# future git-blame invocations, run the following command:
+#
+#   git config blame.ignoreRevsFile .git-blame-ignore-revs
+#
+# When adding entries to this file, please keep them in reverse chronological
+# order (the newest ones are added at the top).
+#
+# You can use
+#
+#   $ git show -s --format='# %s, %cs%n%H%n'
+#
+# incantation to directly create an entry in the format used here.
+
+# Remove insignificant trailing whitespace from source files, 2025-08-13
+143f302bb20b2b14cddd02667df54729b100b095
