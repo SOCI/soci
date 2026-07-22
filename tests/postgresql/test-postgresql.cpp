@@ -1413,12 +1413,33 @@ TEST_CASE("colon_in_double_quotes_in_single_quotes",
     CHECK(return_value == "hello it is \"10:10\"");
 }
 
-struct table_creator_sequence : table_creator_base
+class table_creator_sequence
 {
-    table_creator_sequence(soci::session &sql) : table_creator_base(sql)
+public:
+    table_creator_sequence(soci::session &sql) : msession(sql)
     {
+        drop();
         sql << "create sequence serial start 101";
     }
+
+    virtual ~table_creator_sequence() { drop(); }
+
+private:
+    void drop()
+    {
+        try
+        {
+            msession << "drop sequence serial";
+        }
+        catch (soci_error const& e)
+        {
+            //std::cerr << e.what() << '\n';
+            e.what();
+        }
+    }
+    session& msession;
+
+    SOCI_NOT_COPYABLE(table_creator_sequence)
 };
 
 TEST_CASE("next sequence value", "[postgresql][get_next_sequence_value()]")
