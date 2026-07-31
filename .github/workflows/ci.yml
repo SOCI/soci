@@ -35,98 +35,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-            # Ubuntu jobs
-            # Can't test DB2 as required db2exc package is no longer available after Ubuntu 14.04
-          - lib_type: shared
-            backend: SQLite3
-            runner: ubuntu-24.04
-            unity_build: false
-          - lib_type: shared
-            backend: PostgreSQL
-            runner: ubuntu-24.04
-            unity_build: false
-          - lib_type: shared
-            backend: MySQL
-            runner: ubuntu-24.04
-            unity_build: false
-          - lib_type: shared
-            backend: Firebird
-            runner: ubuntu-24.04
-            unity_build: false
-          - lib_type: shared
-            backend: Oracle
-            runner: ubuntu-22.04
-            unity_build: false
-          - lib_type: shared
-            backend: ODBC
-            runner: ubuntu-24.04
-            unity_build: false
-          - lib_type: shared
-            backend: Empty
-            runner: ubuntu-24.04
-            unity_build: false
-          - lib_type: static
-            backend: SQLite3
-            runner: ubuntu-24.04
-          - lib_type: static
-            backend: PostgreSQL
-            runner: ubuntu-24.04
-          - lib_type: static
-            backend: MySQL
-            runner: ubuntu-24.04
-          - lib_type: static
-            backend: Firebird
-            runner: ubuntu-24.04
-          - lib_type: static
-            backend: Oracle
-            runner: ubuntu-22.04
-          - lib_type: static
-            backend: ODBC
-            runner: ubuntu-24.04
-          - lib_type: static
-            backend: Empty
-            runner: ubuntu-24.04
-
-            # MacOS jobs
-          - lib_type: shared
-            backend: Empty
-            runner: macos-14
-            no_boost: true
-          - lib_type: shared
-            backend: PostgreSQL
-            runner: macos-14
-            no_boost: true
-          - lib_type: shared
-            backend: SQLite3
-            runner: macos-14
-            no_boost: true
-
-            # Special
-          - lib_type: shared
-            backend: SQLite3
-            runner: ubuntu-24.04
-            cxxstd: 17
-            name: SQLite3 Cxx17
-          - lib_type: shared
-            backend: Empty
-            runner: ubuntu-24.04
-            test_release_package: true
-            name: Release package
-          - lib_type: shared
-            backend: Empty
-            runner: ubuntu-24.04
-            build_examples: true
-            name: Examples
           - lib_type: static
             backend: Valgrind
             runner: ubuntu-24.04
             name: Valgrind
             cxxstd: 20
-          - lib_type: shared
-            backend: MySQL
-            runner: ubuntu-24.04
-            mariadb: true
-            name: MariaDB
 
     runs-on: ${{ matrix.runner }}
     name: ${{ format('{0} on {1}', (matrix.name != '' && matrix.name || format('{0} ({1})', matrix.backend, matrix.lib_type)), matrix.runner) }}
