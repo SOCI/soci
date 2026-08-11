@@ -7,4 +7,6 @@
 #
 source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
-valgrind --leak-check=full --suppressions=${SOCI_SOURCE_DIR}/scripts/suppressions/valgrind --error-exitcode=1 --trace-children=yes ctest -V --output-on-failure "$@" .
+# Using debuginfod is extremely slow in GitHub Actions environment, so disable
+# it to prevent tests time outs.
+valgrind --leak-check=full --enable-debuginfod=no --suppressions=${SOCI_SOURCE_DIR}/scripts/suppressions/valgrind --error-exitcode=1 --trace-children=yes ctest -V --output-on-failure "$@" .
