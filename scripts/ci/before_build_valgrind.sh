@@ -6,6 +6,5 @@
 # Copyright (c) 2021 Vadim Zeitlin <vz-soci@zeitlins.org>
 #
 
-# We use both MySQL and PostgreSQL in this build.
-${SOCI_SOURCE_DIR}/scripts/ci/before_build_mysql.sh
+# We test PostgreSQL backend with Valgrind.
 ${SOCI_SOURCE_DIR}/scripts/ci/before_build_postgresql.sh

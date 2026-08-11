@@ -9,7 +9,9 @@ source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 # Note that we don't use the default options here, as we don't want to turn
 # off all the backends (nor to enable ASAN which is incompatible with Valgrind).
 cmake ${SOCI_COMMON_CMAKE_OPTIONS} \
+    -DSOCI_MYSQL=OFF \
     -DSOCI_ODBC=OFF \
+    -DSOCI_ORACLE=OFF \
     ..
 
 run_make
