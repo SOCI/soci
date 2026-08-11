@@ -42,7 +42,7 @@ jobs:
         include:
           - lib_type: static
             backend: Valgrind
-            runner: ubuntu-26.04
+            runner: ubuntu-24.04
             name: Valgrind
             cxxstd: 20
 
