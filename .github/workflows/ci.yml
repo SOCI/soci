@@ -28,6 +28,11 @@ on:
         description: 'Enable ssh server before running the job'
         required: false
         default: false
+      enable_ssh_test:
+        type: boolean
+        description: 'Enable ssh server before running the test'
+        required: false
+        default: false
 
 jobs:
   build:
@@ -120,6 +125,10 @@ jobs:
 
       - name: Build
         run: ./scripts/ci/build.sh
+
+      - name: Setup tmate
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.enable_ssh_test }}
+        uses: mxschmitt/action-tmate@v3
 
       - name: Test
         run: ./scripts/ci/test.sh
