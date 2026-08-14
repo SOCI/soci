@@ -115,7 +115,7 @@ struct table_creator_for_timestamp : public tests::table_creator_base
 
 struct table_creator_for_sequence : public tests::table_creator_base
 {
-    table_creator_for_sequence(soci::session &sql) : tests::table_creator_base(sql)
+    table_creator_for_sequence(soci::session &sql) : tests::table_creator_base(sql, "seqtest")
     {
         sql << "create sequence seqtest start with 101";
     }

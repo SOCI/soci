@@ -1415,7 +1415,7 @@ TEST_CASE("colon_in_double_quotes_in_single_quotes",
 
 struct table_creator_sequence : table_creator_base
 {
-    table_creator_sequence(soci::session &sql) : table_creator_base(sql)
+    table_creator_sequence(soci::session &sql) : table_creator_base(sql, "serial")
     {
         sql << "create sequence serial start 101";
     }

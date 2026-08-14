@@ -34,8 +34,8 @@ namespace tests
 class table_creator_base
 {
 public:
-    table_creator_base(session& sql)
-        : msession(sql) { drop(); }
+    table_creator_base(session& sql, const std::string& sequenceName = {})
+        : m_session(sql), m_sequenceName(sequenceName) { drop(); }
 
     virtual ~table_creator_base() { drop();}
 private:
@@ -43,7 +43,11 @@ private:
     {
         try
         {
-            msession << "drop table soci_test";
+            if (!m_sequenceName.empty())
+            {
+                m_session << "drop sequence " + m_sequenceName;
+            }
+            m_session << "drop table soci_test";
         }
         catch (soci_error const& e)
         {
@@ -51,7 +55,8 @@ private:
             e.what();
         }
     }
-    session& msession;
+    session& m_session;
+    const std::string m_sequenceName;
 
     SOCI_NOT_COPYABLE(table_creator_base)
 };
