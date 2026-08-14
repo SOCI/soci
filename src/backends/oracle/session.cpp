@@ -13,6 +13,8 @@
 #include <cstring>
 #include <ctime>
 
+#include <fmt/format.h>
+
 using namespace soci;
 using namespace soci::details;
 
@@ -423,6 +425,16 @@ bool oracle_session_backend::get_next_sequence_value(
     long long &value)
 {
     s << "select " + sequence + ".nextval from dual", into(value);
+
+    return true;
+}
+
+bool oracle_session_backend::get_next_sequence_values(
+    session &s, std::string const &sequence,
+    std::vector<long long> &values)
+{
+    s << fmt::format("select {}.nextval from dual connect by level <= {}",
+                     sequence, values.size()), into(values);
 
     return true;
 }

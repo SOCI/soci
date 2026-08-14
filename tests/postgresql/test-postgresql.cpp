@@ -7,6 +7,7 @@
 
 #include "soci/soci.h"
 #include "soci/postgresql/soci-postgresql.h"
+#include "soci-ssize.h"
 #include "test-context.h"
 #include "test-myint.h"
 #include <string>
@@ -1436,6 +1437,14 @@ TEST_CASE("next sequence value", "[postgresql][get_next_sequence_value()]")
         std::int64_t val = -1;
         CHECK(sql.get_next_sequence_value("serial", val));
         CHECK(val == 102);
+    }
+
+    std::vector<long long> vals(10);
+    CHECK(sql.get_next_sequence_values("serial", vals));
+    REQUIRE(vals.size() == 10);
+    for (int i = 0; i != ssize(vals); ++i)
+    {
+        CHECK(vals[i] == 103 + i);
     }
 }
 

@@ -7,6 +7,7 @@
 
 #include "soci/soci.h"
 #include "soci/oracle/soci-oracle.h"
+#include "soci-ssize.h"
 #include "test-assert.h"
 #include "test-context.h"
 #include "test-myint.h"
@@ -1562,6 +1563,14 @@ TEST_CASE("next sequence value", "[oracle][get_next_sequence_value()]")
         std::int64_t val = -1;
         CHECK(sql.get_next_sequence_value("seqtest", val));
         CHECK(val == 102);
+    }
+
+    std::vector<long long> vals(10);
+    CHECK(sql.get_next_sequence_values("seqtest", vals));
+    REQUIRE(vals.size() == 10);
+    for (int i = 0; i != ssize(vals); ++i)
+    {
+        CHECK(vals[i] == 103 + i);
     }
 }
 

@@ -420,6 +420,8 @@ struct SOCI_POSTGRESQL_DECL postgresql_session_backend : details::session_backen
 
     bool get_next_sequence_value(session & s,
         std::string const & sequence, long long & value) override;
+    bool get_next_sequence_values(session & s,
+        std::string const & sequence, std::vector<long long> & values) override;
 
     std::string get_dummy_from_table() const override { return std::string(); }
 

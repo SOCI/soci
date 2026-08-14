@@ -423,6 +423,15 @@ bool postgresql_session_backend::get_next_sequence_value(
     return true;
 }
 
+bool postgresql_session_backend::get_next_sequence_values(
+    session & s, std::string const & sequence, std::vector<long long> & values)
+{
+    s << fmt::format("select nextval('{}') from generate_series(1, {})",
+                     sequence, values.size()), into(values);
+
+    return true;
+}
+
 void postgresql_session_backend::clean_up()
 {
     if (nullptr != conn_)

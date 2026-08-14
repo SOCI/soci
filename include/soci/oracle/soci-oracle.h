@@ -443,6 +443,8 @@ struct SOCI_ORACLE_DECL oracle_session_backend : details::session_backend
 
     bool get_next_sequence_value(session &s,
          std::string const &sequence, long long &value) override;
+    bool get_next_sequence_values(session &s,
+         std::string const &sequence, std::vector<long long> &values) override;
 
     std::string get_dummy_from_table() const override { return "dual"; }
 

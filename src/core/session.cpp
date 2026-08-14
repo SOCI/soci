@@ -599,6 +599,13 @@ bool session::get_next_sequence_value(std::string const & sequence, long long & 
     return backEnd_->get_next_sequence_value(*this, sequence, value);
 }
 
+bool session::get_next_sequence_values(std::string const & sequence, std::vector<long long> & values)
+{
+    ensureConnected(backEnd_);
+
+    return backEnd_->get_next_sequence_values(*this, sequence, values);
+}
+
 bool session::get_last_insert_id(std::string const & sequence, long long & value)
 {
     ensureConnected(backEnd_);

@@ -146,6 +146,12 @@ public:
         return result;
     }
 
+    // More efficient version of get_next_sequence_value() when many values are
+    // needed from the same sequence.
+    // If true is returned, values is filled with the number of values from the
+    // given sequence equal to the size of the vector on input.
+    bool get_next_sequence_values(std::string const & sequence, std::vector<long long> & values);
+
     // If true is returned, value is filled with the last auto-generated value
     // for this table (although some backends ignore the table argument and
     // return the last value auto-generated in this session).

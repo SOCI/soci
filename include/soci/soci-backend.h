@@ -386,6 +386,10 @@ public:
     {
         return false;
     }
+    virtual bool get_next_sequence_values(session&, std::string const&, std::vector<long long>&)
+    {
+        return false;
+    }
     virtual bool get_last_insert_id(session&, std::string const&, long long&)
     {
         return false;
