@@ -17,6 +17,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <exception>
 
 #include <fmt/format.h>
 
@@ -52,6 +53,95 @@ void throw_soci_error(PGconn * conn, const char * msg)
 
     throw soci_error(description);
 }
+
+#ifdef LIBPQ_HAS_PIPELINING
+
+// Number of the statements sent before reading their results back.
+//
+// Some bound is necessary because we use the blocking libpq API here: without
+// it both sides could end up blocked on writing, with neither of them reading
+// what the other one had already sent.
+//
+// Note that this bounds the number of the unread results and not their size,
+// which is fine because a bulk statement normally returns just a command tag,
+// i.e. a few dozen bytes, however big the row itself is. This does assume that
+// the statement doesn't use RETURNING, which is allowed here (even if its
+// results can't be used, as bulk use with into elements is not supported) and
+// would make the results arbitrarily big. Using the non-blocking API and
+// draining the results while still sending would be required to be safe in
+// this case too.
+constexpr int PIPELINE_DEPTH = 1000;
+
+// Helper ensuring that we leave the pipeline mode even if an exception is
+// thrown while using it, as the connection couldn't be used at all otherwise.
+class pipeline_mode_guard
+{
+public:
+    explicit pipeline_mode_guard(PGconn * conn) : conn_(conn) {}
+
+    pipeline_mode_guard(pipeline_mode_guard const &) = delete;
+    pipeline_mode_guard & operator=(pipeline_mode_guard const &) = delete;
+
+    // Leave the pipeline mode normally, i.e. reporting any error as an
+    // exception, unlike the destructor which can only ignore them.
+    void leave()
+    {
+        PGconn * const conn = conn_;
+        conn_ = nullptr;
+
+        if (conn && PQexitPipelineMode(conn) != 1)
+        {
+            // This can only happen if we left any results unread, i.e. in case
+            // of a bug in our code.
+            throw_soci_error(conn, "Cannot leave pipeline mode");
+        }
+    }
+
+    ~pipeline_mode_guard()
+    {
+        if (!conn_)
+            return;
+
+        // We can get here because an exception was thrown after having queued
+        // some statements but before synchronizing the pipeline, in which case
+        // there would be no definite end to the results to be discarded below
+        // and we could even block forever waiting for output which the server
+        // hasn't flushed yet. Synchronizing now avoids both problems and is
+        // harmless if it had been already done.
+        if (PQpipelineStatus(conn_) != PQ_PIPELINE_OFF)
+        {
+            PQpipelineSync(conn_);
+        }
+
+        while (PQpipelineStatus(conn_) != PQ_PIPELINE_OFF)
+        {
+            if (PQstatus(conn_) == CONNECTION_BAD)
+            {
+                // Nothing can be done any longer and the connection is not
+                // going to be reused anyhow.
+                break;
+            }
+
+            // PQexitPipelineMode() fails while any results remain unread, so
+            // discard whatever is still pending first. Note that a null result
+            // only separates the results of the consecutive queries here, it
+            // doesn't mean that there is nothing left.
+            if (PGresult * const res = PQgetResult(conn_))
+            {
+                PQclear(res);
+            }
+            else if (PQexitPipelineMode(conn_) == 1)
+            {
+                break;
+            }
+        }
+    }
+
+private:
+    PGconn * conn_;
+};
+
+#endif // LIBPQ_HAS_PIPELINING
 
 } // unnamed namespace
 
@@ -252,6 +342,222 @@ void postgresql_statement_backend::prepare(std::string const & query,
     stType_ = stType;
 }
 
+void
+postgresql_statement_backend::collect_use_buffers(
+    std::vector<char *> & paramValues) const
+{
+    if (useByPosBuffers_.empty() == false)
+    {
+        // use elements bind by position
+        // the map of use buffers can be traversed
+        // in its natural order
+
+        for (auto const& kv : useByPosBuffers_)
+        {
+            char ** buffers = kv.second;
+            paramValues.push_back(buffers[current_row_]);
+        }
+    }
+    else
+    {
+        // use elements bind by name
+
+        for (auto const& s : names_)
+        {
+            auto const b = useByNameBuffers_.find(s);
+            if (b == useByNameBuffers_.end())
+            {
+                std::string msg(
+                    "Missing use element for bind by name (");
+                msg += s;
+                msg += ").";
+                throw soci_error(msg);
+            }
+            char ** buffers = b->second;
+            paramValues.push_back(buffers[current_row_]);
+        }
+    }
+}
+
+void postgresql_statement_backend::execute_bulk(int numberOfExecutions)
+{
+    // Note that the single row mode is not compatible with the bulk operations
+    // and execute() throws if it is used with them, so we don't handle it here.
+
+    rowsAffectedBulk_ = 0;
+
+#ifdef LIBPQ_HAS_PIPELINING
+    // Pipelining puts everything sent between two synchronization points into
+    // a single implicit transaction, so an error in any of the statements
+    // rolls back the previously executed ones too. This is not what happens
+    // when executing them one by one, as each of them is then committed
+    // separately, so only use pipelining inside an explicit transaction, where
+    // all of them are going to be rolled back on error in any case and the
+    // observable behaviour is thus exactly the same.
+    bool const pipelined =
+        PQtransactionStatus(session_.conn_) == PQTRANS_INTRANS;
+
+    // When pipelining, send the statements for many rows before reading any of
+    // their results, replacing one network round trip per row with a single one
+    // per PIPELINE_DEPTH rows. Otherwise we must wait for the result of each
+    // statement before sending the next one, which makes the code below
+    // equivalent to simply using PQexecPrepared() for each row, as we used to.
+    int const depth = pipelined ? PIPELINE_DEPTH : 1;
+#else
+    constexpr bool pipelined = false;
+    constexpr int depth = 1;
+#endif
+
+#ifdef LIBPQ_HAS_PIPELINING
+    if (pipelined && PQenterPipelineMode(session_.conn_) != 1)
+    {
+        // This should never happen, as this function doesn't even check the
+        // connection status, it only detects error in its preconditions which
+        // should be always satisfied here.
+        throw_soci_error(session_.conn_, "Cannot enter pipeline mode");
+    }
+
+    pipeline_mode_guard guard(pipelined ? session_.conn_ : nullptr);
+#endif
+
+    std::vector<char *> paramValues;
+    for (int first = 0; first < numberOfExecutions; first += depth)
+    {
+        int last = first + depth;
+        if (last > numberOfExecutions)
+            last = numberOfExecutions;
+
+        for (current_row_ = first; current_row_ != last; ++current_row_)
+        {
+            paramValues.clear();
+            collect_use_buffers(paramValues);
+
+            int result;
+            if (stType_ == st_repeatable_query)
+            {
+                result = PQsendQueryPrepared(
+                    session_.conn_,
+                    statementName_.c_str(),
+                    isize(paramValues),
+                    &paramValues[0],
+                    nullptr, nullptr, 0
+                );
+            }
+            else // stType_ == st_one_time_query
+            {
+                result = PQsendQueryParams(
+                    session_.conn_,
+                    query_.c_str(),
+                    isize(paramValues),
+                    nullptr, // No param types, let the server infer them
+                    &paramValues[0],
+                    nullptr, nullptr, 0
+                );
+            }
+
+            if (result != 1)
+            {
+                throw_soci_error(session_.conn_, "Cannot execute query");
+            }
+        }
+
+#ifdef LIBPQ_HAS_PIPELINING
+        if (pipelined && PQpipelineSync(session_.conn_) != 1)
+        {
+            throw_soci_error(session_.conn_, "Cannot synchronize pipeline");
+        }
+#endif
+
+        // Now all the results must be read, up to and including the one
+        // corresponding to the synchronization point itself.
+        //
+        // Note that we must keep reading even we get an error, as we can't
+        // leave the pipeline mode before retrieving all the results. So
+        // remember the first error, if any, but only throw it after having
+        // drained everything.
+        std::exception_ptr error;
+        int errorRow = -1;
+
+        int row = first;
+        for (;;)
+        {
+            result_.reset(PQgetResult(session_.conn_));
+
+            PGresult const * const res = result_;
+            if (!res)
+            {
+                if (!pipelined)
+                {
+                    // This is simply the end of the results of the only query
+                    // which had been sent.
+                    break;
+                }
+
+                if (PQstatus(session_.conn_) == CONNECTION_BAD)
+                {
+                    throw_soci_error(session_.conn_, "Cannot read query results");
+                }
+
+                // A null result only separates the results of the consecutive
+                // queries in the pipeline, there are still more of them to come.
+                continue;
+            }
+
+#ifdef LIBPQ_HAS_PIPELINING
+            if (pipelined && PQresultStatus(res) == PGRES_PIPELINE_SYNC)
+            {
+                break;
+            }
+#endif
+
+            if (!error)
+            {
+                // Note that the statements queued after the one which had failed
+                // are not executed at all and result in PGRES_PIPELINE_ABORTED,
+                // which check_for_errors() below treats as an error too, but we
+                // only ever report the first one, i.e. the real problem.
+                try
+                {
+                    result_.check_for_errors("Cannot execute query.");
+
+                    rowsAffectedBulk_ += get_affected_rows();
+                }
+                catch (...)
+                {
+                    error = std::current_exception();
+                    errorRow = row;
+                }
+            }
+
+            ++row;
+        }
+
+        if (error)
+        {
+            // Ensure that the values of the row which resulted in the error
+            // are the ones used when dumping the query parameters, see
+            // get_row_to_dump().
+            current_row_ = errorRow;
+
+            std::rethrow_exception(error);
+        }
+
+        if (row != last)
+        {
+            throw soci_error(
+                fmt::format("Unexpected number of results in the pipeline: "
+                            "{} instead of {}.", row - first, last - first)
+            );
+        }
+    }
+
+#ifdef LIBPQ_HAS_PIPELINING
+    guard.leave();
+#endif
+
+    current_row_ = -1;
+}
+
 statement_backend::exec_fetch_result
 postgresql_statement_backend::execute(int number)
 {
@@ -308,126 +614,89 @@ postgresql_statement_backend::execute(int number)
             }
 
             rowsAffectedBulk_ = 0;
-            for (current_row_ = 0; current_row_ != numberOfExecutions; ++current_row_)
+
+            if (numberOfExecutions > 1)
             {
-                std::vector<char *> paramValues;
+                // There are only bulk use elements (no intos), so execute the
+                // statement once per row of the vectors bound to them.
+                execute_bulk(numberOfExecutions);
 
-                if (useByPosBuffers_.empty() == false)
+                result_.reset();
+                return ef_no_data;
+            }
+
+            current_row_ = 0;
+
+            std::vector<char *> paramValues;
+            collect_use_buffers(paramValues);
+
+            if (stType_ == st_repeatable_query)
+            {
+                // this query was separately prepared
+
+                if (single_row_mode_)
                 {
-                    // use elements bind by position
-                    // the map of use buffers can be traversed
-                    // in its natural order
-
-                    for (auto const& kv : useByPosBuffers_)
+                    int result = PQsendQueryPrepared(session_.conn_,
+                        statementName_.c_str(),
+                        isize(paramValues),
+                        &paramValues[0], nullptr, nullptr, 0);
+                    if (result != 1)
                     {
-                        char ** buffers = kv.second;
-                        paramValues.push_back(buffers[current_row_]);
+                        throw_soci_error(session_.conn_,
+                            "Cannot execute prepared query in single-row mode");
+                    }
+
+                    result = PQsetSingleRowMode(session_.conn_);
+                    if (result != 1)
+                    {
+                        throw_soci_error(session_.conn_,
+                            "Cannot set singlerow mode");
                     }
                 }
                 else
                 {
-                    // use elements bind by name
+                    // default multi-row execution
 
-                    for (auto const& s : names_)
-                    {
-                        auto const b = useByNameBuffers_.find(s);
-                        if (b == useByNameBuffers_.end())
-                        {
-                            std::string msg(
-                                "Missing use element for bind by name (");
-                            msg += s;
-                            msg += ").";
-                            throw soci_error(msg);
-                        }
-                        char ** buffers = b->second;
-                        paramValues.push_back(buffers[current_row_]);
-                    }
-                }
-
-                if (stType_ == st_repeatable_query)
-                {
-                    // this query was separately prepared
-
-                    if (single_row_mode_)
-                    {
-                        int result = PQsendQueryPrepared(session_.conn_,
+                    result_.reset(PQexecPrepared(session_.conn_,
                             statementName_.c_str(),
                             isize(paramValues),
-                            &paramValues[0], nullptr, nullptr, 0);
-                        if (result != 1)
-                        {
-                            throw_soci_error(session_.conn_,
-                                "Cannot execute prepared query in single-row mode");
-                        }
+                            &paramValues[0], nullptr, nullptr, 0));
+                }
+            }
+            else // stType_ == st_one_time_query
+            {
+                // this query was not separately prepared and should
+                // be executed as a one-time query
 
-                        result = PQsetSingleRowMode(session_.conn_);
-                        if (result != 1)
-                        {
-                            throw_soci_error(session_.conn_,
-                                "Cannot set singlerow mode");
-                        }
-                    }
-                    else
+                if (single_row_mode_)
+                {
+                    int result = PQsendQueryParams(session_.conn_, query_.c_str(),
+                        isize(paramValues),
+                        nullptr, &paramValues[0], nullptr, nullptr, 0);
+                    if (result != 1)
                     {
-                        // default multi-row execution
+                        throw_soci_error(session_.conn_,
+                            "cannot execute query in single-row mode");
+                    }
 
-                        result_.reset(PQexecPrepared(session_.conn_,
-                                statementName_.c_str(),
-                                isize(paramValues),
-                                &paramValues[0], nullptr, nullptr, 0));
+                    result = PQsetSingleRowMode(session_.conn_);
+                    if (result != 1)
+                    {
+                        throw_soci_error(session_.conn_,
+                            "Cannot set singlerow mode");
                     }
                 }
-                else // stType_ == st_one_time_query
+                else
                 {
-                    // this query was not separately prepared and should
-                    // be executed as a one-time query
+                    // default multi-row execution
 
-                    if (single_row_mode_)
-                    {
-                        int result = PQsendQueryParams(session_.conn_, query_.c_str(),
+                    result_.reset(PQexecParams(session_.conn_, query_.c_str(),
                             isize(paramValues),
-                            nullptr, &paramValues[0], nullptr, nullptr, 0);
-                        if (result != 1)
-                        {
-                            throw_soci_error(session_.conn_,
-                                "cannot execute query in single-row mode");
-                        }
-
-                        result = PQsetSingleRowMode(session_.conn_);
-                        if (result != 1)
-                        {
-                            throw_soci_error(session_.conn_,
-                                "Cannot set singlerow mode");
-                        }
-                    }
-                    else
-                    {
-                        // default multi-row execution
-
-                        result_.reset(PQexecParams(session_.conn_, query_.c_str(),
-                                isize(paramValues),
-                                nullptr, &paramValues[0], nullptr, nullptr, 0));
-                    }
-                }
-
-                if (numberOfExecutions > 1)
-                {
-                    // there are only bulk use elements (no intos)
-
-                    result_.check_for_errors("Cannot execute query.");
-
-                    rowsAffectedBulk_ += get_affected_rows();
+                            nullptr, &paramValues[0], nullptr, nullptr, 0));
                 }
             }
 
             current_row_ = -1;
-
-            if (numberOfExecutions > 1)
-            {
-                // it was a bulk operation
-                result_.reset();
-                return ef_no_data;
-            }
 
             // otherwise (no bulk), follow the code below
         }

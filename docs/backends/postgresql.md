@@ -21,7 +21,7 @@ The SOCI PostgreSQL backend is supported for use with PostgreSQL >= 9.0, althoug
 
 ### Required Client Libraries
 
-The SOCI PostgreSQL backend requires PostgreSQL's `libpq` client library.
+The SOCI PostgreSQL backend requires PostgreSQL's `libpq` client library. Pipelining requires libpq 14 or later.
 
 Note that the SOCI library itself depends also on `libdl`, so the minimum set of libraries needed to compile a basic client program is:
 
@@ -58,6 +58,10 @@ sql << "select count(*) from invoices", into(count);
 ```
 
 (See the [connection](../connections.md) and [data binding](../binding.md) documentation for general information on using the `session` class.)
+
+#### Pipelining
+
+When supported by libpq, i.e. in versions 14 and later, the PostgreSQL backend uses pipelining for queries using vector use parameters, i.e. typically insert statements. Pipelining results in significantly better performance when using remote server and can be faster than executing such statements in a loop by a factor of 100 or more, depending on the network latency and the number of rows to be inserted. However please note that pipelining is only enabled when the statement is executed inside an active transaction as any error during pipelined execution results in aborting the transaction and rolling back all changes made in it, which is not the case when executing statements outside of a transaction.
 
 #### Single Row Mode
 

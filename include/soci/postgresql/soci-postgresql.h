@@ -318,6 +318,16 @@ struct SOCI_POSTGRESQL_DECL postgresql_statement_backend : details::statement_ba
     CategoryByColumnOID categoryByColumnOID_;
 
 private:
+    // Fill the given vector with the pointers to the values of the use
+    // elements for the row given by current_row_.
+    void collect_use_buffers(std::vector<char *> & paramValues) const;
+
+    // Execute the statement once per row of the bulk use elements and set
+    // rowsAffectedBulk_ to the total number of the rows affected by all of
+    // them. Must not be used in the single row mode.
+    void execute_bulk(int numberOfExecutions);
+
+
     // Current row during a bulk operation or -1 if it's not in progress.
     int current_row_ = -1;
 };
