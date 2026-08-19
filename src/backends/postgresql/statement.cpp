@@ -330,8 +330,7 @@ postgresql_statement_backend::execute(int number)
 
                     for (auto const& s : names_)
                     {
-                        UseByNameBuffersMap::iterator b
-                            = useByNameBuffers_.find(s);
+                        auto const b = useByNameBuffers_.find(s);
                         if (b == useByNameBuffers_.end())
                         {
                             std::string msg(
