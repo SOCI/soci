@@ -112,19 +112,19 @@ foreach(__comp IN LISTS SOCI_FIND_COMPONENTS)
         endif()
       endforeach()
 
-      if (__already_found)
-        continue()
-      endif()
+      # Note that even if we don't need to find the dependency, we still need
+      # to link with its targets, as they are not part of the exported ones.
+      if (NOT __already_found)
+        find_package(
+          ${__dep}
+          ${__quiet}
+        )
 
-      find_package(
-        ${__dep}
-        ${__quiet}
-      )
-
-      if (NOT ${__dep}_FOUND)
-        set(SOCI_FOUND FALSE)
-        set(SOCI_NOT_FOUND_MESSAGE "Unmet dependency '${__dep}' for SOCI component '${__comp}'")
-        set(__skip_dependency TRUE)
+        if (NOT ${__dep}_FOUND)
+          set(SOCI_FOUND FALSE)
+          set(SOCI_NOT_FOUND_MESSAGE "Unmet dependency '${__dep}' for SOCI component '${__comp}'")
+          set(__skip_dependency TRUE)
+        endif()
       endif()
 
       list(APPEND __link_targets  ${__targets})
@@ -160,16 +160,34 @@ if (NOT DEFINED SOCI_FOUND OR SOCI_FOUND)
     add_library(SOCI::SOCI INTERFACE IMPORTED)
   endif()
 
+  # Note that we can't use target_link_libraries() here because it can only
+  # be used for imported targets in the directory in which they were created
+  # and this is not the case if find_package(SOCI) is called again from a
+  # subdirectory of the one in which it had been called for the first time.
+  #
+  # Also note that requesting, in such subdirectory, a component which was
+  # not requested by the first call still doesn't work, because SOCI::SOCI
+  # dependencies are resolved in the scope of the directory where it was
+  # created and the component target is not visible there.
   foreach (__comp IN LISTS SOCI_FIND_COMPONENTS)
-      target_link_libraries(SOCI::SOCI INTERFACE SOCI::${__comp})
+      set_property(
+        TARGET SOCI::SOCI
+        APPEND
+        PROPERTY INTERFACE_LINK_LIBRARIES SOCI::${__comp}
+      )
   endforeach()
 
   # Shall be removed in SOCI v5
+  #
+  # Note that, unlike for SOCI::SOCI above, it's enough to link this target
+  # only once, when it's created, as it never depends on anything else. Doing
+  # it like this also avoids CMP0079 warnings if find_package(SOCI) is called
+  # again from a subdirectory and this policy is not set.
   if (NOT TARGET soci_interface_deprecated)
     add_library(soci_interface_deprecated INTERFACE)
+    target_link_libraries(soci_interface_deprecated INTERFACE SOCI::SOCI)
+    set_target_properties(soci_interface_deprecated PROPERTIES DEPRECATION "Use SOCI::SOCI (all-uppercase) instead of SOCI::soci")
   endif()
-  target_link_libraries(soci_interface_deprecated INTERFACE SOCI::SOCI)
-  set_target_properties(soci_interface_deprecated PROPERTIES DEPRECATION "Use SOCI::SOCI (all-uppercase) instead of SOCI::soci")
   if (NOT TARGET SOCI::soci)
     add_library(SOCI::soci ALIAS soci_interface_deprecated)
   endif()
