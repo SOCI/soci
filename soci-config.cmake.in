@@ -160,8 +160,21 @@ if (NOT DEFINED SOCI_FOUND OR SOCI_FOUND)
     add_library(SOCI::SOCI INTERFACE IMPORTED)
   endif()
 
+  # Note that we can't use target_link_libraries() here because it can only
+  # be used for imported targets in the directory in which they were created
+  # and this is not the case if find_package(SOCI) is called again from a
+  # subdirectory of the one in which it had been called for the first time.
+  #
+  # Also note that requesting, in such subdirectory, a component which was
+  # not requested by the first call still doesn't work, because SOCI::SOCI
+  # dependencies are resolved in the scope of the directory where it was
+  # created and the component target is not visible there.
   foreach (__comp IN LISTS SOCI_FIND_COMPONENTS)
-      target_link_libraries(SOCI::SOCI INTERFACE SOCI::${__comp})
+      set_property(
+        TARGET SOCI::SOCI
+        APPEND
+        PROPERTY INTERFACE_LINK_LIBRARIES SOCI::${__comp}
+      )
   endforeach()
 
   # Shall be removed in SOCI v5
