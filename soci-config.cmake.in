@@ -178,11 +178,16 @@ if (NOT DEFINED SOCI_FOUND OR SOCI_FOUND)
   endforeach()
 
   # Shall be removed in SOCI v5
+  #
+  # Note that, unlike for SOCI::SOCI above, it's enough to link this target
+  # only once, when it's created, as it never depends on anything else. Doing
+  # it like this also avoids CMP0079 warnings if find_package(SOCI) is called
+  # again from a subdirectory and this policy is not set.
   if (NOT TARGET soci_interface_deprecated)
     add_library(soci_interface_deprecated INTERFACE)
+    target_link_libraries(soci_interface_deprecated INTERFACE SOCI::SOCI)
+    set_target_properties(soci_interface_deprecated PROPERTIES DEPRECATION "Use SOCI::SOCI (all-uppercase) instead of SOCI::soci")
   endif()
-  target_link_libraries(soci_interface_deprecated INTERFACE SOCI::SOCI)
-  set_target_properties(soci_interface_deprecated PROPERTIES DEPRECATION "Use SOCI::SOCI (all-uppercase) instead of SOCI::soci")
   if (NOT TARGET SOCI::soci)
     add_library(SOCI::soci ALIAS soci_interface_deprecated)
   endif()
