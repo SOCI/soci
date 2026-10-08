@@ -112,19 +112,19 @@ foreach(__comp IN LISTS SOCI_FIND_COMPONENTS)
         endif()
       endforeach()
 
-      if (__already_found)
-        continue()
-      endif()
+      # Note that even if we don't need to find the dependency, we still need
+      # to link with its targets, as they are not part of the exported ones.
+      if (NOT __already_found)
+        find_package(
+          ${__dep}
+          ${__quiet}
+        )
 
-      find_package(
-        ${__dep}
-        ${__quiet}
-      )
-
-      if (NOT ${__dep}_FOUND)
-        set(SOCI_FOUND FALSE)
-        set(SOCI_NOT_FOUND_MESSAGE "Unmet dependency '${__dep}' for SOCI component '${__comp}'")
-        set(__skip_dependency TRUE)
+        if (NOT ${__dep}_FOUND)
+          set(SOCI_FOUND FALSE)
+          set(SOCI_NOT_FOUND_MESSAGE "Unmet dependency '${__dep}' for SOCI component '${__comp}'")
+          set(__skip_dependency TRUE)
+        endif()
       endif()
 
       list(APPEND __link_targets  ${__targets})
