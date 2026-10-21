@@ -34,8 +34,12 @@ oracle_soci_error::oracle_soci_error(std::string const & msg, int errNum)
 
 soci_error::error_category oracle_soci_error::get_error_category() const
 {
-    if (err_num_ ==  3113 ||
+    if (err_num_ ==    28 || // your session has been killed
+        err_num_ ==  1012 || // not logged on
+        err_num_ ==  2396 || // exceeded maximum idle time
+        err_num_ ==  3113 ||
         err_num_ ==  3114 ||
+        err_num_ ==  3135 || // connection lost contact
         err_num_ == 12162 ||
         err_num_ == 12541 ||
         err_num_ == 25403)
