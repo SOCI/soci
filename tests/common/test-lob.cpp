@@ -339,6 +339,108 @@ TEST_CASE_METHOD(common_tests, "Into XML vector with several fetches", "[core][x
     REQUIRE(!st.fetch());
 }
 
+// Check that columns following a (long) XML one are retrieved correctly: this
+// is not trivial for some backends (e.g. ODBC), which need to retrieve the
+// values of long columns, and all the columns following them, differently.
+TEST_CASE_METHOD(common_tests, "XML followed by other columns", "[core][xml]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    auto_table_creator tableCreator(tc_.table_creator_xml(sql));
+    if (!tableCreator.get())
+    {
+        WARN("XML type not supported by the database, skipping the test.");
+        return;
+    }
+
+    int const count = 3;
+    std::vector<int> ids{1, 2, 3};
+    std::vector<xml_type> xmls(count);
+    std::vector<indicator> inds{i_ok, i_null, i_ok};
+    xmls[0].value = make_long_xml_string(100);
+    xmls[2].value = make_long_xml_string(20000);
+
+    sql << "insert into soci_test (id, x) values (:1, "
+        << tc_.to_xml(":2")
+        << ")",
+        use(ids), use(xmls, inds);
+
+    std::string const
+        query = "select " + tc_.from_xml("x") + ", id from soci_test order by id";
+
+    SECTION("scalar")
+    {
+        xml_type xml;
+        indicator ind;
+        int id;
+        soci::statement st = (sql.prepare << query, into(xml, ind), into(id));
+        st.execute();
+        for (int n = 0; n != count; ++n)
+        {
+            INFO("Row #" << n);
+            REQUIRE(st.fetch());
+            CHECK(id == ids[n]);
+            CHECK(ind == inds[n]);
+            if (ind == i_ok)
+                CHECK(remove_trailing_nl(xml.value) == xmls[n].value);
+        }
+
+        CHECK(!st.fetch());
+    }
+
+    SECTION("vector")
+    {
+        // Use vectors smaller than the number of rows to check that fetching
+        // more than once works too.
+        std::vector<xml_type> xmls2(2);
+        std::vector<indicator> inds2(2);
+        std::vector<int> ids2(2);
+        soci::statement st = (sql.prepare << query,
+                              into(xmls2, inds2), into(ids2));
+        st.execute();
+
+        int n = 0;
+        while (st.fetch())
+        {
+            for (std::size_t i = 0; i != ids2.size(); ++i, ++n)
+            {
+                INFO("Row #" << n);
+                REQUIRE(n < count);
+                CHECK(ids2[i] == ids[n]);
+                CHECK(inds2[i] == inds[n]);
+                if (inds2[i] == i_ok)
+                    CHECK(remove_trailing_nl(xmls2[i].value) == xmls[n].value);
+            }
+
+            xmls2.resize(2);
+            inds2.resize(2);
+            ids2.resize(2);
+        }
+
+        CHECK(n == count);
+    }
+
+    SECTION("row")
+    {
+        soci::rowset<soci::row> rs = (sql.prepare << query);
+
+        int n = 0;
+        for (auto const& r : rs)
+        {
+            INFO("Row #" << n);
+            REQUIRE(n < count);
+            CHECK(r.get<int>(1) == ids[n]);
+            CHECK(r.get_indicator(0) == inds[n]);
+            if (inds[n] == i_ok)
+                CHECK(remove_trailing_nl(r.get<std::string>(0)) == xmls[n].value);
+
+            ++n;
+        }
+
+        CHECK(n == count);
+    }
+}
+
 TEST_CASE_METHOD(common_tests, "BLOB", "[core][blob]")
 {
     soci::session sql(backEndFactory_, connectString_);

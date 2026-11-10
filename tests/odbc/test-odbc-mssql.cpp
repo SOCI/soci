@@ -70,6 +70,26 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
         CHECK(str_out == str_in);
     }
 
+    // Also check reading it into a vector and as wide strings.
+    std::vector<std::string> vec_out(1);
+    sql << "select long_text from soci_test", into(vec_out);
+    REQUIRE(vec_out.size() == 1);
+    CHECK(vec_out[0].length() == str_in.length());
+    CHECK(vec_out[0] == str_in);
+
+    std::wstring const wstr_in(str_in.begin(), str_in.end());
+
+    std::wstring wstr_out;
+    sql << "select long_text from soci_test", into(wstr_out);
+    CHECK(wstr_out.length() == wstr_in.length());
+    CHECK(wstr_out == wstr_in);
+
+    std::vector<std::wstring> wvec_out(1);
+    sql << "select long_text from soci_test", into(wvec_out);
+    REQUIRE(wvec_out.size() == 1);
+    CHECK(wvec_out[0].length() == wstr_in.length());
+    CHECK(wvec_out[0] == wstr_in);
+
     // The long string should be truncated when inserting it into a fixed size
     // column.
     CHECK_THROWS_AS(

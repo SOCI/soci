@@ -103,49 +103,32 @@ void odbc_vector_into_type_backend::define_by_pos(
     case x_stdstring:
     case x_xmltype:
     case x_longstring:
+        odbcType_ = SQL_C_CHAR;
+        SOCI_FALLTHROUGH;
+    case x_stdwstring:
         {
-            odbcType_ = SQL_C_CHAR;
+            if (type_ == x_stdwstring)
+                odbcType_ = SQL_C_WCHAR;
 
             colSize_ = static_cast<size_t>(get_sqllen_from_value(statement_.column_size(position)));
-            if (colSize_ >= ODBC_MAX_COL_SIZE || colSize_ == 0)
+            if (is_odbc_long_column(colSize_))
             {
-                // Column size for text data type can be too large for buffer allocation.
-                colSize_ = odbc_max_buffer_length;
-                // If we are using huge buffer size then we need to fetch rows
-                // one by one as otherwise we could easily run out of memory.
-                // Note that the flag is permanent for the statement and will
-                // never be reset.
-                statement_.fetchVectorByRows_ = true;
+                // Column size for text data type can be too large for buffer
+                // allocation (or unknown), so we don't allocate any buffer
+                // and retrieve the values using SQLGetData() instead.
+                isLong_ = true;
+                colSize_ = 0;
+                break;
             }
 
             colSize_++;
+            if (type_ == x_stdwstring)
+                colSize_ *= sizeof(SQLWCHAR); // size in bytes
 
             // If we are fetching by a single row, allocate the buffer only for
             // one value.
             const std::size_t elementsCount
                 = statement_.fetchVectorByRows_ ? 1 : vectorSize;
-            buf_ = new char[colSize_ * elementsCount];
-        }
-        break;
-    case x_stdwstring:
-        // Do exactly the same thing as above, but for wide characters.
-        {
-            odbcType_ = SQL_C_WCHAR;
-
-            colSize_ = static_cast<size_t>(get_sqllen_from_value(statement_.column_size(position)));
-            if (colSize_ >= ODBC_MAX_COL_SIZE || colSize_ == 0)
-            {
-                colSize_ = odbc_max_buffer_length;
-
-                statement_.fetchVectorByRows_ = true;
-            }
-
-            colSize_++;
-            colSize_ = colSize_ * sizeof(SQLWCHAR); // size in bytes
-
-            const std::size_t elementsCount
-                = statement_.fetchVectorByRows_ ? 1 : vectorSize;
-
             buf_ = new char[colSize_ * elementsCount];
         }
         break;
@@ -160,15 +143,29 @@ void odbc_vector_into_type_backend::define_by_pos(
         throw soci_error("Into element used with non-supported type.");
     }
 
+    if (isLong_)
+        statement_.add_long_column(position_ + 1);
+
+    if (uses_get_data())
+    {
+        // SQLGetData() can only be used for retrieving the values of the
+        // current row, so we need to fetch the rows one by one, see the
+        // comment in odbc_statement_backend::fetch().
+        //
+        // Note that the flag is permanent for the statement and will never
+        // be reset.
+        statement_.fetchVectorByRows_ = true;
+    }
+
     position++;
 
     rebind_row(0);
 }
 
-void odbc_vector_into_type_backend::rebind_row(std::size_t rowInd)
+void* odbc_vector_into_type_backend::get_row_buffer(std::size_t rowInd, SQLLEN& size)
 {
     void* elementPtr = nullptr;
-    SQLLEN size = 0;
+    size = 0;
     switch (type_)
     {
     // simple cases
@@ -234,8 +231,26 @@ void odbc_vector_into_type_backend::rebind_row(std::size_t rowInd)
     {
         // It's one of the types for which we use fixed buffer.
         elementPtr = buf_;
-        size = colSize_;
+        size = static_cast<SQLLEN>(colSize_);
     }
+
+    return elementPtr;
+}
+
+bool odbc_vector_into_type_backend::uses_get_data() const
+{
+    // Note that position_ is 0-based, unlike the column indices.
+    return statement_.is_get_data_column(position_ + 1);
+}
+
+void odbc_vector_into_type_backend::rebind_row(std::size_t rowInd)
+{
+    // Columns retrieved using SQLGetData() are never bound.
+    if (uses_get_data())
+        return;
+
+    SQLLEN size;
+    void* const elementPtr = get_row_buffer(rowInd, size);
 
     const SQLUSMALLINT pos = static_cast<SQLUSMALLINT>(position_ + 1);
     SQLRETURN rc
@@ -247,6 +262,74 @@ void odbc_vector_into_type_backend::rebind_row(std::size_t rowInd)
     }
 }
 
+void odbc_vector_into_type_backend::get_data(std::size_t rowInd)
+{
+    const SQLUSMALLINT pos = static_cast<SQLUSMALLINT>(position_ + 1);
+
+    if (isLong_)
+    {
+        // Retrieve the value directly into the vector element.
+        bool gotValue;
+        std::size_t len = 0;
+        //
+        // For consistency with the values of the bound columns, see
+        // do_post_fetch_rows(), trim the trailing spaces and clear the
+        // elements corresponding to NULL values.
+        if (type_ == x_stdwstring)
+        {
+            std::wstring& value
+                = exchange_vector_type_cast<x_stdwstring>(data_).at(rowInd);
+
+            std::u16string s;
+            gotValue = get_long_data(pos, s);
+            if (gotValue)
+            {
+                s.erase(s.find_last_not_of(u' ') + 1);
+                len = s.size();
+
+                value = utf16_to_wide(s);
+            }
+            else
+            {
+                value.clear();
+            }
+        }
+        else
+        {
+            std::string& value = vector_string_value(type_, data_, rowInd);
+            gotValue = get_long_data(pos, value);
+            if (gotValue)
+            {
+                value.erase(value.find_last_not_of(' ') + 1);
+                len = value.size();
+            }
+            else
+            {
+                value.clear();
+            }
+        }
+
+        // Set the indicator as it would have been set by SQLBindCol(),
+        // post_fetch() relies on it being SQL_NULL_DATA for NULL values.
+        set_sqllen_at(rowInd, gotValue ? static_cast<SQLLEN>(len) : SQL_NULL_DATA);
+        return;
+    }
+
+    SQLLEN size;
+    void* const elementPtr = get_row_buffer(rowInd, size);
+
+    SQLLEN ind = 0;
+    SQLRETURN rc = SQLGetData(statement_.hstmt_, pos, odbcType_,
+                              elementPtr, size, &ind);
+    if (is_odbc_error(rc))
+    {
+        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
+                              fmt::format("getting data of vector item at index {} of column #{}", rowInd, pos));
+    }
+
+    set_sqllen_at(rowInd, get_sqllen_from_value(ind));
+}
+
 void odbc_vector_into_type_backend::pre_fetch()
 {
     // nothing to do for the supported types
@@ -255,6 +338,19 @@ void odbc_vector_into_type_backend::pre_fetch()
 void odbc_vector_into_type_backend::do_post_fetch_rows(
     std::size_t beginRow, std::size_t endRow)
 {
+    if (uses_get_data())
+    {
+        for (std::size_t i = beginRow; i != endRow; ++i)
+        {
+            get_data(i);
+        }
+
+        // Values of long columns are retrieved directly into the vector
+        // elements, so there is nothing more to do for them.
+        if (isLong_)
+            return;
+    }
+
     if (type_ == x_char)
     {
         std::vector<char> *vp
