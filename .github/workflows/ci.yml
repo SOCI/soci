@@ -102,15 +102,15 @@ jobs:
             # MacOS jobs
           - lib_type: shared
             backend: Empty
-            runner: macos-14
+            runner: macos-15
             no_boost: true
           - lib_type: shared
             backend: PostgreSQL
-            runner: macos-14
+            runner: macos-15
             no_boost: true
           - lib_type: shared
             backend: SQLite3
-            runner: macos-14
+            runner: macos-15
             no_boost: true
 
             # Special
