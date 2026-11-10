@@ -134,6 +134,9 @@ void odbc_statement_backend::prepare(std::string const & query,
     // reset any old into buffers, they will be added later if they're used
     // with this query
     intos_.clear();
+    getDataIntos_.clear();
+    firstGetDataColumn_ = 0;
+    fetchVectorByRows_ = false;
 }
 
 statement_backend::exec_fetch_result
@@ -276,9 +279,18 @@ odbc_statement_backend::do_fetch(int beginRow, int endRow)
         throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, "fetching data");
     }
 
+    // This must be done in the column order, as some drivers -- notably
+    // including Microsoft SQL Server one -- don't support calling SQLGetData()
+    // for columns in arbitrary order (i.e. don't support SQL_GD_ANY_ORDER),
+    // and both vectors are sorted by column.
     for (auto & into : intos_)
     {
         into->do_post_fetch_rows(beginRow, endRow);
+    }
+
+    for (auto & into : getDataIntos_)
+    {
+        into->get_data();
     }
 
     return ef_success;
@@ -308,10 +320,10 @@ odbc_statement_backend::fetch(int number)
     statement_backend::exec_fetch_result res SOCI_DUMMY_INIT(ef_success);
 
     // Usually we try to fetch the entire vector at once, but if some into
-    // string columns are bigger than 8KB (ODBC_MAX_COL_SIZE) then we use
-    // 100MB buffer for that columns. So in this case we downgrade to using
-    // scalar fetches to hold the buffer only for a single row and not
-    // rows_count * 100MB.
+    // string columns are bigger than 8KB (ODBC_MAX_COL_SIZE) or of unknown
+    // size, they are not bound and their values are retrieved using
+    // SQLGetData() which can only be used for a single row without driver
+    // support which is not necessarily available.
     // See odbc_vector_into_type_backend::define_by_pos().
     if (!fetchVectorByRows_)
     {

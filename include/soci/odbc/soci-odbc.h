@@ -28,12 +28,19 @@ namespace soci
 
 namespace details
 {
-    // TODO: Do we want to make it a part of public interface? --mloskot
-    std::size_t const odbc_max_buffer_length = 100 * 1024 * 1024;
-
     // select max size from following MSDN article
     // https://msdn.microsoft.com/en-us/library/ms130896.aspx
+    //
+    // Columns of this size or bigger (or of unknown size, which is reported as
+    // 0 by some drivers) are not bound, but retrieved using SQLGetData().
     SQLLEN const ODBC_MAX_COL_SIZE = 8000;
+
+    // Return true if the column of the given size should be retrieved using
+    // SQLGetData() rather than bound to a buffer.
+    inline bool is_odbc_long_column(std::size_t colSize)
+    {
+        return colSize == 0 || colSize >= static_cast<std::size_t>(ODBC_MAX_COL_SIZE);
+    }
 
     // This cast is only used to avoid compiler warnings when passing strings
     // to ODBC functions, the returned string may *not* be really modified.
@@ -97,6 +104,13 @@ protected:
     inline bool supports_negative_tinyint() const;
     inline bool can_convert_to_unsigned_sql_type() const;
 
+    // Retrieve the full value of the given (1-based) column of the current
+    // row using SQLGetData(), as many times as necessary.
+    //
+    // Returns false if the value is NULL, without modifying the string then.
+    bool get_long_data(SQLUSMALLINT colNum, std::string& s) const;
+    bool get_long_data(SQLUSMALLINT colNum, std::u16string& s) const;
+
     odbc_statement_backend &statement_;
 private:
     SOCI_NOT_COPYABLE(odbc_standard_type_backend_base)
@@ -118,12 +132,25 @@ struct odbc_standard_into_type_backend : details::standard_into_type_backend,
 
     void clean_up() override;
 
+    // Retrieve the value of the column using SQLGetData(), called only if the
+    // column is not bound, see odbc_statement_backend::is_get_data_column().
+    void get_data();
+
     char *buf_;        // generic buffer
     void *data_;
     details::exchange_type type_;
     int position_;
     SQLSMALLINT odbcType_;
     SQLLEN valueLen_;
+
+    // Buffer and its size used for binding the column or for SQLGetData().
+    void *odbcData_ = nullptr;
+    SQLLEN odbcSize_ = 0;
+
+    // True if this is a long string column, whose value is retrieved
+    // directly into the string using get_long_data().
+    bool isLong_ = false;
+
 private:
     SOCI_NOT_COPYABLE(odbc_standard_into_type_backend)
 };
@@ -155,10 +182,23 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
     // IBM DB2 driver is not compliant to ODBC spec for indicators in 64bit
     // SQLLEN is still defined 32bit (int) but spec requires 64bit (long)
     inline SQLLEN get_sqllen_from_vector_at(std::size_t idx) const;
+    inline void set_sqllen_at(std::size_t idx, SQLLEN val);
 
     // Rebind the single vector value at the given index to the first row.
     // Used when vector values are fetched by single row.
     void rebind_row(std::size_t rowInd);
+
+    // Return the buffer to use for the value at the given index and fill in
+    // its size.
+    void* get_row_buffer(std::size_t rowInd, SQLLEN& size);
+
+    // Return true if this column is not bound but retrieved using
+    // SQLGetData(), see odbc_statement_backend::is_get_data_column().
+    bool uses_get_data() const;
+
+    // Retrieve the value at the given index using SQLGetData(), only called
+    // if uses_get_data() returns true.
+    void get_data(std::size_t rowInd);
 
     std::vector<SQLLEN> indHolderVec_;
     void *data_;
@@ -167,6 +207,10 @@ struct odbc_vector_into_type_backend : details::vector_into_type_backend,
     std::size_t colSize_;    // size of the string column (used for strings)
     SQLSMALLINT odbcType_;
     int position_;
+
+    // True if this is a long string column, whose values are retrieved
+    // directly into the vector elements using get_long_data().
+    bool isLong_ = false;
 };
 
 struct odbc_standard_use_type_backend : details::standard_use_type_backend,
@@ -282,6 +326,28 @@ struct SOCI_ODBC_DECL odbc_statement_backend : details::statement_backend
     // helper for defining into vector<string>
     std::size_t column_size(int position);
 
+    // Long columns are never bound and, as not all drivers support calling
+    // SQLGetData() for the columns preceding the last bound one (i.e. don't
+    // support SQL_GD_ANY_COLUMN), all the columns following the first long
+    // one must be retrieved using SQLGetData() too.
+    //
+    // This function must be called when defining each long column and
+    // before defining any columns following it (which is always the case as
+    // the columns are defined in increasing order).
+    void add_long_column(int colNum)
+    {
+        if (!firstGetDataColumn_ || colNum < firstGetDataColumn_)
+            firstGetDataColumn_ = colNum;
+    }
+
+    // Return true if the column with the given 1-based index must be
+    // retrieved using SQLGetData() rather than bound. Notice that this is
+    // always the case for the long columns themselves.
+    bool is_get_data_column(int colNum) const
+    {
+        return firstGetDataColumn_ && colNum >= firstGetDataColumn_;
+    }
+
     odbc_standard_into_type_backend * make_into_type_backend() override;
     odbc_standard_use_type_backend * make_use_type_backend() override;
     odbc_vector_into_type_backend * make_vector_into_type_backend() override;
@@ -302,6 +368,15 @@ struct SOCI_ODBC_DECL odbc_statement_backend : details::statement_backend
     // This vector, containing non-owning non-null pointers, can be empty if
     // we're not using any vector "intos".
     std::vector<odbc_vector_into_type_backend*> intos_;
+
+    // Non-vector "intos" whose values must be retrieved using SQLGetData()
+    // after fetching each row, in column order. Contains non-owning non-null
+    // pointers.
+    std::vector<odbc_standard_into_type_backend*> getDataIntos_;
+
+    // 1-based index of the first long column, i.e. of the first column
+    // retrieved using SQLGetData(), or 0 if there are none.
+    int firstGetDataColumn_ = 0;
 
 private:
     // fetch() helper wrapping SQLFetch() call for the given range of rows.
@@ -569,6 +644,19 @@ inline SQLLEN odbc_vector_into_type_backend::get_sqllen_from_vector_at(std::size
         return reinterpret_cast<const int*>(&indHolderVec_[0])[idx];
     }
     return indHolderVec_[idx];
+}
+
+inline void odbc_vector_into_type_backend::set_sqllen_at(std::size_t idx, SQLLEN val)
+{
+    // Store the value in the same way as get_sqllen_from_vector_at() reads it.
+    if (requires_noncompliant_32bit_sqllen())
+    {
+        reinterpret_cast<int*>(&indHolderVec_[0])[idx] = static_cast<int>(val);
+    }
+    else
+    {
+        indHolderVec_[idx] = val;
+    }
 }
 
 inline void odbc_vector_use_type_backend::set_sqllen_from_vector_at(const std::size_t idx, const SQLLEN val)
