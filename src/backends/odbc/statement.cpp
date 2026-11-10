@@ -155,6 +155,14 @@ odbc_statement_backend::execute(int number)
     // cursor or an "invalid cursor state" error will occur on execute
     SQLCloseCursor(hstmt_);
 
+    // Reset the rowset size possibly set by fetch() during the previous
+    // execution of this statement: it will be set again when fetching, but
+    // having it greater than 1 when executing the statement makes some
+    // drivers, notably Microsoft SQL Server ones, use a server-side cursor
+    // instead of streaming the results, which requires a server round trip
+    // for every rowset and is much slower.
+    SQLSetStmtAttr(hstmt_, SQL_ATTR_ROW_ARRAY_SIZE, (SQLPOINTER)1, 0);
+
     SQLRETURN rc = SQLExecute(hstmt_);
 
     // Don't use is_odbc_error() here, as SQL_SUCCESS_WITH_INFO indicates an
