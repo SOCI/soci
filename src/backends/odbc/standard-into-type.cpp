@@ -435,7 +435,7 @@ void odbc_standard_into_type_backend::post_fetch(
         }
         else if (type_ == x_int64 && use_string_for_bigint())
         {
-          int64_t ll = exchange_type_cast<x_int64>(data_);
+          int64_t& ll = exchange_type_cast<x_int64>(data_);
           if (!cstring_to_integer(ll, buf_))
           {
             throw soci_error("Failed to parse the returned 64-bit integer value");
@@ -443,7 +443,7 @@ void odbc_standard_into_type_backend::post_fetch(
         }
         else if (type_ == x_uint64 && use_string_for_bigint())
         {
-          uint64_t ll = exchange_type_cast<x_uint64>(data_);
+          uint64_t& ll = exchange_type_cast<x_uint64>(data_);
           if (!cstring_to_unsigned(ll, buf_))
           {
             throw soci_error("Failed to parse the returned 64-bit integer value");
