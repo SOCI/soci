@@ -12,6 +12,7 @@
 #include <cstdio>
 #include <cstring>
 #include <ctime>
+#include <exception>
 
 #include <fmt/format.h>
 
@@ -349,7 +350,16 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
 
 oracle_session_backend::~oracle_session_backend()
 {
-    clean_up();
+    try
+    {
+        close();
+    }
+    catch (...)
+    {
+        // Ignore errors here, they could have been reported by close() if it
+        // had been called before and there is nothing we can do about them
+        // here anyhow.
+    }
 }
 
 bool oracle_session_backend::is_connected()
@@ -359,14 +369,20 @@ bool oracle_session_backend::is_connected()
 
 void oracle_session_backend::begin()
 {
-    // This code is commented out because it causes one of the transaction
-    // tests in common_tests::test10() to fail with error 'Invalid handle'
-    // With the code commented out, all tests pass.
-    //    sword res = OCITransStart(svchp_, errhp_, 0, OCI_TRANS_NEW);
-    //    if (res != OCI_SUCCESS)
-    //    {
-    //        throworacle_soci_error(res, errhp_);
-    //    }
+    // Oracle doesn't have auto-commit mode, so all statements executed outside
+    // of an explicit transaction are part of an implicitly started one, which
+    // is committed when the session is closed. Commit it now, to ensure that
+    // the changes done before calling begin() are not rolled back if the new
+    // transaction is, as with the other backends using auto-commit.
+    //
+    // Note that if an explicit transaction is already active, this function
+    // doesn't do anything, nested transactions are not supported.
+    if (explicitTransaction_)
+        return;
+
+    commit();
+
+    explicitTransaction_ = true;
 }
 
 void oracle_session_backend::commit()
@@ -376,6 +392,8 @@ void oracle_session_backend::commit()
     {
         throw oracle_soci_error(res, errhp_);
     }
+
+    explicitTransaction_ = false;
 }
 
 void oracle_session_backend::rollback()
@@ -384,6 +402,69 @@ void oracle_session_backend::rollback()
     if (res != OCI_SUCCESS)
     {
         throw oracle_soci_error(res, errhp_);
+    }
+
+    explicitTransaction_ = false;
+}
+
+void oracle_session_backend::close()
+{
+    // Remember the first error, if any, to throw it only after doing as much
+    // of the cleanup as possible. Note that remember_error() can be called
+    // with any OCI function result and does nothing if it indicates success.
+    std::exception_ptr error;
+    auto const remember_error = [this, &error](sword res)
+    {
+        if (res == OCI_SUCCESS || res == OCI_SUCCESS_WITH_INFO || error)
+            return;
+
+        try
+        {
+            throw oracle_soci_error(res, errhp_);
+        }
+        catch (...)
+        {
+            error = std::current_exception();
+        }
+    };
+
+    // Note that this function may be called more than once, so check that the
+    // handles are still valid (they're reset to null after being freed).
+    if (svchp_ != nullptr && errhp_ != nullptr && usrhp_ != nullptr)
+    {
+        // OCISessionEnd() implicitly commits the current transaction, which
+        // is what we want for the implicitly started one, as this emulates
+        // auto-commit behaviour of the other backends (and if committing
+        // fails, it returns the error and rolls the transaction back).
+        //
+        // But an explicitly started and not committed transaction must be
+        // rolled back, as with the other backends.
+        if (explicitTransaction_)
+        {
+            remember_error(OCITransRollback(svchp_, errhp_, OCI_DEFAULT));
+            explicitTransaction_ = false;
+        }
+
+        remember_error(OCISessionEnd(svchp_, errhp_, usrhp_, OCI_DEFAULT));
+
+        OCIHandleFree(usrhp_, OCI_HTYPE_SESSION);
+        usrhp_ = nullptr;
+    }
+
+    if (srvhp_ != nullptr && errhp_ != nullptr)
+    {
+        remember_error(OCIServerDetach(srvhp_, errhp_, OCI_DEFAULT));
+
+        OCIHandleFree(srvhp_, OCI_HTYPE_SERVER);
+        srvhp_ = nullptr;
+    }
+
+    // Free all the remaining handles.
+    clean_up();
+
+    if (error)
+    {
+        std::rethrow_exception(error);
     }
 }
 
@@ -394,15 +475,16 @@ void oracle_session_backend::clean_up()
         OCISessionEnd(svchp_, errhp_, usrhp_, OCI_DEFAULT);
     }
 
-    if (usrhp_) { OCIHandleFree(usrhp_, OCI_HTYPE_SESSION); }
-    if (svchp_) { OCIHandleFree(svchp_, OCI_HTYPE_SVCCTX);  }
+    if (usrhp_) { OCIHandleFree(usrhp_, OCI_HTYPE_SESSION); usrhp_ = nullptr; }
+    if (svchp_) { OCIHandleFree(svchp_, OCI_HTYPE_SVCCTX);  svchp_ = nullptr; }
     if (srvhp_)
     {
         OCIServerDetach(srvhp_, errhp_, OCI_DEFAULT);
         OCIHandleFree(srvhp_, OCI_HTYPE_SERVER);
+        srvhp_ = nullptr;
     }
-    if (errhp_) { OCIHandleFree(errhp_, OCI_HTYPE_ERROR); }
-    if (envhp_) { OCIHandleFree(envhp_, OCI_HTYPE_ENV);   }
+    if (errhp_) { OCIHandleFree(errhp_, OCI_HTYPE_ERROR); errhp_ = nullptr; }
+    if (envhp_) { OCIHandleFree(envhp_, OCI_HTYPE_ENV);   envhp_ = nullptr; }
 }
 
 oracle_statement_backend * oracle_session_backend::make_statement_backend()

@@ -111,6 +111,16 @@ The Oracle backend has full support for SOCI's [bulk operations](../binding.md#b
 the Oracle backend, although transactions with non-default isolation levels
 have to be managed by explicit SQL statements.
 
+Oracle doesn't have auto-commit mode, so all statements executed without calling `begin()` are
+part of an implicitly started transaction. To emulate the auto-commit behaviour of the other
+backends, this transaction is committed when `begin()` is called and when the session is closed,
+either explicitly or in its destructor. However a transaction started by calling `begin()` and not
+committed is rolled back when the session is closed, as with the other backends.
+
+Note that in SOCI versions before 4.2 the current transaction was always committed when the
+session was closed, even if it had been started explicitly, and calling `begin()` didn't commit
+the changes done before it.
+
 ### blob Data Type
 
 The Oracle backend supports working with data stored in columns of type Blob, via SOCI's [blob](../lobs.md) class.

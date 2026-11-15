@@ -2281,14 +2281,10 @@ TEST_CASE_METHOD(common_tests, "Close with active transaction",
         return;
     }
 
-    // Closing the session with an active transaction must succeed and roll
-    // the transaction back.
+    // Close the given session, ensuring that it succeeds.
+    auto const close_or_fail = [&tableCreator](soci::session& s)
     {
-        soci::session sqlTr(backEndFactory_, connectString_);
-        sqlTr.begin();
-        sqlTr << "insert into soci_test (id) values(1)";
-
-        if (!sqlTr.close())
+        if (!s.close())
         {
             // The connection could still be open, with the transaction
             // holding a lock on the table, and any query using it, including
@@ -2299,16 +2295,42 @@ TEST_CASE_METHOD(common_tests, "Close with active transaction",
 
             FAIL("Closing session with an active transaction failed.");
         }
+    };
+
+    // Closing the session with an active transaction must succeed and roll
+    // the transaction back.
+    {
+        soci::session sqlTr(backEndFactory_, connectString_);
+        sqlTr.begin();
+        sqlTr << "insert into soci_test (id) values(1)";
+        close_or_fail(sqlTr);
     }
 
-    // Use yet another session to check that the changes were not committed,
-    // as the original one may still have a transaction started before they
-    // were done active.
+    // Changes done without calling begin() must be preserved, whether they
+    // are committed immediately, as with most backends, or when closing the
+    // session, as with the backends not supporting auto-commit.
+    {
+        soci::session sqlTr(backEndFactory_, connectString_);
+        sqlTr << "insert into soci_test (id) values(2)";
+        close_or_fail(sqlTr);
+    }
+
+    // And calling begin() must not affect the changes done before it.
+    {
+        soci::session sqlTr(backEndFactory_, connectString_);
+        sqlTr << "insert into soci_test (id) values(3)";
+        sqlTr.begin();
+        sqlTr << "insert into soci_test (id) values(4)";
+        close_or_fail(sqlTr);
+    }
+
+    // Use yet another session to check the results, as the original one may
+    // still have a transaction started before the changes were done active.
     soci::session sqlCheck(backEndFactory_, connectString_);
 
-    int count = -1;
-    sqlCheck << "select count(*) from soci_test", into(count);
-    CHECK( count == 0 );
+    std::vector<int> ids(10);
+    sqlCheck << "select id from soci_test order by id", into(ids);
+    CHECK( ids == std::vector<int>{2, 3} );
 }
 
 std::tm  generate_tm()

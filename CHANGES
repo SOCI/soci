@@ -10,10 +10,11 @@ INCOMPATIBLE CHANGES IN SOCI 4.2 SINCE 4.1
   This makes it simpler to use in noexcept contexts (e.g. dtor of some class).
   Any errors are reported using logger::report_ignored_error().
 
-- Firebird backend does not implicitly commit transaction when the session
-  is closed any longer but does commit the implicit current transaction when
-  begin() is called, for consistency with the other backends. See the
-  "Transactions" section of Firebird backend documentation for more details.
+- Firebird and Oracle backends do not commit the transaction started by
+  begin() when the session is closed any longer, but roll it back, and do
+  commit the implicit current transaction when begin() is called, for
+  consistency with the other backends. See the "Transactions" section of the
+  corresponding backend documentation for more details.
 
 
 INCOMPATIBLE CHANGES IN SOCI 4.1 SINCE 4.0
