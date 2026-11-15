@@ -42,6 +42,22 @@ namespace details
         return colSize == 0 || colSize >= static_cast<std::size_t>(ODBC_MAX_COL_SIZE);
     }
 
+    // Maximal number of bytes that a single character of a string column, as
+    // counted by its column size, can take when retrieved as SQL_C_CHAR.
+    //
+    // Column size is in characters, but the data is converted to the client
+    // encoding, typically UTF-8, by the driver and a character may need more
+    // than one byte in it. For SQL Server, column size is in either UTF-16
+    // code units (for NVARCHAR) or bytes in the server code page (for
+    // VARCHAR), and any of them can take at most 3 bytes in UTF-8. This is
+    // not enough for PostgreSQL, which counts Unicode code points, taking up
+    // to 4 bytes, in its column size, but in practice values consisting
+    // entirely of characters outside of the BMP should be rare enough to not
+    // justify increasing the buffer size even further and, if they do happen,
+    // we detect it and throw an exception rather than silently truncating the
+    // data, see odbc_standard_type_backend_base::check_string_fitted().
+    std::size_t const ODBC_MAX_BYTES_PER_CHAR = 3;
+
     // This cast is only used to avoid compiler warnings when passing strings
     // to ODBC functions, the returned string may *not* be really modified.
     inline SQLCHAR* sqlchar_cast(std::string const& s)
@@ -110,6 +126,17 @@ protected:
     // Returns false if the value is NULL, without modifying the string then.
     bool get_long_data(SQLUSMALLINT colNum, std::string& s) const;
     bool get_long_data(SQLUSMALLINT colNum, std::u16string& s) const;
+
+    // Check that the string value of the given (1-based) column, with the
+    // length in bytes returned by the driver in the indicator, fitted into
+    // the buffer of the given size in bytes, including the space for the
+    // trailing NUL of charSize bytes.
+    //
+    // Throws if it didn't, as the value was truncated then: note that we
+    // can't rely on the driver returning SQL_SUCCESS_WITH_INFO for this, as
+    // e.g. FreeTDS doesn't do it.
+    void check_string_fitted(SQLLEN len, std::size_t bufSize,
+                             std::size_t charSize, int colNum) const;
 
     odbc_statement_backend &statement_;
 private:

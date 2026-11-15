@@ -60,9 +60,12 @@ void odbc_standard_into_type_backend::define_by_pos(
                 break;
             }
 
-            size = static_cast<SQLUINTEGER>(colSize + 1);
+            // Compute the buffer size in bytes, see the comment near
+            // ODBC_MAX_BYTES_PER_CHAR definition for the narrow case.
             if (type_ == x_stdwstring)
-                size *= sizeof(SQLWCHAR); // size in bytes
+                size = static_cast<SQLUINTEGER>((colSize + 1) * sizeof(SQLWCHAR));
+            else
+                size = static_cast<SQLUINTEGER>(colSize * ODBC_MAX_BYTES_PER_CHAR + 1);
             buf_ = new char[size];
             data = buf_;
         }
@@ -281,6 +284,27 @@ do_get_long_data(SQLHSTMT hstmt,
 
 } // anonymous namespace
 
+void
+odbc_standard_type_backend_base::check_string_fitted(SQLLEN len,
+                                                     std::size_t bufSize,
+                                                     std::size_t charSize,
+                                                     int colNum) const
+{
+    if (len == SQL_NO_TOTAL)
+    {
+        throw soci_error(fmt::format(
+            "Value of column #{} doesn't fit into the buffer of {} bytes",
+            colNum, bufSize - charSize));
+    }
+
+    if (len < 0 || static_cast<std::size_t>(len) + charSize > bufSize)
+    {
+        throw soci_error(fmt::format(
+            "Value of column #{} of {} bytes doesn't fit into the buffer of {} bytes",
+            colNum, len, bufSize - charSize));
+    }
+}
+
 bool
 odbc_standard_type_backend_base::get_long_data(SQLUSMALLINT colNum,
                                                std::string& s) const
@@ -392,6 +416,31 @@ void odbc_standard_into_type_backend::post_fetch(
         // variable by get_data(), so there is nothing more to do for them.
         if (isLong_)
             return;
+
+        std::size_t charSize = 0;
+        switch (type_)
+        {
+            case x_stdstring:
+            case x_longstring:
+            case x_xmltype:
+                charSize = sizeof(char);
+                break;
+
+            case x_stdwstring:
+                charSize = sizeof(SQLWCHAR);
+                break;
+
+            default:
+                break;
+        }
+
+        if (charSize)
+        {
+            // Check that the string wasn't truncated.
+            check_string_fitted(get_sqllen_from_value(valueLen_),
+                                static_cast<std::size_t>(odbcSize_),
+                                charSize, position_);
+        }
 
         // only std::string and std::tm need special handling
         if (type_ == x_char)

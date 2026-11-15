@@ -83,6 +83,82 @@ private:
 std::string connectString;
 backend_factory const &backEnd = *soci::factory_odbc();
 
+// Non-ASCII characters can take more bytes in the client encoding than the
+// column size, check that they are not truncated when fetching them.
+TEST_CASE("PostgreSQL ODBC non-ASCII short strings", "[odbc][postgresql][unicode]")
+{
+    soci::session sql(backEnd, connectString);
+
+    // We need to know the encoding of the data returned to us to check it.
+    std::string clientEncoding;
+    sql << "show client_encoding", into(clientEncoding);
+    if (clientEncoding != "UTF8")
+    {
+        WARN("Skipping test because client encoding is " << clientEncoding);
+        return;
+    }
+
+    struct short_text_table_creator : table_creator_base
+    {
+        explicit short_text_table_creator(soci::session& sql)
+            : table_creator_base(sql)
+        {
+            sql << "create table soci_test (id int, v varchar(10) null)";
+        }
+    } short_text_table_creator(sql);
+
+    // Use chr() to avoid depending on the encoding used for the query: Euro
+    // sign takes 3 bytes in UTF-8 and the emoji (outside of the BMP) 4.
+    sql << "insert into soci_test(id, v) values(1, repeat(chr(8364), 10))";
+    sql << "insert into soci_test(id, v) values(2, 'abc')";
+    sql << "insert into soci_test(id, v) values(3, NULL)";
+    sql << "insert into soci_test(id, v) values(4, repeat(chr(128512), 10))";
+
+    // Euro sign U+20AC in UTF-8.
+    std::string expected;
+    for (int n = 0; n < 10; ++n)
+        expected += "\xe2\x82\xac";
+
+    // Note that we don't test wide strings here because psqlODBC ANSI driver
+    // doesn't support them at all.
+    SECTION("scalar")
+    {
+        std::string v;
+        sql << "select v from soci_test where id = 1", into(v);
+        CHECK(v == expected);
+    }
+
+    SECTION("vector")
+    {
+        std::vector<std::string> v(3);
+        std::vector<indicator> ind(3);
+        sql << "select v from soci_test where id < 4 order by id",
+               into(v, ind);
+        REQUIRE(v.size() == 3);
+
+        CHECK(v[0] == expected);
+        CHECK(v[1] == "abc");
+        CHECK(ind[2] == i_null);
+    }
+
+    SECTION("too long")
+    {
+        // Characters outside of the BMP take more space than we allocate for
+        // them, but we should get an error and not truncated data: 10 emojis
+        // take 40 bytes in UTF-8, but we only have space for 30 of them.
+        char const* const expectedError =
+            "Value of column #1 of 40 bytes doesn't fit into the buffer of 30 bytes";
+
+        std::string v;
+        CHECK_THROWS_WITH((sql << "select v from soci_test where id = 4", into(v)),
+                          Catch::Contains(expectedError));
+
+        std::vector<std::string> vv(1);
+        CHECK_THROWS_WITH((sql << "select v from soci_test where id = 4", into(vv)),
+                          Catch::Contains(expectedError));
+    }
+}
+
 // DDL Creation objects for common tests
 struct table_creator_one : public table_creator_base
 {

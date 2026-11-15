@@ -121,9 +121,12 @@ void odbc_vector_into_type_backend::define_by_pos(
                 break;
             }
 
-            colSize_++;
+            // Compute the buffer size in bytes, see the comment near
+            // ODBC_MAX_BYTES_PER_CHAR definition for the narrow case.
             if (type_ == x_stdwstring)
-                colSize_ *= sizeof(SQLWCHAR); // size in bytes
+                colSize_ = (colSize_ + 1) * sizeof(SQLWCHAR);
+            else
+                colSize_ = colSize_ * ODBC_MAX_BYTES_PER_CHAR + 1;
 
             // If we are fetching by a single row, allocate the buffer only for
             // one value.
@@ -379,6 +382,8 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
                 continue;
             }
 
+            check_string_fitted(len, colSize_, sizeof(char), position_ + 1);
+
             // Find the actual length of the string: for a VARCHAR(N)
             // column, it may be right-padded with spaces up to the length
             // of the longest string in the result set. This happens with
@@ -418,6 +423,8 @@ void odbc_vector_into_type_backend::do_post_fetch_rows(
                 value.clear();
                 continue;
             }
+
+            check_string_fitted(len, colSize_, sizeof(SQLWCHAR), position_ + 1);
 
             SQLWCHAR* end = pos + len / sizeof(SQLWCHAR);
             while (end != pos)
