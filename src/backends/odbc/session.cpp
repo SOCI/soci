@@ -636,7 +636,28 @@ void odbc_session_backend::close()
         rc = SQLDisconnect(hdbc_);
         if (is_odbc_error(rc))
         {
-            throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "disconnecting");
+            odbc_soci_error const err(SQL_HANDLE_DBC, hdbc_, "disconnecting");
+
+            // The only error we can do something about is the one due to a
+            // transaction still being active (and, notably, MS SQL Server
+            // refuses to disconnect in this case): roll it back, as all the
+            // other backends do when closing the connection, and try again.
+            if (err.get_sqlstate() != "25000")
+            {
+                throw err;
+            }
+
+            // Don't check for errors here: even if rolling back fails, e.g.
+            // because the connection is broken, disconnecting may still
+            // succeed and if it doesn't, we report the error below anyhow.
+            SQLEndTran(SQL_HANDLE_DBC, hdbc_, SQL_ROLLBACK);
+
+            rc = SQLDisconnect(hdbc_);
+            if (is_odbc_error(rc))
+            {
+                throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
+                                      "disconnecting after trying to roll back transaction");
+            }
         }
 
         rc = hdbc_.reset();

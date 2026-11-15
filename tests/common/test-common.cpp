@@ -2256,6 +2256,61 @@ TEST_CASE_METHOD(common_tests, "Transactions", "[core][transaction]")
     }
 }
 
+TEST_CASE_METHOD(common_tests, "Close with active transaction",
+                 "[core][transaction][close]")
+{
+    soci::session sql(backEndFactory_, connectString_);
+
+    if (!tc_.has_transactions_support(sql))
+    {
+        WARN("Transactions not supported by the database, skipping the test.");
+        return;
+    }
+
+    auto_table_creator tableCreator(tc_.table_creator_1(sql));
+
+    if (!tc_.is_database_shared_between_sessions())
+    {
+        // We can't check that the changes are rolled back, as we can't use
+        // another session to do it, but at least check that closing works.
+        sql.begin();
+        sql << "insert into soci_test (id) values(1)";
+        CHECK( sql.close() );
+
+        WARN("Database is not shared between sessions, not checking rollback.");
+        return;
+    }
+
+    // Closing the session with an active transaction must succeed and roll
+    // the transaction back.
+    {
+        soci::session sqlTr(backEndFactory_, connectString_);
+        sqlTr.begin();
+        sqlTr << "insert into soci_test (id) values(1)";
+
+        if (!sqlTr.close())
+        {
+            // The connection could still be open, with the transaction
+            // holding a lock on the table, and any query using it, including
+            // dropping it in table creator dtor, could then block forever, so
+            // don't do anything else with this table (it will be dropped when
+            // it's created by the next test anyhow).
+            tableCreator.release();
+
+            FAIL("Closing session with an active transaction failed.");
+        }
+    }
+
+    // Use yet another session to check that the changes were not committed,
+    // as the original one may still have a transaction started before they
+    // were done active.
+    soci::session sqlCheck(backEndFactory_, connectString_);
+
+    int count = -1;
+    sqlCheck << "select count(*) from soci_test", into(count);
+    CHECK( count == 0 );
+}
+
 std::tm  generate_tm()
 {
     std::tm t = std::tm();

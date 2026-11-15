@@ -1119,6 +1119,11 @@ public:
         return "sqlite3";
     }
 
+    bool is_database_shared_between_sessions() const override
+    {
+        return get_connect_string().find(":memory:") == std::string::npos;
+    }
+
     table_creator_base* table_creator_1(soci::session& s) const override
     {
         return new table_creator_one(s);
