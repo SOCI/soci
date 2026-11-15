@@ -37,6 +37,10 @@ void logger_impl::clear_query_parameters()
     queryParams_.clear();
 }
 
+void logger_impl::report_ignored_error(soci_error const &)
+{
+}
+
 logger_impl * logger_impl::clone() const
 {
     logger_impl * const impl = do_clone();

@@ -8,6 +8,8 @@
 #include "soci/transaction.h"
 #include "soci/error.h"
 
+#include "soci-report-error.h"
+
 using namespace soci;
 
 transaction::transaction(session& sql)
@@ -25,7 +27,10 @@ transaction::~transaction()
             rollback();
         }
         catch (...)
-        {}
+        {
+            details::report_current_exception(sql_,
+                "while rolling back the transaction in its destructor");
+        }
     }
 }
 

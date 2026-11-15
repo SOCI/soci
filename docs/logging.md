@@ -27,6 +27,9 @@ An example use might be:
 Each statement logs its query string before the preparation step (whether explicit or implicit) and therefore logging is effective whether the query succeeds or not.
 Note that each prepared query is logged only once, independent on how many times it is executed.
 
+The errors that can't be reported by throwing an exception, e.g. those happening when the `session` or
+`transaction` object is destroyed, are also written to the log stream, prefixed with `Ignoring error:`.
+
 The `get_last_query` function allows to retrieve the last used query. The associated `get_last_query_context` function allows to obtain a string
 representation of the bound values (if any) used in the last query. That is, while `get_last_query` might return something like
 `INSERT INTO dummy (val) VALUES (:val)`, `get_last_query_context` will return something like `:val=42` and together they can be used to get a detailed
@@ -75,3 +78,27 @@ object:
     sql.set_logger(new my_log_impl(...));
 
 and `start_query()` method of the logger will be called for all queries.
+
+### Reporting ignored errors
+
+Some errors can't be reported by throwing an exception, notably those happening in the destructors of
+`session` and `transaction` classes, e.g. when rolling back the transaction fails. By default, these
+errors are silently ignored, but a custom logger may override `report_ignored_error()` method to be
+notified about them:
+
+    class my_log_impl : public soci::logger_impl
+    {
+    public:
+        void report_ignored_error(soci::soci_error const & e) override
+        {
+            ... log e.what(), taking care to not let any exceptions escape ...
+        }
+
+        ...
+    };
+
+The error object passed to this function may be of a backend-specific class derived from `soci_error`,
+allowing to retrieve more information about it, e.g. ODBC `SQLSTATE`, using `dynamic_cast<>`.
+
+Note that while this function is not `noexcept`, it shouldn't throw any exceptions and if it
+does throw any, they are caught and simply ignored by SOCI.

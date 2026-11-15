@@ -3960,6 +3960,67 @@ TEST_CASE_METHOD(common_tests, "Logger", "[core][log]")
     sql.set_logger(logger_orig);
 }
 
+TEST_CASE_METHOD(common_tests, "Logger ignored errors", "[core][log]")
+{
+    // Logger class used for testing: appends all errors to the provided
+    // buffer.
+    class test_log_impl : public soci::logger_impl
+    {
+    public:
+        explicit test_log_impl(std::vector<std::string>& errors)
+            : m_errors(errors)
+        {
+        }
+
+        void report_ignored_error(soci_error const & e) override
+        {
+            m_errors.push_back(e.what());
+        }
+
+    private:
+        logger_impl* do_clone() const override
+        {
+            return new test_log_impl(m_errors);
+        }
+
+        std::vector<std::string>& m_errors;
+    };
+
+    soci::session sql(backEndFactory_, connectString_);
+
+    std::vector<std::string> errors;
+    sql.set_logger(new test_log_impl(errors));
+
+    {
+        // Close the session while the transaction object still exists, so
+        // that rolling it back in its destructor fails. Commit the
+        // transaction first to ensure that closing the session succeeds.
+        transaction tr(sql);
+        sql.commit();
+        sql.close();
+    }
+
+    REQUIRE( errors.size() == 1 );
+    CHECK_THAT( errors.front(),
+                Catch::Contains("Session is not connected") &&
+                Catch::Contains("while rolling back the transaction") );
+
+    // Check that the standard logger outputs the errors to the log stream.
+    soci::session sql2(backEndFactory_, connectString_);
+
+    std::ostringstream log;
+    sql2.set_log_stream(&log);
+
+    {
+        transaction tr(sql2);
+        sql2.commit();
+        sql2.close();
+    }
+
+    CHECK_THAT( log.str(),
+                Catch::Contains("Ignoring error: Session is not connected") );
+}
+
 } // namespace test_cases
 
 // Implement test_context_common ctor here: like this, just using this class
