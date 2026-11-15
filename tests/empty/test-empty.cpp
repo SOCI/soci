@@ -137,6 +137,119 @@ TEST_CASE("Dummy test", "[empty]")
     }
 }
 
+namespace
+{
+
+// Session backend which always fails to close the connection.
+struct failing_close_session_backend : empty_session_backend
+{
+    using empty_session_backend::empty_session_backend;
+
+    void close() override
+    {
+        throw soci_error("Closing failed.");
+    }
+};
+
+struct failing_close_backend_factory : backend_factory
+{
+    details::session_backend*
+    make_session(connection_parameters const& parameters) const override
+    {
+        return new failing_close_session_backend(parameters);
+    }
+};
+
+// Logger appending all ignored errors to the provided buffer.
+class errors_log_impl : public soci::logger_impl
+{
+public:
+    explicit errors_log_impl(std::vector<std::string>& errors)
+        : errors_(errors)
+    {
+    }
+
+    void report_ignored_error(soci_error const & e) override
+    {
+        errors_.push_back(e.what());
+    }
+
+private:
+    logger_impl* do_clone() const override
+    {
+        return new errors_log_impl(errors_);
+    }
+
+    std::vector<std::string>& errors_;
+};
+
+} // anonymous namespace
+
+TEST_CASE("Close errors", "[empty][close]")
+{
+    std::vector<std::string> errors;
+
+    SECTION("Successful close")
+    {
+        soci::session sql(backEnd, connectString);
+        sql.set_logger(new errors_log_impl(errors));
+
+        CHECK( sql.close() );
+        CHECK( errors.empty() );
+
+        // Closing an already closed session is fine too.
+        CHECK( sql.close() );
+        CHECK( errors.empty() );
+    }
+
+    failing_close_backend_factory const failing;
+
+    SECTION("Failing close")
+    {
+        soci::session sql(failing, connectString);
+        sql.set_logger(new errors_log_impl(errors));
+
+        CHECK( !sql.close() );
+        REQUIRE( errors.size() == 1 );
+        CHECK( errors[0] == "Closing failed while closing the session." );
+
+        // The session is closed even if closing it failed.
+        CHECK( !sql.is_connected() );
+        CHECK( sql.close() );
+        CHECK( errors.size() == 1 );
+    }
+
+    SECTION("Failing close in destructor")
+    {
+        {
+            soci::session sql(failing, connectString);
+            sql.set_logger(new errors_log_impl(errors));
+        }
+
+        REQUIRE( errors.size() == 1 );
+        CHECK( errors[0] == "Closing failed while closing the session." );
+    }
+
+    SECTION("Failing close when reconnecting")
+    {
+        soci::session sql(failing, connectString);
+        sql.set_logger(new errors_log_impl(errors));
+
+        sql.reconnect();
+        CHECK( errors.size() == 1 );
+        CHECK( sql.is_connected() );
+    }
+
+    SECTION("Failing close in move assignment")
+    {
+        soci::session sql(failing, connectString);
+        sql.set_logger(new errors_log_impl(errors));
+
+        sql = soci::session(backEnd, connectString);
+        CHECK( errors.size() == 1 );
+    }
+}
+
 // Each test must define the test context class which implements the base class
 // pure virtual functions in a backend-specific way.
 //

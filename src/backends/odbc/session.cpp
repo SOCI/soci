@@ -373,9 +373,18 @@ void odbc_session_backend::configure_connection()
     }
 }
 
-odbc_session_backend::~odbc_session_backend() noexcept(false)
+odbc_session_backend::~odbc_session_backend()
 {
-    clean_up();
+    try
+    {
+        close();
+    }
+    catch (...)
+    {
+        // Ignore errors here, they could have been reported by close() if it
+        // had been called before and there is nothing we can do about them
+        // here anyhow.
+    }
 }
 
 bool odbc_session_backend::is_connected()
@@ -617,24 +626,33 @@ void odbc_session_backend::reset_transaction()
 }
 
 
-void odbc_session_backend::clean_up()
+void odbc_session_backend::close()
 {
-    SQLRETURN rc = SQLDisconnect(hdbc_);
-    if (is_odbc_error(rc))
+    // Note that this function may be called more than once, so check if the
+    // handles are still valid before using them.
+    SQLRETURN rc;
+    if (hdbc_)
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "disconnecting");
+        rc = SQLDisconnect(hdbc_);
+        if (is_odbc_error(rc))
+        {
+            throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "disconnecting");
+        }
+
+        rc = hdbc_.reset();
+        if (is_odbc_error(rc))
+        {
+            throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "freeing connection");
+        }
     }
 
-    rc = hdbc_.reset();
-    if (is_odbc_error(rc))
+    if (henv_)
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "freeing connection");
-    }
-
-    rc = henv_.reset();
-    if (is_odbc_error(rc))
-    {
-        throw odbc_soci_error(SQL_HANDLE_ENV, henv_, "freeing environment");
+        rc = henv_.reset();
+        if (is_odbc_error(rc))
+        {
+            throw odbc_soci_error(SQL_HANDLE_ENV, henv_, "freeing environment");
+        }
     }
 }
 

@@ -368,7 +368,21 @@ class session_backend
 {
 public:
     session_backend() : failoverCallback_(nullptr), session_(nullptr) {}
-    virtual ~session_backend() noexcept(false) {}
+    virtual ~session_backend() {}
+
+    // Close the connection to the database.
+    //
+    // This function is called by session::close() and is the only place where
+    // errors occurring when closing the connection can be reported, by
+    // throwing an exception, as the destructor must not throw. It should free
+    // all resources, as far as possible, even if an error occurs and must be
+    // safe to call more than once, notably calling it from the destructor of
+    // the derived class after it had been already called (and possibly failed)
+    // must be fine.
+    //
+    // Default implementation does nothing, so that the backends that never
+    // fail to close the connection can just do it in their destructor.
+    virtual void close() {}
 
     virtual bool is_connected() = 0;
 

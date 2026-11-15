@@ -52,7 +52,7 @@ public:
     void open(backend_factory const & factory, std::string const & connectString);
     void open(std::string const & backendName, std::string const & connectString);
     void open(std::string const & connectString);
-    void close();
+    bool close() noexcept;
     void reconnect();
 
     bool is_connected() const;
@@ -108,6 +108,7 @@ session sql("postgresql://dbname=mydb");
 
 * The constructors that take backend name as string load the shared library (if not yet loaded) with name computed as `libsoci_ABC.so` (or `libsoci_ABC.dll` on Windows) where `ABC` is the given backend name.
 * Destructor closes the connection if it is open. Note that any errors occurring while doing it can't be reported by throwing an exception, so they are passed to `logger_impl::report_ignored_error()`, see [logging](../logging.md), instead.
+* `close` closes the connection if it is open. It never throws, but returns `false` if an error occurred while closing the connection, which is also reported to the logger in the same way as above. The session is not connected after calling `close` in any case.
 * `open`, `close` and `reconnect` functions for   reusing the same session object many times; the `reconnect` function attempts to establish the connection with the same parameters as most recently used with constructor or `open`. The arguments for `open` are treated in the same way as for constructors. `is_connected` can be used to check if there is an existing usable connection.
 * `begin`, `commit` and `rollback` functions for transaction control.
 * `once` member, which is used for performing *instant* queries that do not need to be separately prepared. Example:

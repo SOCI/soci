@@ -181,7 +181,7 @@ session& session::operator=(session && other)
         }
         else if (backEnd_ != other.backEnd_)
         {
-            delete backEnd_;
+            close();
         }
 
         if (other.isFromPool_)
@@ -248,23 +248,25 @@ schema_table_name& session::alloc_schema_table_name(const std::string & tableNam
 
 session::~session()
 {
-    try
+    if (isFromPool_)
     {
-        if (isFromPool_)
+        try
         {
             pool_->give_back(poolPosition_);
         }
-        else
+        catch (...)
         {
-            delete backEnd_;
+            // Do not throw from a destructor and just report the exception
+            // because, while not ideal, it's still preferable to immediately
+            // terminating the program.
+            details::report_current_exception(*this,
+                "while returning the session to the pool");
         }
     }
-    catch (...)
+    else
     {
-        // Do not throw from a destructor and just report the exception
-        // because, while not ideal, it's still preferable to immediately
-        // terminating the program.
-        details::report_current_exception(*this, "while closing the session");
+        // This never throws and reports the errors, if any, on its own.
+        close();
     }
 }
 
@@ -311,19 +313,36 @@ void session::open(std::string const & connectString)
     open(connection_parameters(connectString));
 }
 
-void session::close()
+bool session::close() noexcept
 {
+    if (!backEnd_)
+    {
+        // Nothing to do, and so nothing can fail either.
+        return true;
+    }
+
     auto* const backEnd = backEnd_;
     backEnd_ = nullptr;
 
     if (isFromPool_)
     {
-        pool_->at(poolPosition_).close();
+        return pool_->at(poolPosition_).close();
     }
-    else
+
+    // Make sure it's destroyed in any case.
+    std::unique_ptr<session_backend> backEndGuard(backEnd);
+
+    try
     {
-        delete backEnd;
+        backEnd->close();
     }
+    catch (...)
+    {
+        details::report_current_exception(*this, "while closing the session");
+        return false;
+    }
+
+    return true;
 }
 
 void session::reconnect()

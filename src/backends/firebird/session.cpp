@@ -116,9 +116,18 @@ void firebird_session_backend::begin()
     explicitTransaction_ = true;
 }
 
-firebird_session_backend::~firebird_session_backend() noexcept(false)
+firebird_session_backend::~firebird_session_backend()
 {
-    cleanUp();
+    try
+    {
+        close();
+    }
+    catch (...)
+    {
+        // Ignore errors here, they could have been reported by close() if it
+        // had been called before and there is nothing we can do about them
+        // here anyhow.
+    }
 }
 
 bool firebird_session_backend::is_connected()
@@ -170,8 +179,15 @@ isc_tr_handle* firebird_session_backend::current_transaction()
     return &trhp_;
 }
 
-void firebird_session_backend::cleanUp()
+void firebird_session_backend::close()
 {
+    // This function may be called more than once, don't do anything if we had
+    // already detached from the database.
+    if (dbhp_ == 0)
+    {
+        return;
+    }
+
     ISC_STATUS stat[ISC_STATUS_LENGTH];
 
     // Remember the first error, if any, to throw it only after doing as much

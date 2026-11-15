@@ -302,7 +302,9 @@ struct SOCI_FIREBIRD_DECL firebird_session_backend : details::session_backend
 {
     firebird_session_backend(connection_parameters const & parameters);
 
-    ~firebird_session_backend() noexcept(false) override;
+    ~firebird_session_backend() override;
+
+    void close() override;
 
     bool is_connected() override;
 
@@ -318,8 +320,6 @@ struct SOCI_FIREBIRD_DECL firebird_session_backend : details::session_backend
     database_engine get_database_engine() const override { return database_engine::firebird; }
 
     std::string get_backend_name() const override { return "firebird"; }
-
-    void cleanUp();
 
     firebird_statement_backend * make_statement_backend() override;
     details::rowid_backend* make_rowid_backend() override;
