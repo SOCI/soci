@@ -103,6 +103,68 @@ extract_soci_option(std::string& connectString,
     return value;
 }
 
+// SQL Server ends the transaction on its own in some cases, e.g. when it
+// chooses the connection as a deadlock victim or when an error occurs with
+// XACT_ABORT on. FreeTDS doesn't notice it and keeps considering that the
+// transaction is in progress: ending it then fails with "The COMMIT (or
+// ROLLBACK) TRANSACTION request has no corresponding BEGIN TRANSACTION" error,
+// and so does turning the auto-commit mode back on, leaving the connection in
+// this state for good, with every statement committed by the server as soon
+// as it is executed.
+//
+// Check if the given error, from ending the transaction, is this one.
+bool is_transaction_ended_by_server(odbc_session_backend const& session,
+                                    odbc_soci_error const& e)
+{
+    if (session.get_database_product() != odbc_session_backend::prod_mssql)
+    {
+        return false;
+    }
+
+    switch (e.native_error_code())
+    {
+        case 3902: // COMMIT TRANSACTION without BEGIN TRANSACTION
+        case 3903: // ROLLBACK TRANSACTION without BEGIN TRANSACTION
+            return true;
+    }
+
+    return false;
+}
+
+// Open a transaction on the server for the driver to roll back, which brings
+// both back in sync after is_transaction_ended_by_server() returned true.
+//
+// Returns an empty string if the transaction was rolled back or the error
+// message otherwise.
+std::string roll_back_transaction_ended_by_server(odbc_session_backend& session)
+{
+    try
+    {
+        auto_statement<odbc_statement_backend> st(session);
+        SQLRETURN const rc = SQLExecDirect(st.hstmt_,
+            sqlchar_cast("if @@trancount = 0 begin transaction"), SQL_NTS);
+        if (is_odbc_error(rc))
+        {
+            return odbc_soci_error(SQL_HANDLE_STMT, st.hstmt_,
+                                   "opening a transaction").what();
+        }
+    }
+    catch (soci_error const& e)
+    {
+        // Allocating the statement handle failed.
+        return e.what();
+    }
+
+    SQLRETURN const rc = SQLEndTran(SQL_HANDLE_DBC, session.hdbc_, SQL_ROLLBACK);
+    if (is_odbc_error(rc))
+    {
+        return odbc_soci_error(SQL_HANDLE_DBC, session.hdbc_,
+                               "rolling it back").what();
+    }
+
+    return {};
+}
+
 } // anonymous namespace
 
 odbc_session_backend::odbc_session_backend(
@@ -416,8 +478,41 @@ odbc_session_backend::end_transaction(SQLSMALLINT completion, char const* what)
     SQLRETURN rc = SQLEndTran(SQL_HANDLE_DBC, hdbc_, completion);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, what);
+        odbc_soci_error e(SQL_HANDLE_DBC, hdbc_, what);
+        if (is_transaction_ended_by_server(*this, e))
+        {
+            // Even when rolling back, this is still an error: the statements
+            // executed after the server ended the transaction were committed
+            // immediately, so their changes can't be rolled back any more.
+            e.add_context("as the transaction was already ended by the server");
+            if (completion == SQL_ROLLBACK)
+            {
+                e.add_context("(any changes made since then were committed)");
+            }
+
+            // The transaction can't be ended normally any more, but the
+            // connection can still be made usable again.
+            std::string const err = roll_back_transaction_ended_by_server(*this);
+            if (!err.empty())
+            {
+                e.add_context("and resynchronizing the connection failed: " + err);
+            }
+            else
+            {
+                try
+                {
+                    reset_transaction();
+                }
+                catch (soci_error const& reset_err)
+                {
+                    e.add_context(std::string("and then ") + reset_err.what());
+                }
+            }
+        }
+
+        throw e;
     }
+    reset_transaction();
 }
 
 void odbc_session_backend::commit()
