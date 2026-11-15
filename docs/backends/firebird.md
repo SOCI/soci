@@ -121,8 +121,18 @@ This feature is also supported by emulation.
 
 [Transactions](../transactions.md) are also fully supported by the Firebird backend.
 In fact, an implicit transaction is always started when using this backend if one hadn't been
-started by explicitly calling `begin()` before. The current transaction is automatically
-committed in `session` destructor.
+started by explicitly calling `begin()` before.
+
+When the session is closed, either explicitly or in its destructor, the implicitly started
+transaction is automatically committed, to emulate the auto-commit behaviour of the other
+backends. However a transaction started by calling `begin()` and not committed is rolled back,
+which also matches the other backends behaviour. For the same reason, calling `begin()` while
+an implicit transaction is already active commits it before starting a new one, so that only
+the changes done after calling `begin()` are rolled back if `commit()` is not called.
+
+Note that in SOCI versions before 4.2 the current transaction was always committed when the
+session was closed, even if it had been started explicitly, and calling `begin()` didn't do
+anything if a transaction, even an implicit one, was already active.
 
 ### BLOB Data Type
 

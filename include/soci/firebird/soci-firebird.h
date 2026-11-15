@@ -336,7 +336,15 @@ struct SOCI_FIREBIRD_DECL firebird_session_backend : details::session_backend
     isc_db_handle dbhp_;
 
 private:
+    // Start a new transaction if there is no active one.
+    void start_transaction();
+
     isc_tr_handle trhp_;
+
+    // True if the current transaction was started by an explicit call to
+    // begin() and not implicitly when executing a statement.
+    bool explicitTransaction_ = false;
+
     bool decimals_as_strings_;
 };
 

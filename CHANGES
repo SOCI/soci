@@ -3,6 +3,15 @@ This file contains the history of changes in the SOCI library.
 Please read at least the following section when upgrading from
 a previous version of the library.
 
+INCOMPATIBLE CHANGES IN SOCI 4.2 SINCE 4.1
+==========================================
+
+- Firebird backend does not implicitly commit transaction when the session
+  is closed any longer but does commit the implicit current transaction when
+  begin() is called, for consistency with the other backends. See the
+  "Transactions" section of Firebird backend documentation for more details.
+
+
 INCOMPATIBLE CHANGES IN SOCI 4.1 SINCE 4.0
 ==========================================
 

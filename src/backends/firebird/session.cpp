@@ -8,6 +8,7 @@
 #include "soci/firebird/soci-firebird.h"
 #include "firebird/error-firebird.h"
 #include "soci/session.h"
+#include <exception>
 #include <map>
 #include <string>
 
@@ -85,7 +86,7 @@ firebird_session_backend::firebird_session_backend(
 }
 
 
-void firebird_session_backend::begin()
+void firebird_session_backend::start_transaction()
 {
     if (trhp_ == 0)
     {
@@ -95,6 +96,24 @@ void firebird_session_backend::begin()
             throw_iscerror(stat);
         }
     }
+}
+
+void firebird_session_backend::begin()
+{
+    // If an explicit transaction is already active, this function doesn't do
+    // anything, nested transactions are not supported.
+    if (explicitTransaction_)
+        return;
+
+    // If an implicit transaction is active, commit it first: the changes done
+    // in it would have been already committed by the other backends using
+    // auto-commit mode, so they shouldn't become part of the new transaction
+    // and be rolled back if it is.
+    commit();
+
+    start_transaction();
+
+    explicitTransaction_ = true;
 }
 
 firebird_session_backend::~firebird_session_backend() noexcept(false)
@@ -123,6 +142,7 @@ void firebird_session_backend::commit()
         }
 
         trhp_ = 0;
+        explicitTransaction_ = false;
     }
 }
 
@@ -138,13 +158,14 @@ void firebird_session_backend::rollback()
         }
 
         trhp_ = 0;
+        explicitTransaction_ = false;
     }
 }
 
 isc_tr_handle* firebird_session_backend::current_transaction()
 {
     // It will do nothing if we're already inside a transaction.
-    begin();
+    start_transaction();
 
     return &trhp_;
 }
@@ -153,23 +174,61 @@ void firebird_session_backend::cleanUp()
 {
     ISC_STATUS stat[ISC_STATUS_LENGTH];
 
-    // at the end of session our transaction is finally commited.
-    if (trhp_ != 0)
+    // Remember the first error, if any, to throw it only after doing as much
+    // of the cleanup as possible.
+    std::exception_ptr error;
+    auto const remember_error = [&stat, &error]()
+    {
+        if (!error)
+        {
+            try
+            {
+                throw_iscerror(stat);
+            }
+            catch (...)
+            {
+                error = std::current_exception();
+            }
+        }
+    };
+
+    // Implicitly started transaction is committed, as there is no autocommit
+    // mode in Firebird and so this is the only way to ensure that the changes
+    // done outside of an explicit transaction are not lost, as with the other
+    // backends.
+    if (trhp_ != 0 && !explicitTransaction_)
     {
         if (isc_commit_transaction(stat, &trhp_))
         {
-            throw_iscerror(stat);
+            // We need to roll it back, as the database can't be detached while
+            // the transaction is still active.
+            remember_error();
         }
+    }
+
+    // But an explicitly started and not committed transaction is rolled back,
+    // as with the other backends (this also takes care of implicit transaction
+    // that we failed to commit above).
+    if (trhp_ != 0)
+    {
+        if (isc_rollback_transaction(stat, &trhp_))
+            remember_error();
 
         trhp_ = 0;
     }
 
     if (isc_detach_database(stat, &dbhp_))
     {
-        throw_iscerror(stat);
+        remember_error();
     }
 
     dbhp_ = 0L;
+    explicitTransaction_ = false;
+
+    if (error)
+    {
+        std::rethrow_exception(error);
+    }
 }
 
 bool firebird_session_backend::get_next_sequence_value(
