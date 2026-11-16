@@ -36,7 +36,6 @@ jobs:
       matrix:
         include:
             # Ubuntu jobs
-            # Can't test DB2 as required db2exc package is no longer available after Ubuntu 14.04
           - lib_type: shared
             backend: SQLite3
             runner: ubuntu-24.04
@@ -73,6 +72,10 @@ jobs:
             unity_build: false
             mssql_driver: freetds
             name: MS SQL (FreeTDS driver)
+          - lib_type: shared
+            backend: DB2
+            runner: ubuntu-24.04
+            unity_build: false
           - lib_type: shared
             backend: Empty
             runner: ubuntu-24.04

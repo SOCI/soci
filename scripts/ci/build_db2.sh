@@ -6,9 +6,10 @@
 #
 source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
+# Semicolons in the connection string must be escaped for CMake.
 cmake ${SOCI_DEFAULT_CMAKE_OPTIONS} \
     -DSOCI_DB2=ON \
-    -DSOCI_DB2_TEST_CONNSTR:STRING="DSN=SOCITEST\;Uid=db2inst1\;Pwd=db2inst1" \
+    -DSOCI_DB2_TEST_CONNSTR:STRING="$(db2_connstr | sed 's/;/\;/g')" \
     ..
 
 run_make
