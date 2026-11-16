@@ -111,6 +111,16 @@ public:
     {
         return "length(" + s + ")";
     }
+
+    bool has_partial_update_bug() const override
+    {
+        // DB2 CLI processes array parameters atomically by default, so an
+        // error in any row means that none of them are inserted. This could
+        // be changed by setting SQL_ATTR_PARAMOPT_ATOMIC to SQL_ATOMIC_NO and
+        // computing the number of affected rows from the parameter status
+        // array, as ODBC backend does, but this is not done currently.
+        return true;
+    }
 };
 
 test_context tc_db2;
