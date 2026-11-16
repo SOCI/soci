@@ -239,9 +239,11 @@ do_get_long_data(SQLHSTMT hstmt,
         return true;
     }
 
-    // The value was truncated and we got all but the last buffer character
-    // (which was used for the trailing NUL).
-    std::size_t got = initialLen - 1;
+    // The value was truncated, but we don't know where exactly: notably, the
+    // legacy "SQL Server" ODBC driver truncates it before the last character,
+    // i.e. we get one less character that could fit in the buffer with it, so
+    // we need to rely on the length of the string in the buffer.
+    std::size_t got = std::char_traits<CharT>::length(initialBuf);
     s.assign(initialBuf, got);
 
     for (;;)
@@ -251,12 +253,14 @@ do_get_long_data(SQLHSTMT hstmt,
         // could be inaccurate (e.g. when the driver performs encoding
         // conversion), so we still loop until we get everything. And if we
         // don't know it, just double the total buffer size every time.
-        std::size_t chunk = got;
-        if (avail != SQL_NO_TOTAL &&
-                static_cast<std::size_t>(avail) > got)
-        {
-            chunk = static_cast<std::size_t>(avail) - got;
-        }
+        std::size_t chunk = avail == SQL_NO_TOTAL
+            ? got
+            : static_cast<std::size_t>(avail) - got;
+
+        // In either case, use at least the initial buffer size to make sure we
+        // make progress on each loop iteration.
+        if (chunk < initialLen)
+            chunk = initialLen;
 
         s.resize(got + chunk + 1);
 
@@ -271,7 +275,16 @@ do_get_long_data(SQLHSTMT hstmt,
             break;
         }
 
-        got += chunk;
+        auto const gotThisTime = std::char_traits<CharT>::length(&s[got]);
+        if (!gotThisTime)
+        {
+            // We would loop forever if we didn't make any progress.
+            throw soci_error(fmt::format(
+                "No data returned by the ODBC driver for column #{} after {} characters",
+                colNum, got));
+        }
+
+        got += gotThisTime;
 
         // Make avail the total size of the data, as after the first call.
         if (avail != SQL_NO_TOTAL)

@@ -150,7 +150,9 @@ odbc_statement_backend::execute(int number)
     {
         SQLSetStmtAttr(hstmt_, SQL_ATTR_PARAMS_PROCESSED_PTR, &rows_processed, 0);
 
-        status.resize(number);
+        // Initialize the status array with a value not corresponding to
+        // success, as not all drivers fill it in case of error.
+        status.resize(number, SQL_PARAM_UNUSED);
         SQLSetStmtAttr(hstmt_, SQL_ATTR_PARAM_STATUS_PTR, &status[0], 0);
     }
 
@@ -177,51 +179,52 @@ odbc_statement_backend::execute(int number)
         const odbc_soci_error err(SQL_HANDLE_STMT, hstmt_, "executing statement");
 
         bool error = true;
-        if (rc == SQL_SUCCESS_WITH_INFO)
+
+        // Check for partial update when using array parameters: this is
+        // supposed to be indicated by SQL_SUCCESS_WITH_INFO, but some drivers
+        // (e.g. legacy "SQL Server" one) return SQL_ERROR in this case, while
+        // still having executed the statement for some rows.
+        if (hasVectorUseElements_)
         {
-            // Check for partial update when using array parameters.
-            if (hasVectorUseElements_)
-            {
-                rowsAffected_ = 0;
+            rowsAffected_ = 0;
 
-                error_row_ = -1;
-                for (SQLULEN i = 0; i < rows_processed; ++i)
+            error_row_ = -1;
+            for (SQLULEN i = 0; i < rows_processed; ++i)
+            {
+                switch (status[i])
                 {
-                    switch (status[i])
-                    {
-                        case SQL_PARAM_SUCCESS:
-                        case SQL_PARAM_SUCCESS_WITH_INFO:
-                            ++rowsAffected_;
-                            break;
+                    case SQL_PARAM_SUCCESS:
+                    case SQL_PARAM_SUCCESS_WITH_INFO:
+                        ++rowsAffected_;
+                        break;
 
-                        case SQL_PARAM_ERROR:
-                            if (error_row_ == -1)
-                                error_row_ = soci_cast<int, SQLULEN>::cast(i);
-                            break;
+                    case SQL_PARAM_ERROR:
+                        if (error_row_ == -1)
+                            error_row_ = soci_cast<int, SQLULEN>::cast(i);
+                        break;
 
-                        case SQL_PARAM_UNUSED:
-                        case SQL_PARAM_DIAG_UNAVAILABLE:
-                            // We shouldn't get those, normally, but just
-                            // ignore them if we do.
-                            break;
-                    }
+                    case SQL_PARAM_UNUSED:
+                    case SQL_PARAM_DIAG_UNAVAILABLE:
+                        // We shouldn't get those, normally, but just
+                        // ignore them if we do.
+                        break;
                 }
+            }
 
-                // In principle, it is possible to get success with info for an
-                // operation which succeeded for all rows -- even though this
-                // hasn't been observed so far. In this case, we shouldn't
-                // throw an error.
-                if (error_row_ == -1)
-                    error = false;
-            }
-            else
-            {
-                // This is a weird case which has never been observed so far
-                // and it's not clear what it might correspond to, but don't
-                // handle it as an error to avoid throwing spurious exceptions
-                // when there is no real problem.
+            // In principle, it is possible to get success with info for an
+            // operation which succeeded for all rows -- even though this
+            // hasn't been observed so far. In this case, we shouldn't
+            // throw an error.
+            if (rc == SQL_SUCCESS_WITH_INFO && error_row_ == -1)
                 error = false;
-            }
+        }
+        else if (rc == SQL_SUCCESS_WITH_INFO)
+        {
+            // This is a weird case which has never been observed so far
+            // and it's not clear what it might correspond to, but don't
+            // handle it as an error to avoid throwing spurious exceptions
+            // when there is no real problem.
+            error = false;
         }
         else
         {
