@@ -30,6 +30,7 @@ jobs:
         include:
           - lib_type: shared
             build_type: Debug
+            mssql_driver: ODBC Driver 17 for SQL Server
           - lib_type: shared
             build_type: Release
             unity_build: true
