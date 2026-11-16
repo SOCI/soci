@@ -276,7 +276,10 @@ bool sqlite3_session_backend::get_last_insert_id(
 
 void sqlite3_session_backend::clean_up()
 {
-    sqlite3_close(conn_);
+    // Use sqlite3_close_v2() because, unlike sqlite3_close(), it doesn't fail,
+    // leaving the connection open and without any way to close it later, if
+    // there are still any unfinalized statements,
+    sqlite3_close_v2(conn_);
 }
 
 sqlite3_statement_backend * sqlite3_session_backend::make_statement_backend()

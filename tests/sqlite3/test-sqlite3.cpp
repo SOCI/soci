@@ -953,6 +953,56 @@ TEST_CASE("SQLite row int64", "[sqlite][row][int64]")
     CHECK(r.get<std::int64_t>("val") == val);
 }
 
+namespace
+{
+
+struct FileRemover
+{
+    // Argument must be a literal string as we just keep the pointer.
+    explicit FileRemover(char const* fileName) : fileName_(fileName) {}
+    ~FileRemover() { std::remove(fileName_); }
+
+    char const* const fileName_;
+};
+
+} // anonymous namespace
+
+TEST_CASE("SQLite close with unfinalized statement", "[sqlite][close]")
+{
+    FileRemover fileRemoverDB("test-close.db");
+    FileRemover fileRemoverJournal("test-close.db-journal");
+
+    soci::session sql(backEnd, "db=test-close.db");
+
+    // In exclusive locking mode, the connection keeps the lock acquired when
+    // writing to the database until it is closed, which allows us to check
+    // that it is really closed below.
+    sql << "pragma locking_mode=exclusive";
+    sql << "create table t(i integer)";
+    sql << "insert into t(i) values(1)";
+
+    // Check that the database is really locked, as otherwise the test below
+    // wouldn't check anything. Note that the default busy timeout is 0, so
+    // this fails immediately.
+    {
+        soci::session other(backEnd, "db=test-close.db");
+        REQUIRE_THROWS( other << "insert into t(i) values(2)" );
+    }
+
+    {
+        int i = 0;
+        soci::statement st = (sql.prepare << "select i from t", into(i));
+
+        // Closing the session while the statement still exists must work.
+        CHECK( sql.close() );
+    }
+
+    // And the connection must be really closed once the statement is
+    // destroyed, so that the database is not locked any more.
+    soci::session other(backEnd, "db=test-close.db");
+    CHECK_NOTHROW( other << "insert into t(i) values(3)" );
+}
+
 // The setting "synchronous" cannot be set when the database is locked in
 // environments with parallelisms for example. A timeout solves this issue.
 // This test checks whether the timeout was applied before setting "synchronous".
@@ -963,15 +1013,6 @@ TEST_CASE("SQLite synchronous option works from multiple threads",
         soci::session sql(backEnd, "db=test.db");
         sql << R"(PRAGMA journal_mode="WAL")";
     }
-
-    struct FileRemover
-    {
-        // Argument must be a literal string as we just keep the pointer.
-        explicit FileRemover(char const* fileName) : fileName_(fileName) {}
-        ~FileRemover() { std::remove(fileName_); }
-
-        char const* const fileName_;
-    };
 
     FileRemover fileRemoverDB("test.db");
     FileRemover fileRemoverSHM("test.db-shm");
