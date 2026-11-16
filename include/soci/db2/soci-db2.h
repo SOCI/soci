@@ -217,6 +217,9 @@ struct SOCI_DB2_DECL db2_statement_backend : details::statement_backend
     bool hasVectorUseElements;
     SQLUINTEGER numRowsFetched;
     details::db2::binding_method use_binding_method_;
+
+    // True if the last executed statement returned a result set.
+    bool hasResultSet_ = false;
 };
 
 struct SOCI_DB2_DECL db2_rowid_backend : details::rowid_backend
