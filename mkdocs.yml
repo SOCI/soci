@@ -38,7 +38,6 @@ nav:
     - Multi-threading: multithreading.md
     - Boost: boost.md
     - Utilities: utilities.md
-    - Vagrant: vagrant.md
   - API:
     - Client API: api/client.md
     - Backend API: api/backend.md

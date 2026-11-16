@@ -46,8 +46,5 @@ CMakeLists.txt.user
 # Eclipse
 /.project
 
-# Vagrant
-/.vagrant/
-
 # Python
 .venv/

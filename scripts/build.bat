@@ -10,7 +10,7 @@ rem 4. Optionally, run devenv.exe SOCI{32|64}.sln from command line
 
 rem ### CONFIGURATION #####################################
 rem ### Connection strings for tests (alternatively, use command line-c option)
-rem ### For example, SQL Server LocalDB instance, MySQL and PostgreSQL on the Vagrant VM.
+rem ### For example, SQL Server LocalDB instance, MySQL and PostgreSQL.
 set TEST_CONNSTR_MSSQL=""
 set TEST_CONNSTR_MYSQL=""
 set TEST_CONNSTR_PGSQL=""
