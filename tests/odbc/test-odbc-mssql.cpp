@@ -70,6 +70,26 @@ TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
         CHECK(str_out == str_in);
     }
 
+    // Also check reading it into a vector and as wide strings.
+    std::vector<std::string> vec_out(1);
+    sql << "select long_text from soci_test", into(vec_out);
+    REQUIRE(vec_out.size() == 1);
+    CHECK(vec_out[0].length() == str_in.length());
+    CHECK(vec_out[0] == str_in);
+
+    std::wstring const wstr_in(str_in.begin(), str_in.end());
+
+    std::wstring wstr_out;
+    sql << "select long_text from soci_test", into(wstr_out);
+    CHECK(wstr_out.length() == wstr_in.length());
+    CHECK(wstr_out == wstr_in);
+
+    std::vector<std::wstring> wvec_out(1);
+    sql << "select long_text from soci_test", into(wvec_out);
+    REQUIRE(wvec_out.size() == 1);
+    CHECK(wvec_out[0].length() == wstr_in.length());
+    CHECK(wvec_out[0] == wstr_in);
+
     // The long string should be truncated when inserting it into a fixed size
     // column.
     CHECK_THROWS_AS(
@@ -137,6 +157,131 @@ TEST_CASE("MS SQL wide string vector", "[odbc][mssql][vector][wstring]")
   {
     CHECK(str_out[i] == str_in[i]);
   }
+}
+
+// Non-ASCII characters can take more bytes in the client encoding than the
+// column size, check that they are not truncated when fetching them.
+TEST_CASE("MS SQL non-ASCII short strings", "[odbc][mssql][unicode]")
+{
+    soci::session sql(backEnd, connectString);
+
+    struct short_text_table_creator : table_creator_base
+    {
+        explicit short_text_table_creator(soci::session& sql)
+            : table_creator_base(sql)
+        {
+            sql << "create table soci_test ("
+                        "id int, "
+                        "v varchar(10) collate Latin1_General_CI_AS null, "
+                        "nv nvarchar(10) null"
+                    ")";
+        }
+    } short_text_table_creator(sql);
+
+    // Use SQL functions to create the values to avoid depending on the
+    // encoding used for the query or parameters: the values use E-acute
+    // (taking 2 bytes in UTF-8 but just 1 in CP1252 used for VARCHAR column)
+    // and Euro sign (3 bytes in UTF-8 and 2 in UTF-16).
+    sql << "insert into soci_test(id, v, nv) values("
+            "1, replicate(char(233), 10), replicate(nchar(8364), 10))";
+    sql << "insert into soci_test(id, v, nv) values(2, 'abc', N'abc')";
+    sql << "insert into soci_test(id, v, nv) values(3, NULL, NULL)";
+
+    // The encoding of the narrow strings depends on the driver and its
+    // configuration (and also the platform), and we can only check them if
+    // it's UTF-8, so check for this by retrieving a known non-ASCII string.
+    //
+    // Note that we use a long column for this, to ensure that this check
+    // doesn't depend on the correct handling of the short ones.
+    std::string euro;
+    sql << "select cast(nchar(8364) as nvarchar(max))", into(euro);
+    bool const isUTF8 = euro == "\xe2\x82\xac";
+
+    // Hardcoded UTF-8 representations of E-acute (U+00E9) and Euro (U+20AC).
+    std::string expectedV, expectedNV;
+    for (int n = 0; n < 10; ++n)
+    {
+        expectedV += "\xc3\xa9";
+        expectedNV += "\xe2\x82\xac";
+    }
+
+    std::wstring const wexpectedV(10, L'é');
+    std::wstring const wexpectedNV(10, L'€');
+
+    SECTION("scalar wide")
+    {
+        std::wstring wv, wnv;
+        sql << "select v, nv from soci_test where id = 1", into(wv), into(wnv);
+        CHECK(wv == wexpectedV);
+        CHECK(wnv == wexpectedNV);
+    }
+
+    SECTION("vector wide")
+    {
+        std::vector<indicator> indV(3), indNV(3);
+        std::vector<std::wstring> wv(3), wnv(3);
+        sql << "select v, nv from soci_test order by id",
+               into(wv, indV), into(wnv, indNV);
+        REQUIRE(wv.size() == 3);
+        REQUIRE(wnv.size() == 3);
+
+        CHECK(wv[0] == wexpectedV);
+        CHECK(wnv[0] == wexpectedNV);
+        CHECK(wv[1] == L"abc");
+        CHECK(wnv[1] == L"abc");
+        CHECK(indV[2] == i_null);
+        CHECK(indNV[2] == i_null);
+    }
+
+    // Note that we must not return from inside a section, as this would
+    // prevent Catch from discovering the sections following it, so put the
+    // warning into its own section and return only after it.
+    if (!isUTF8)
+    {
+        SECTION("narrow")
+        {
+            WARN("Skipping narrow strings tests as client encoding is not UTF-8");
+        }
+        return;
+    }
+
+    SECTION("scalar")
+    {
+        std::string v, nv;
+        sql << "select v, nv from soci_test where id = 1", into(v), into(nv);
+        CHECK(v == expectedV);
+        CHECK(nv == expectedNV);
+    }
+
+    SECTION("scalar after long column")
+    {
+        // The columns following a long one are retrieved using SQLGetData()
+        // instead of being bound, so check that this works too.
+        std::string l, v, nv;
+        sql << "select cast(nv as nvarchar(max)), v, nv "
+               "from soci_test where id = 1",
+               into(l), into(v), into(nv);
+        CHECK(l == expectedNV);
+        CHECK(v == expectedV);
+        CHECK(nv == expectedNV);
+    }
+
+    SECTION("vector")
+    {
+        std::vector<std::string> v(3), nv(3);
+        std::vector<indicator> indV(3), indNV(3);
+        sql << "select v, nv from soci_test order by id",
+               into(v, indV), into(nv, indNV);
+        REQUIRE(v.size() == 3);
+        REQUIRE(nv.size() == 3);
+
+        CHECK(v[0] == expectedV);
+        CHECK(nv[0] == expectedNV);
+        CHECK(v[1] == "abc");
+        CHECK(nv[1] == "abc");
+        CHECK(indV[2] == i_null);
+        CHECK(indNV[2] == i_null);
+    }
 }
 
 TEST_CASE("MS SQL table records count", "[odbc][mssql][count]")
