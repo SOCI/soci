@@ -145,6 +145,19 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
 
     sword res;
 
+    // Ensure that all handles allocated below are freed if an exception is
+    // thrown from this ctor, as the dtor won't be called in this case.
+    struct clean_up_on_error
+    {
+        ~clean_up_on_error()
+        {
+            if (backend_)
+                backend_->clean_up();
+        }
+
+        oracle_session_backend* backend_;
+    } guard{this};
+
     // create the environment
     res = OCIEnvNlsCreate(&envhp_, OCI_THREADED | OCI_ENV_NO_MUTEX,
         nullptr, nullptr, nullptr, nullptr, 0, nullptr, charset, ncharset);
@@ -158,7 +171,6 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         OCI_HTYPE_SERVER, 0, nullptr);
     if (res != OCI_SUCCESS)
     {
-        clean_up();
         throw soci_error("Cannot create server handle");
     }
 
@@ -167,7 +179,6 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         OCI_HTYPE_ERROR, 0, nullptr);
     if (res != OCI_SUCCESS)
     {
-        clean_up();
         throw soci_error("Cannot create error handle");
     }
 
@@ -180,12 +191,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
             defaultSourceCharSetId, serviceName.c_str(), serviceName.size(), &nlsServiceLen);
         if (res != OCI_SUCCESS)
         {
-            // Note that we must create the exception object before calling
-            // clean_up() as it invalidates the error handle used to get the
-            // error details.
-            oracle_soci_error err(res, errhp_);
-            clean_up();
-            throw err;
+            throw oracle_soci_error(res, errhp_);
         }
 
         res = OCINlsCharSetConvert(envhp_, errhp_,
@@ -193,9 +199,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
             defaultSourceCharSetId, userName.c_str(), userName.size(), &nlsUserNameLen);
         if (res != OCI_SUCCESS)
         {
-            oracle_soci_error err(res, errhp_);
-            clean_up();
-            throw err;
+            throw oracle_soci_error(res, errhp_);
         }
 
         res = OCINlsCharSetConvert(envhp_, errhp_,
@@ -203,9 +207,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
             defaultSourceCharSetId, password.c_str(), password.size(), &nlsPasswordLen);
         if (res != OCI_SUCCESS)
         {
-            oracle_soci_error err(res, errhp_);
-            clean_up();
-            throw err;
+            throw oracle_soci_error(res, errhp_);
         }
     }
     else
@@ -249,9 +251,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         static_cast<sb4>(nlsServiceLen), OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
-        oracle_soci_error err(res, errhp_);
-        clean_up();
-        throw err;
+        throw oracle_soci_error(res, errhp_);
     }
 
     // register failover callback
@@ -263,9 +263,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         &fo, 0, static_cast<ub4>(OCI_ATTR_FOCBK), errhp_);
     if (res != OCI_SUCCESS)
     {
-        oracle_soci_error err(res, errhp_);
-        clean_up();
-        throw err;
+        throw oracle_soci_error(res, errhp_);
     }
 
     // create service context handle
@@ -273,7 +271,6 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         OCI_HTYPE_SVCCTX, 0, nullptr);
     if (res != OCI_SUCCESS)
     {
-        clean_up();
         throw soci_error("Cannot create service context");
     }
 
@@ -282,9 +279,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         OCI_ATTR_SERVER, errhp_);
     if (res != OCI_SUCCESS)
     {
-        oracle_soci_error err(res, errhp_);
-        clean_up();
-        throw err;
+        throw oracle_soci_error(res, errhp_);
     }
 
     // allocate user session handle
@@ -292,7 +287,6 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         OCI_HTYPE_SESSION, 0, nullptr);
     if (res != OCI_SUCCESS)
     {
-        clean_up();
         throw soci_error("Cannot allocate user session handle");
     }
 
@@ -312,7 +306,6 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
             static_cast<ub4>(nlsUserNameLen), OCI_ATTR_USERNAME, errhp_);
         if (res != OCI_SUCCESS)
         {
-            clean_up();
             throw soci_error("Cannot set username");
         }
 
@@ -322,7 +315,6 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
             static_cast<ub4>(nlsPasswordLen), OCI_ATTR_PASSWORD, errhp_);
         if (res != OCI_SUCCESS)
         {
-            clean_up();
             throw soci_error("Cannot set password");
         }
     }
@@ -332,9 +324,7 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         credentialType, mode);
     if (res != OCI_SUCCESS && res != OCI_SUCCESS_WITH_INFO)
     {
-        oracle_soci_error err(res, errhp_);
-        clean_up();
-        throw err;
+        throw oracle_soci_error(res, errhp_);
     }
 
     // set the session in the context handle
@@ -342,10 +332,11 @@ oracle_session_backend::oracle_session_backend(std::string const & serviceName,
         0, OCI_ATTR_SESSION, errhp_);
     if (res != OCI_SUCCESS)
     {
-        oracle_soci_error err(res, errhp_);
-        clean_up();
-        throw err;
+        throw oracle_soci_error(res, errhp_);
     }
+
+    // Everything succeeded, so don't clean up.
+    guard.backend_ = nullptr;
 }
 
 oracle_session_backend::~oracle_session_backend()
