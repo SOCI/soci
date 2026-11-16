@@ -33,7 +33,7 @@ const std::string db2_soci_error::sqlState(std::string const & msg,const SQLSMAL
                        message,
                        SQL_MAX_MESSAGE_LENGTH + 1,
                        &length) == SQL_SUCCESS ) {
-        return fmt::format("{} SQLMESSAGE: {}", msg, message);
+        return fmt::format("{} SQLMESSAGE: {}", msg, (char*)message);
     }
     return msg;
 }
@@ -231,7 +231,11 @@ void db2_session_backend::rollback()
 
 void db2_session_backend::clean_up()
 {
-    // if a transaction is in progress, it will automatically be rolled back upon when the connection is disconnected/freed
+    // DB2 CLI refuses to disconnect if a transaction is active (SQLSTATE
+    // 25000 or 25501), so roll it back first, as the other backends do when
+    // closing the connection. This is harmless if there is no transaction and
+    // we ignore any errors, as there is nothing we can do about them anyhow.
+    SQLEndTran(SQL_HANDLE_DBC, hDbc, SQL_ROLLBACK);
     in_transaction = false;
 
     SQLDisconnect(hDbc);

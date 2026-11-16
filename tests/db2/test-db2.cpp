@@ -31,7 +31,7 @@ struct table_creator_one : public table_creator_base
     table_creator_one(soci::session & sql)
         : table_creator_base(sql)
     {
-        sql << "CREATE TABLE SOCI_TEST(ID INTEGER, VAL SMALLINT, C CHAR, STR VARCHAR(20), SH SMALLINT, LL BIGINT, UL NUMERIC(20), "
+        sql << "CREATE TABLE SOCI_TEST(ID INTEGER, VAL INTEGER, C CHAR, STR VARCHAR(20), SH SMALLINT, LL BIGINT, UL NUMERIC(20), "
             "D DOUBLE, NUM76 NUMERIC(7,6), "
             "TM TIMESTAMP, I1 INTEGER, I2 INTEGER, I3 INTEGER, NAME VARCHAR(20))";
     }
@@ -111,9 +111,31 @@ public:
     {
         return "length(" + s + ")";
     }
+
+    bool has_partial_update_bug() const override
+    {
+        // DB2 CLI processes array parameters atomically by default, so an
+        // error in any row means that none of them are inserted. This could
+        // be changed by setting SQL_ATTR_PARAMOPT_ATOMIC to SQL_ATOMIC_NO and
+        // computing the number of affected rows from the parameter status
+        // array, as ODBC backend does, but this is not done currently.
+        return true;
+    }
 };
 
 test_context tc_db2;
+
+// Table creator used by the DB2-specific tests below: it drops the table if it
+// already exists, e.g. because it was left over by a previous test run, and
+// also drops it at the end of the test.
+struct table_creator_db2_test : table_creator_base
+{
+    table_creator_db2_test(soci::session& sql, char const* columns)
+        : table_creator_base(sql)
+    {
+        sql << "CREATE TABLE SOCI_TEST (" << columns << ")";
+    }
+};
 
 //
 // Additional tests to exercise the DB2 backend
@@ -126,8 +148,7 @@ TEST_CASE("DB2 test 1", "[db2]")
     sql << "SELECT CURRENT TIMESTAMP FROM SYSIBM.SYSDUMMY1";
     sql << "SELECT " << 123 << " FROM SYSIBM.SYSDUMMY1";
 
-    std::string query = "CREATE TABLE DB2INST1.SOCI_TEST (ID BIGINT,DATA VARCHAR(8))";
-    sql << query;
+    table_creator_db2_test tableCreator(sql, "ID BIGINT,DATA VARCHAR(8)");
 
     {
         const int i = 7;
@@ -296,17 +317,13 @@ TEST_CASE("DB2 test 1", "[db2]")
         std::vector<indicator> inds(100);
         statement st = (sql.prepare << "select id from db2inst1.SOCI_TEST", use(numbers, inds));
     }
-
-    sql<<"DROP TABLE DB2INST1.SOCI_TEST";
-    sql.commit();
 }
 
 TEST_CASE("DB2 test 2", "[db2]")
 {
     soci::session sql(backEnd, connectString);
 
-    std::string query = "CREATE TABLE DB2INST1.SOCI_TEST (ID BIGINT,DATA VARCHAR(8),DT TIMESTAMP)";
-    sql << query;
+    table_creator_db2_test tableCreator(sql, "ID BIGINT,DATA VARCHAR(8),DT TIMESTAMP");
 
     {
         int i = 7;
@@ -343,9 +360,6 @@ TEST_CASE("DB2 test 2", "[db2]")
         CHECK(dt2.tm_min == dt.tm_min);
         CHECK(dt2.tm_sec == dt.tm_sec);
     }
-
-    sql<<"DROP TABLE DB2INST1.SOCI_TEST";
-    sql.commit();
 }
 
 TEST_CASE("DB2 test 3", "[db2]")
@@ -353,8 +367,7 @@ TEST_CASE("DB2 test 3", "[db2]")
     soci::session sql(backEnd, connectString);
     int i;
 
-    std::string query = "CREATE TABLE DB2INST1.SOCI_TEST (ID BIGINT,DATA VARCHAR(8),DT TIMESTAMP)";
-    sql << query;
+    table_creator_db2_test tableCreator(sql, "ID BIGINT,DATA VARCHAR(8),DT TIMESTAMP");
 
     std::vector<long long> ids(100);
     std::vector<std::string> data(100);
@@ -393,7 +406,4 @@ TEST_CASE("DB2 test 3", "[db2]")
 
         i += 1;
     }
-
-    sql<<"DROP TABLE DB2INST1.SOCI_TEST";
-    sql.commit();
 }

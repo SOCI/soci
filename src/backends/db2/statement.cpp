@@ -147,7 +147,9 @@ db2_statement_backend::execute(int  number )
     SQLSMALLINT colCount;
     SQLNumResultCols(hStmt, &colCount);
 
-    if (number > 0 && colCount > 0)
+    hasResultSet_ = colCount > 0;
+
+    if (number > 0 && hasResultSet_)
     {
         return fetch(number);
     }
@@ -158,6 +160,15 @@ db2_statement_backend::execute(int  number )
 statement_backend::exec_fetch_result
 db2_statement_backend::fetch(int  number )
 {
+    if (!hasResultSet_)
+    {
+        // The last statement didn't return any results at all, so there is
+        // nothing to fetch: normally we shouldn't be even called in this case,
+        // but if we are, just do nothing instead of calling SQLFetch() which
+        // would fail with "invalid cursor state" error.
+        return ef_no_data;
+    }
+
     numRowsFetched = 0;
 
     SQLSetStmtAttr(hStmt, SQL_ATTR_ROW_BIND_TYPE, SQL_BIND_BY_COLUMN, 0);

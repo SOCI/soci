@@ -1,38 +1,32 @@
 #!/usr/bin/env bash
-# Installs DB2 for SOCI build in CI builds
+# Starts DB2 server and installs DB2 CLI driver for SOCI in CI builds
 #
-# Copyright (c) 2013 Brian R. Toonen <toonen@alcf.anl.gov>
-# Copyright (c) 2013 Mateusz Loskot <mateusz@loskot.net>
+# Copyright (c) 2026 Vadim Zeitlin <vz-soci@zeitlins.org>
 #
-set -e
-sudo bash -c 'echo "deb http://archive.canonical.com/ubuntu precise partner" >> /etc/apt/sources.list'
-run_apt update
-run_apt install db2exc
+source ${SOCI_SOURCE_DIR}/scripts/ci/common.sh
 
-echo "Running db2profile and db2rmln"
-sudo /bin/sh -c '. ~db2inst1/sqllib/db2profile ; $DB2DIR/cfg/db2rmln'
+# Start the server first, as it takes several minutes to create the instance
+# and the database: we don't wait for it to become available here but only in
+# test_db2.sh, so that this happens in parallel with building SOCI.
+#
+# Note that the container must be privileged as it changes the kernel IPC
+# parameters on startup.
+docker run --name ${DB2_CONTAINER} --detach --privileged --publish 50000:50000 \
+    --env LICENSE=accept \
+    --env DB2INSTANCE=${DB2_USER} --env DB2INST1_PASSWORD="${DB2_PASSWORD}" \
+    --env DBNAME=${DB2_DB} \
+    ${SOCI_DB2_IMAGE}
 
-echo "Setting up db2 users"
-echo -e "db2inst1\ndb2inst1" | sudo passwd db2inst1
-echo -e "db2fenc1\ndb2fenc1" | sudo passwd db2fenc1
-echo -e "dasusr1\ndasusr1" | sudo passwd dasusr1
+# Install the client side: IBM Data Server Driver for ODBC and CLI contains
+# both the headers and the library needed for building the backend.
+clidriver_url=https://public.dhe.ibm.com/ibmdl/export/pub/software/data/db2/drivers/odbc_cli/linuxx64_odbc_cli.tar.gz
+echo "Installing DB2 CLI driver from ${clidriver_url}"
+sudo mkdir -p $(dirname ${DB2_CLIDRIVER_DIR})
+wget $SOCI_WGET_OPTIONS -O - ${clidriver_url} | \
+    sudo tar -C $(dirname ${DB2_CLIDRIVER_DIR}) -xzf -
 
-echo "Configuring DB2 ODBC driver"
-if test `getconf LONG_BIT` = "64" ; then
-    if test -f /home/db2inst1/sqllib/lib64/libdb2o.so ; then
-        DB2_ODBC_DRIVER=/home/db2inst1/sqllib/lib64/libdb2o.so
-    else
-        echo "ERROR: can't find the 64-bit DB2 ODBC library"
-        exit 1
-    fi
-else
-    if test -f /home/db2inst1/sqllib/lib32/libdb2.so ; then
-        DB2_ODBC_DRIVER=/home/db2inst1/sqllib/lib32/libdb2.so
-    elif test -f /home/db2inst1/sqllib/lib/libdb2.so ; then
-        DB2_ODBC_DRIVER=/home/db2inst1/sqllib/lib/libdb2.so
-    else
-        echo "ERROR: can't find the 32-bit DB2 ODBC library"
-        exit 1
-    fi
+if [ ! -f ${DB2_CLIDRIVER_DIR}/include/sqlcli1.h ]; then
+    echo "DB2 CLI driver installation failed, ${DB2_CLIDRIVER_DIR} contents:"
+    ls -lR ${DB2_CLIDRIVER_DIR}
+    exit 1
 fi
-echo "DB2 ODBC driver set to $DB2_ODBC_DRIVER"
