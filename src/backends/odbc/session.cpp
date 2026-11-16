@@ -410,24 +410,24 @@ void odbc_session_backend::begin()
     }
 }
 
-void odbc_session_backend::commit()
+void
+odbc_session_backend::end_transaction(SQLSMALLINT completion, char const* what)
 {
-    SQLRETURN rc = SQLEndTran(SQL_HANDLE_DBC, hdbc_, SQL_COMMIT);
+    SQLRETURN rc = SQLEndTran(SQL_HANDLE_DBC, hdbc_, completion);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "committing transaction");
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, what);
     }
-    reset_transaction();
+}
+
+void odbc_session_backend::commit()
+{
+    end_transaction(SQL_COMMIT, "committing transaction");
 }
 
 void odbc_session_backend::rollback()
 {
-    SQLRETURN rc = SQLEndTran(SQL_HANDLE_DBC, hdbc_, SQL_ROLLBACK);
-    if (is_odbc_error(rc))
-    {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "rolling back transaction");
-    }
-    reset_transaction();
+    end_transaction(SQL_ROLLBACK, "rolling back transaction");
 }
 
 bool odbc_session_backend::get_next_sequence_value(

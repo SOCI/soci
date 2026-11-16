@@ -529,6 +529,10 @@ struct SOCI_ODBC_DECL odbc_session_backend : details::session_backend
     std::string connection_string_;
 
 private:
+    // Common part of commit() and rollback(): completion is SQL_COMMIT or
+    // SQL_ROLLBACK and what is used in the error message if it fails.
+    void end_transaction(SQLSMALLINT completion, char const* what);
+
     mutable database_product product_;
 };
 
