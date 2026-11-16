@@ -9,6 +9,7 @@
 #include "soci/odbc/soci-odbc.h"
 #include "test-context.h"
 #include <string>
+#include <vector>
 #include <ctime>
 #include <cmath>
 
@@ -23,6 +24,92 @@ std::string connectString;
 backend_factory const &backEnd = *soci::factory_odbc();
 
 // MS SQL-specific tests
+
+// SQL Server ends the transaction on its own in some cases, e.g. when it
+// chooses the connection as a deadlock victim or, as done here, when an error
+// occurs with XACT_ABORT on: ending the transaction must still work and leave
+// the connection usable for the next ones.
+TEST_CASE("MS SQL transaction ended by the server", "[odbc][mssql][transaction]")
+{
+    soci::session sql(backEnd, connectString);
+
+    struct id_table_creator : public table_creator_base
+    {
+        explicit id_table_creator(soci::session& sql)
+            : table_creator_base(sql)
+        {
+            sql << "create table soci_test (id int primary key)";
+        }
+    } id_table_creator(sql);
+
+    auto const get_trancount = [&sql]()
+    {
+        int trancount = -1;
+        sql << "select @@trancount", into(trancount);
+        return trancount;
+    };
+
+    {
+        soci::transaction tr(sql);
+        sql << "insert into soci_test values (1)";
+        // Each statement is executed in a batch of its own, which would
+        // restore the XACT_ABORT setting at its end if it were set separately.
+        CHECK_THROWS_AS((sql << "set xact_abort on; select 1/0"), soci_error);
+
+        // Whether ending the transaction fails depends on the driver: FreeTDS
+        // reports that there is no transaction any more, while Microsoft ODBC
+        // Driver opens a new one as soon as the server ends the previous one.
+        // Either way, the connection must remain usable, including for rolling
+        // back, as soci::transaction dtor does after a failed commit.
+        auto const check_ended_by_server = [](soci_error const& e)
+        {
+            CHECK_THAT(e.what(), Catch::Contains("already ended by the server"));
+        };
+
+        SECTION("rollback")
+        {
+            try
+            {
+                tr.rollback();
+            }
+            catch (soci_error const& e)
+            {
+                check_ended_by_server(e);
+            }
+        }
+
+        SECTION("commit")
+        {
+            try
+            {
+                tr.commit();
+            }
+            catch (soci_error const& e)
+            {
+                check_ended_by_server(e);
+            }
+        }
+    }
+
+    {
+        soci::transaction tr(sql);
+        sql << "insert into soci_test values (2)";
+        CHECK(get_trancount() == 1);
+        tr.rollback();
+    }
+    CHECK(get_trancount() == 0);
+
+    {
+        soci::transaction tr(sql);
+        sql << "insert into soci_test values (3)";
+        tr.commit();
+    }
+
+    std::vector<int> ids(10);
+    sql << "select id from soci_test", into(ids);
+    CHECK(ids == std::vector<int>{3});
+}
+
 TEST_CASE("MS SQL long string", "[odbc][mssql][long]")
 {
     soci::session sql(backEnd, connectString);
