@@ -33,11 +33,12 @@ jobs:
           - lib_type: shared
             build_type: Release
             unity_build: true
+            mssql_driver: SQL Server
           - lib_type: static
             build_type: Release
 
     runs-on: windows-2022
-    name: MSVS ${{ matrix.lib_type }} ${{ matrix.build_type }} ${{ matrix.unity_build && '(unity build)' || '' }}
+    name: MSVS ${{ matrix.lib_type }} ${{ matrix.build_type }} ${{ matrix.unity_build && '(unity build)' || '' }} ${{ matrix.mssql_driver && format('with "{0}" ODBC driver', matrix.mssql_driver) || '' }}
 
     env:
       SOCI_CI: true
@@ -77,6 +78,47 @@ jobs:
         run: |
           cmake --build build
 
+      # There is no SQL Server service on GitHub Windows runners, but LocalDB
+      # is installed as part of MSVS, so use it. It is only accessible via a
+      # named pipe, and old drivers don't understand "(localdb)\Instance"
+      # syntax, so we need to find the pipe name and use it directly.
+      #
+      # Note that this must be done after building, as LocalDB shuts down
+      # after being idle for a few minutes and its pipe name changes when it
+      # is restarted, so the connection string could become invalid if we
+      # determined it before the (potentially long) build.
+      - name: Set up SQL Server LocalDB
+        if: matrix.mssql_driver
+        run: |
+          Get-OdbcDriver -Platform 64-bit | Format-Table -Property Name
+
+          sqllocaldb start MSSQLLocalDB
+          $info = sqllocaldb info MSSQLLocalDB
+          Write-Output $info
+          # Note that "np:" prefix must be kept, at least the legacy "SQL
+          # Server" driver doesn't recognize the pipe name without it.
+          $m = $info | Select-String -Pattern 'pipe name:\s*(np:\S+)'
+          if (-not $m) { throw "Failed to find LocalDB pipe name" }
+          $pipe = $m.Matches[0].Groups[1].Value
+
+          $connstr = "Driver={${{ matrix.mssql_driver }}};Server=$pipe;Trusted_Connection=yes"
+          $conn = New-Object System.Data.Odbc.OdbcConnection "$connstr;Database=master"
+          $conn.Open()
+          $cmd = $conn.CreateCommand()
+          $cmd.CommandText = "CREATE DATABASE soci_test"
+          $cmd.ExecuteNonQuery() | Out-Null
+          $conn.Close()
+
+          $connstr += ";Database=soci_test"
+          "SOCI_MSSQL_CONNSTR=$connstr" >> $env:GITHUB_ENV
+
+          # Update the connection string used by CTest: this doesn't rebuild
+          # anything.
+          cmake -S . -B build "-DSOCI_ODBC_TEST_MSSQL_CONNSTR:STRING=$connstr"
+
       - name: Test
         run: |
-          ctest --test-dir build -V --timeout 300 --output-on-failure --exclude-regex "soci_mysql_test|soci_odbc_test_.*"
+          # Only run ODBC MS SQL test if we have the database for it.
+          $exclude = "soci_mysql_test|soci_odbc_test_(ms_access|mysql|postgresql)"
+          if (-not $env:SOCI_MSSQL_CONNSTR) { $exclude += "|soci_odbc_test_mssql" }
+          ctest --test-dir build -V --timeout 300 --output-on-failure --exclude-regex $exclude
