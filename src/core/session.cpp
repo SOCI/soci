@@ -12,7 +12,11 @@
 #include "soci/query_transformation.h"
 #include "soci/log-context.h"
 
+#include "soci-report-error.h"
+
 #include <fmt/format.h>
+
+#include <exception>
 
 using namespace soci;
 using namespace soci::details;
@@ -69,6 +73,14 @@ public:
     virtual std::string get_last_query() const override
     {
         return lastQuery_;
+    }
+
+    virtual void report_ignored_error(soci_error const & e) override
+    {
+        if (logStream_ != nullptr)
+        {
+            *logStream_ << "Ignoring error: " << e.what() << '\n';
+        }
     }
 
 private:
@@ -169,7 +181,7 @@ session& session::operator=(session && other)
         }
         else if (backEnd_ != other.backEnd_)
         {
-            delete backEnd_;
+            close();
         }
 
         if (other.isFromPool_)
@@ -236,22 +248,25 @@ schema_table_name& session::alloc_schema_table_name(const std::string & tableNam
 
 session::~session()
 {
-    try
+    if (isFromPool_)
     {
-        if (isFromPool_)
+        try
         {
             pool_->give_back(poolPosition_);
         }
-        else
+        catch (...)
         {
-            delete backEnd_;
+            // Do not throw from a destructor and just report the exception
+            // because, while not ideal, it's still preferable to immediately
+            // terminating the program.
+            details::report_current_exception(*this,
+                "while returning the session to the pool");
         }
     }
-    catch (...)
+    else
     {
-        // Do not throw from a destructor and just ignore the exception
-        // because, while not ideal, it's still preferable to immediately
-        // terminating the program.
+        // This never throws and reports the errors, if any, on its own.
+        close();
     }
 }
 
@@ -298,19 +313,36 @@ void session::open(std::string const & connectString)
     open(connection_parameters(connectString));
 }
 
-void session::close()
+bool session::close() noexcept
 {
+    if (!backEnd_)
+    {
+        // Nothing to do, and so nothing can fail either.
+        return true;
+    }
+
     auto* const backEnd = backEnd_;
     backEnd_ = nullptr;
 
     if (isFromPool_)
     {
-        pool_->at(poolPosition_).close();
+        return pool_->at(poolPosition_).close();
     }
-    else
+
+    // Make sure it's destroyed in any case.
+    std::unique_ptr<session_backend> backEndGuard(backEnd);
+
+    try
     {
-        delete backEnd;
+        backEnd->close();
     }
+    catch (...)
+    {
+        details::report_current_exception(*this, "while closing the session");
+        return false;
+    }
+
+    return true;
 }
 
 void session::reconnect()
@@ -780,4 +812,40 @@ std::string soci::details::make_varchar_type(int precision)
 std::string soci::details::make_number_type(const char* name, int precision, int scale)
 {
     return fmt::format("{}({}, {})", name, precision, scale);
+}
+
+void
+soci::details::report_current_exception(session const & sql,
+                                        char const * context) noexcept
+{
+    try
+    {
+        logger const & log = sql.get_logger();
+
+        try
+        {
+            throw;
+        }
+        catch (soci_error & e)
+        {
+            e.add_context(context);
+            log.report_ignored_error(e);
+        }
+        catch (std::exception const & e)
+        {
+            soci_error err(e.what());
+            err.add_context(context);
+            log.report_ignored_error(err);
+        }
+        catch (...)
+        {
+            soci_error err("Unknown exception");
+            err.add_context(context);
+            log.report_ignored_error(err);
+        }
+    }
+    catch (...)
+    {
+        // There is nothing we can do if logging itself fails, just ignore it.
+    }
 }

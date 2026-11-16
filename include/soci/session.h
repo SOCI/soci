@@ -70,7 +70,15 @@ public:
     void open(backend_factory const & factory, std::string const & connectString);
     void open(std::string const & backendName, std::string const & connectString);
     void open(std::string const & connectString);
-    void close();
+
+    // Close the connection to the database, if any.
+    //
+    // This function never throws, if an error occurs while closing the
+    // connection, it is reported using logger::report_ignored_error() and
+    // false is returned. Note that the session is not connected any longer
+    // after calling this function even if it returns false.
+    bool close() noexcept;
+
     void reconnect();
 
     // check if we have a working connection to the database

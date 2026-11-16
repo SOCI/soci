@@ -219,6 +219,10 @@ public:
     // Override this if the backend may not have transactions support.
     virtual bool has_transactions_support(session&) const { return true; }
 
+    // Override this if different sessions using the same connection string
+    // don't use the same database, e.g. for in-memory SQLite databases.
+    virtual bool is_database_shared_between_sessions() const { return true; }
+
     // Override this if the backend silently truncates string values too long
     // to fit by default.
     virtual bool has_silent_truncate_bug(session&) const { return false; }

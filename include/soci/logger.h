@@ -16,6 +16,7 @@
 namespace soci
 {
 
+class soci_error;
 
 struct SOCI_DECL query_parameter
 {
@@ -46,6 +47,16 @@ public:
 
     // Clears all currently logged query parameters
     virtual void clear_query_parameters();
+
+    // Called when an error that can't be reported by throwing an exception
+    // happens, e.g. when closing the session in its destructor.
+    //
+    // The default implementation does nothing, override it to log the error
+    // somewhere if desired.
+    //
+    // This function shouldn't throw as, by its very nature, it's called from a
+    // context where exceptions can't be thrown.
+    virtual void report_ignored_error(soci_error const & e);
 
     logger_impl * clone() const;
 
@@ -95,6 +106,11 @@ public:
     }
 
     virtual void clear_query_parameters() { m_impl->clear_query_parameters(); }
+
+    void report_ignored_error(soci_error const & e) const
+    {
+        m_impl->report_ignored_error(e);
+    }
 
     // Methods used for the implementation of session basic logging support.
     void set_stream(std::ostream * s) { m_impl->set_stream(s); }

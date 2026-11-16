@@ -302,7 +302,9 @@ struct SOCI_FIREBIRD_DECL firebird_session_backend : details::session_backend
 {
     firebird_session_backend(connection_parameters const & parameters);
 
-    ~firebird_session_backend() noexcept(false) override;
+    ~firebird_session_backend() override;
+
+    void close() override;
 
     bool is_connected() override;
 
@@ -319,8 +321,6 @@ struct SOCI_FIREBIRD_DECL firebird_session_backend : details::session_backend
 
     std::string get_backend_name() const override { return "firebird"; }
 
-    void cleanUp();
-
     firebird_statement_backend * make_statement_backend() override;
     details::rowid_backend* make_rowid_backend() override;
     firebird_blob_backend * make_blob_backend() override;
@@ -336,7 +336,15 @@ struct SOCI_FIREBIRD_DECL firebird_session_backend : details::session_backend
     isc_db_handle dbhp_;
 
 private:
+    // Start a new transaction if there is no active one.
+    void start_transaction();
+
     isc_tr_handle trhp_;
+
+    // True if the current transaction was started by an explicit call to
+    // begin() and not implicitly when executing a statement.
+    bool explicitTransaction_ = false;
+
     bool decimals_as_strings_;
 };
 

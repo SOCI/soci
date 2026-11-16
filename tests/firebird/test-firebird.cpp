@@ -33,11 +33,10 @@ TEST_CASE("Firebird transactions", "[firebird][transaction]")
     soci::session sql(backEnd, connectString);
 
     // In Firebird transaction is always required and is started
-    // automatically when session is opened. There is no need to
-    // call session::begin(); it will do nothing if there is active
-    // transaction.
-
-    // sql.begin();
+    // automatically when a statement is executed. There is no need to
+    // call session::begin(), but doing it commits the implicit transaction, if
+    // any, and starts a new one which will be rolled back, and not committed,
+    // if the session is closed without committing it.
 
     try
     {
@@ -52,13 +51,90 @@ TEST_CASE("Firebird transactions", "[firebird][transaction]")
     // won't be visible to active transaction.
     sql.commit();
 
-    // After commit or rollback, transaction must be started manually.
-    sql.begin();
-
+    // After commit or rollback, a new transaction is started implicitly when
+    // the next statement is executed.
     sql << "insert into test1(id) values(5)";
     sql << "drop table test1";
 
-    // Transaction is automatically commited in session's destructor
+    // Implicitly started transaction is automatically committed in session's
+    // destructor.
+}
+
+TEST_CASE("Firebird transaction on close", "[firebird][transaction]")
+{
+    {
+        soci::session sql(backEnd, connectString);
+
+        try
+        {
+            sql << "drop table test_close";
+        }
+        catch (soci_error const &)
+        {} // ignore if error
+
+        sql << "create table test_close (id integer)";
+        sql.commit();
+    }
+
+    // Changes done in an implicit transaction are committed on close.
+    {
+        soci::session sql(backEnd, connectString);
+        sql << "insert into test_close(id) values(1)";
+    }
+
+    // Changes done in an explicitly started transaction are rolled back.
+    {
+        soci::session sql(backEnd, connectString);
+        sql.begin();
+        sql << "insert into test_close(id) values(2)";
+    }
+
+    // Calling begin() when an implicit transaction is already active commits
+    // it, so only the changes done after begin() are rolled back.
+    {
+        soci::session sql(backEnd, connectString);
+        sql << "insert into test_close(id) values(3)";
+        sql.begin();
+        sql << "insert into test_close(id) values(4)";
+    }
+
+    // Calling begin() again when an explicit transaction is already active
+    // doesn't do anything.
+    {
+        soci::session sql(backEnd, connectString);
+        sql.begin();
+        sql << "insert into test_close(id) values(9)";
+        sql.begin();
+        sql << "insert into test_close(id) values(10)";
+    }
+
+    // After committing an explicit transaction, the next one is implicit
+    // again.
+    {
+        soci::session sql(backEnd, connectString);
+        sql.begin();
+        sql << "insert into test_close(id) values(5)";
+        sql.commit();
+        sql << "insert into test_close(id) values(6)";
+    }
+
+    // And the same after rolling it back.
+    {
+        soci::session sql(backEnd, connectString);
+        sql.begin();
+        sql << "insert into test_close(id) values(7)";
+        sql.rollback();
+        sql << "insert into test_close(id) values(8)";
+    }
+
+    soci::session sql(backEnd, connectString);
+
+    std::vector<int> ids(10);
+    sql << "select id from test_close order by id", into(ids);
+    CHECK(ids == std::vector<int>{1, 3, 5, 6, 8});
+
+    sql << "drop table test_close";
+    sql.commit();
 }
 
 // character types

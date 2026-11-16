@@ -3,6 +3,20 @@ This file contains the history of changes in the SOCI library.
 Please read at least the following section when upgrading from
 a previous version of the library.
 
+INCOMPATIBLE CHANGES IN SOCI 4.2 SINCE 4.1
+==========================================
+
+- session::close() doesn't throw on error any more but simply returns false.
+  This makes it simpler to use in noexcept contexts (e.g. dtor of some class).
+  Any errors are reported using logger::report_ignored_error().
+
+- Firebird and Oracle backends do not commit the transaction started by
+  begin() when the session is closed any longer, but roll it back, and do
+  commit the implicit current transaction when begin() is called, for
+  consistency with the other backends. See the "Transactions" section of the
+  corresponding backend documentation for more details.
+
+
 INCOMPATIBLE CHANGES IN SOCI 4.1 SINCE 4.0
 ==========================================
 

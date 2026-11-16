@@ -330,6 +330,8 @@ struct SOCI_ORACLE_DECL oracle_session_backend : details::session_backend
 
     ~oracle_session_backend() override;
 
+    void close() override;
+
     bool is_connected() override;
 
     void begin() override;
@@ -471,6 +473,11 @@ struct SOCI_ORACLE_DECL oracle_session_backend : details::session_backend
     OCISvcCtx *svchp_;
     OCISession *usrhp_;
     bool decimals_as_strings_;
+
+private:
+    // True if the current transaction was started by an explicit call to
+    // begin() and not implicitly when executing a statement.
+    bool explicitTransaction_ = false;
 };
 
 struct oracle_backend_factory : backend_factory

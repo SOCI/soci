@@ -13,6 +13,13 @@
 
 #include <sqlite3.h>
 
+// This check is also done by CMake, but the SQLite library may also come
+// from elsewhere (e.g. be predefined in the parent project or use a custom
+// built-in source file), so check for it here too.
+#if SQLITE_VERSION_NUMBER < 3007014
+    #error "SOCI requires SQLite 3.7.14 or later."
+#endif
+
 #include <fmt/format.h>
 
 #include <memory>
@@ -269,7 +276,10 @@ bool sqlite3_session_backend::get_last_insert_id(
 
 void sqlite3_session_backend::clean_up()
 {
-    sqlite3_close(conn_);
+    // Use sqlite3_close_v2() because, unlike sqlite3_close(), it doesn't fail,
+    // leaving the connection open and without any way to close it later, if
+    // there are still any unfinalized statements,
+    sqlite3_close_v2(conn_);
 }
 
 sqlite3_statement_backend * sqlite3_session_backend::make_statement_backend()

@@ -6,7 +6,7 @@ SOCI backend for accessing SQLite 3 database.
 
 ### Supported Versions
 
-The oldest tested SQLite3 version that SOCI was tested with was 3.1.3 and the latest tested version is 3.49.1. Due to high degree of SQLite3 backwards compatibility, it is likely that newer versions can work as well.
+SOCI requires SQLite3 version 3.7.14 or later and the latest tested version is 3.49.1. Due to high degree of SQLite3 backwards compatibility, it is likely that newer versions can work as well.
 
 ### Required Client Libraries
 

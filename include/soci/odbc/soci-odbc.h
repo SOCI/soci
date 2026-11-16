@@ -445,7 +445,9 @@ struct SOCI_ODBC_DECL odbc_session_backend : details::session_backend
 {
     odbc_session_backend(connection_parameters const & parameters);
 
-    ~odbc_session_backend() noexcept(false) override;
+    ~odbc_session_backend() override;
+
+    void close() override;
 
     bool is_connected() override;
 
@@ -466,8 +468,6 @@ struct SOCI_ODBC_DECL odbc_session_backend : details::session_backend
 
     void configure_connection();
     void reset_transaction();
-
-    void clean_up();
 
     odbc_statement_backend * make_statement_backend() override;
     odbc_rowid_backend * make_rowid_backend() override;
@@ -505,10 +505,16 @@ struct SOCI_ODBC_DECL odbc_session_backend : details::session_backend
             }
         }
 
+        // Free the handle and return the result of SQLFreeHandle(). If it
+        // fails, the handle is kept, so that the diagnostics can be retrieved
+        // from it (and freeing it is attempted again in the destructor).
         SQLRETURN reset()
         {
             SQLRETURN const rc = SQLFreeHandle(HANDLE_TYPE, h_);
-            h_ = nullptr;
+            if (rc == SQL_SUCCESS || rc == SQL_SUCCESS_WITH_INFO)
+            {
+                h_ = nullptr;
+            }
             return rc;
         }
 

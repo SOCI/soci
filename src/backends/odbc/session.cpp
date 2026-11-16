@@ -373,9 +373,18 @@ void odbc_session_backend::configure_connection()
     }
 }
 
-odbc_session_backend::~odbc_session_backend() noexcept(false)
+odbc_session_backend::~odbc_session_backend()
 {
-    clean_up();
+    try
+    {
+        close();
+    }
+    catch (...)
+    {
+        // Ignore errors here, they could have been reported by close() if it
+        // had been called before and there is nothing we can do about them
+        // here anyhow.
+    }
 }
 
 bool odbc_session_backend::is_connected()
@@ -617,24 +626,54 @@ void odbc_session_backend::reset_transaction()
 }
 
 
-void odbc_session_backend::clean_up()
+void odbc_session_backend::close()
 {
-    SQLRETURN rc = SQLDisconnect(hdbc_);
-    if (is_odbc_error(rc))
+    // Note that this function may be called more than once, so check if the
+    // handles are still valid before using them.
+    SQLRETURN rc;
+    if (hdbc_)
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "disconnecting");
+        rc = SQLDisconnect(hdbc_);
+        if (is_odbc_error(rc))
+        {
+            odbc_soci_error const err(SQL_HANDLE_DBC, hdbc_, "disconnecting");
+
+            // The only error we can do something about is the one due to a
+            // transaction still being active (and, notably, MS SQL Server
+            // refuses to disconnect in this case): roll it back, as all the
+            // other backends do when closing the connection, and try again.
+            if (err.get_sqlstate() != "25000")
+            {
+                throw err;
+            }
+
+            // Don't check for errors here: even if rolling back fails, e.g.
+            // because the connection is broken, disconnecting may still
+            // succeed and if it doesn't, we report the error below anyhow.
+            SQLEndTran(SQL_HANDLE_DBC, hdbc_, SQL_ROLLBACK);
+
+            rc = SQLDisconnect(hdbc_);
+            if (is_odbc_error(rc))
+            {
+                throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
+                                      "disconnecting after trying to roll back transaction");
+            }
+        }
+
+        rc = hdbc_.reset();
+        if (is_odbc_error(rc))
+        {
+            throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "freeing connection");
+        }
     }
 
-    rc = hdbc_.reset();
-    if (is_odbc_error(rc))
+    if (henv_)
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "freeing connection");
-    }
-
-    rc = henv_.reset();
-    if (is_odbc_error(rc))
-    {
-        throw odbc_soci_error(SQL_HANDLE_ENV, henv_, "freeing environment");
+        rc = henv_.reset();
+        if (is_odbc_error(rc))
+        {
+            throw odbc_soci_error(SQL_HANDLE_ENV, henv_, "freeing environment");
+        }
     }
 }
 
