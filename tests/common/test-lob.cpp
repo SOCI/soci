@@ -432,7 +432,18 @@ TEST_CASE_METHOD(common_tests, "XML followed by other columns", "[core][xml]")
             CHECK(r.get<int>(1) == ids[n]);
             CHECK(r.get_indicator(0) == inds[n]);
             if (inds[n] == i_ok)
-                CHECK(remove_trailing_nl(r.get<std::string>(0)) == xmls[n].value);
+            {
+                // Some drivers, e.g. legacy "SQL Server" ODBC one, don't
+                // support XML type at all and the server returns XML columns
+                // as NTEXT to them, so we need to accept wide strings too.
+                std::string s;
+                if (r.get_properties(0).get_db_type() == db_wstring)
+                    s = soci::details::wide_to_utf8(r.get<std::wstring>(0));
+                else
+                    s = r.get<std::string>(0);
+
+                CHECK(remove_trailing_nl(s) == xmls[n].value);
+            }
 
             ++n;
         }
