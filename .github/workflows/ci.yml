@@ -40,43 +40,43 @@ jobs:
           - lib_type: shared
             backend: SQLite3
             runner: ubuntu-24.04
-            unity_build: false
+            unity_build: true
           - lib_type: shared
             backend: PostgreSQL
             runner: ubuntu-24.04
-            unity_build: false
+            unity_build: true
           - lib_type: shared
             backend: MySQL
             runner: ubuntu-24.04
-            unity_build: false
+            unity_build: true
           - lib_type: shared
             backend: Firebird
             runner: ubuntu-24.04
-            unity_build: false
+            unity_build: true
           - lib_type: shared
             backend: Oracle
             runner: ubuntu-22.04
-            unity_build: false
+            unity_build: true
           - lib_type: shared
             backend: ODBC
             runner: ubuntu-24.04
-            unity_build: false
+            unity_build: true
           - lib_type: shared
             backend: MSSQL
             runner: ubuntu-24.04
-            unity_build: false
+            unity_build: true
             mssql_driver: msodbcsql18
             name: MS SQL (Microsoft driver)
           - lib_type: shared
             backend: MSSQL
             runner: ubuntu-24.04
-            unity_build: false
+            unity_build: true
             mssql_driver: freetds
             name: MS SQL (FreeTDS driver)
           - lib_type: shared
             backend: Empty
             runner: ubuntu-24.04
-            unity_build: false
+            unity_build: true
           - lib_type: static
             backend: SQLite3
             runner: ubuntu-24.04
@@ -196,7 +196,7 @@ jobs:
           if [ "${{matrix.lib_type}}" = "static" ]; then
             set_env_var SOCI_BUILD_STATIC YES
           fi
-          if [ "${{matrix.unity_build}}" = false ]; then
+          if [ "${{matrix.unity_build}}" = true ]; then
             set_env_var SOCI_ENABLE_UNITY_BUILD ON
           else
             set_env_var SOCI_ENABLE_UNITY_BUILD OFF
