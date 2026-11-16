@@ -4,7 +4,7 @@ The following (complete!) example is purposely provided without any explanation.
 
 ```cpp
 #include "soci.h"
-#include "soci-oracle.h"
+#include "soci/oracle/soci-oracle.h"
 #include <iostream>
 #include <istream>
 #include <ostream>

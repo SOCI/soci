@@ -603,7 +603,7 @@ The simple client interface is provided with other languages in mind, to allow e
 
 The functionality of this interface is limited and in particular the dynamic rowset description and type conversions are not supported in this release. On the other hand, the important feature of this interface is that it does not require passing pointers to data managed by the user, because all data is handled at the SOCI side. This should make it easier to integrate SOCI with languages that have constrained ability to understand the C type system.
 
-Users of this interface need to explicitly `#include <soci-simple.h>`.
+Users of this interface need to explicitly `#include <soci/soci-simple.h>`.
 
 ```c
 typedef void * session_handle;

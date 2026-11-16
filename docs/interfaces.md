@@ -49,7 +49,7 @@ To avoid exceptions passing the module boundaries, all errors are reported as st
 The above examples can be rewritten as (without error-handling):
 
 ```cpp
-#include <soci-simple.h>
+#include <soci/soci-simple.h>
 
 // ...
 session_handle sql = soci_create_session("postgresql://dbname=mydb");
