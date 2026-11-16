@@ -13,6 +13,13 @@
 
 #include <sqlite3.h>
 
+// This check is also done by CMake, but the SQLite library may also come
+// from elsewhere (e.g. be predefined in the parent project or use a custom
+// built-in source file), so check for it here too.
+#if SQLITE_VERSION_NUMBER < 3007014
+    #error "SOCI requires SQLite 3.7.14 or later."
+#endif
+
 #include <fmt/format.h>
 
 #include <memory>

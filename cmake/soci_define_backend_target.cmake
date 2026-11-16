@@ -15,7 +15,9 @@ include(soci_utils)
 # DEPENDENCIES <spec1> [... <specN>]       List of dependency specifications. Each specification has to be a single
 #                                          argument (single string) following the syntax
 #                                          <find_spec> YIELDS <targets>
-#                                          where <find_spec> will be passed to find_package to find the dependency. Upon
+#                                          where <find_spec> will be passed to find_package to find the dependency and
+#                                          may contain additional space-separated find_package arguments after the
+#                                          package name, e.g. its minimal version ("SQLite3 3.7.14"). Upon
 #                                          success, all targets defined in <targets> are expected to exist.
 #                                          For now, all dependencies are expected to be public and required.
 # FIND_PACKAGE_FILES <file1> [... <fileN>] List of files used by find_package to locate one of the dependencies. Specified
@@ -77,10 +79,11 @@ function(soci_define_backend_target)
   endif()
 
   foreach(CURRENT_DEP_SPEC IN LISTS DEFINE_BACKEND_DEPENDENCIES)
-    if (NOT "${CURRENT_DEP_SPEC}" MATCHES "^([a-zA-Z0-9_:-;]+) YIELDS ([a-zA-Z0-9_:-;]+)$")
+    if (NOT "${CURRENT_DEP_SPEC}" MATCHES "^([a-zA-Z0-9_.: -]+) YIELDS ([a-zA-Z0-9_:-;]+)$")
       message(FATAL_ERROR "Invalid format for dependency specification in '${CURRENT_DEP_SPEC}'")
     endif()
-    set(CURRENT_DEP_SEARCH ${CMAKE_MATCH_1})
+    # Transform space-separated find_package() arguments into a list.
+    string(REPLACE " " ";" CURRENT_DEP_SEARCH "${CMAKE_MATCH_1}")
     set(CURRENT_DEP_TARGETS ${CMAKE_MATCH_2})
 
     list(GET CURRENT_DEP_SEARCH 0 CURRENT_DEP)

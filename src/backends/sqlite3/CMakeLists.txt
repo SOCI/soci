@@ -23,7 +23,8 @@ soci_define_backend_target(
   NAME "SQLite3"
   TARGET_NAME "soci_sqlite3"
   DEPENDENCIES
-    "SQLite3 YIELDS ${SQLITE_TARGET}"
+    # Keep the minimal version in sync with the check in session.cpp.
+    "SQLite3 3.7.14 YIELDS ${SQLITE_TARGET}"
   SOURCE_FILES
     "blob.cpp"
     "error.cpp"
