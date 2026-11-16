@@ -33,7 +33,7 @@ const std::string db2_soci_error::sqlState(std::string const & msg,const SQLSMAL
                        message,
                        SQL_MAX_MESSAGE_LENGTH + 1,
                        &length) == SQL_SUCCESS ) {
-        return fmt::format("{} SQLMESSAGE: {}", msg, message);
+        return fmt::format("{} SQLMESSAGE: {}", msg, (char*)message);
     }
     return msg;
 }
