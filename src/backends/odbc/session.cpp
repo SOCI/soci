@@ -237,6 +237,20 @@ odbc_session_backend::odbc_session_backend(
     // mode value.
     bool remember_completed = false;
 
+    // For convenience, SOCI-specific options can also be specified as part of
+    // the connection string itself. Always remove them from it, even if they
+    // are not used below, as they must neither be passed to the driver nor
+    // be part of the key used for completed_connection_strings.
+    std::string completionString = extract_soci_option(connectString,
+                                                       odbc_option_driver_complete);
+    std::string parentWindowString = extract_soci_option(connectString,
+                                                         odbc_option_parent_window);
+
+    // But the options specified in the connection parameters take precedence
+    // (note that get_option() doesn't modify the value if it returns false).
+    parameters.get_option(odbc_option_driver_complete, completionString);
+    parameters.get_option(odbc_option_parent_window, parentWindowString);
+
     if (parameters.is_option_on(option_reconnect))
     {
       completion = SQL_DRIVER_NOPROMPT;
@@ -248,15 +262,6 @@ odbc_session_backend::odbc_session_backend(
     }
     else
     {
-      std::string completionString;
-      if (!parameters.get_option(odbc_option_driver_complete, completionString))
-      {
-        // For convenience, also allow specifying this option as part of the
-        // connection string itself.
-        completionString = extract_soci_option(connectString,
-                                               soci::odbc_option_driver_complete);
-      }
-
       if (!completionString.empty())
       {
         // The value of the option is supposed to be just the integer value of
@@ -278,14 +283,6 @@ odbc_session_backend::odbc_session_backend(
           // connection string and use it if we do.
           complete_connection_string(connectString);
         }
-      }
-
-      // Check for odbc_option_parent_window in the same way.
-      std::string parentWindowString;
-      if (!parameters.get_option(odbc_option_parent_window, parentWindowString))
-      {
-        parentWindowString = extract_soci_option(connectString,
-                                                 soci::odbc_option_parent_window);
       }
 
       if (!parentWindowString.empty())
