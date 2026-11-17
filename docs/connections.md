@@ -61,6 +61,16 @@ The existing options are described in the backend-specific part of the documenta
 IBM DB2 driver for ODBC and CLI also support the driver completion requests.
 So, the DB2 backend provides similar option `db2_option_driver_complete` with `#include <soci-db2.h>` required to obtain the option name.
 
+Options not specific to a particular backend are declared in `soci/connection-parameters.h` (included by `soci/soci.h`). Currently the only such option is:
+
+- `option_connect_timeout`: the maximal time to wait for the connection to be established, in seconds, with `0` meaning to wait indefinitely (which is the default). Currently this option is supported by MySQL, ODBC and PostgreSQL backends. Note that its value must be specified as a string, as all options values, e.g.
+
+```cpp
+connection_parameters parameters("odbc", "DSN=mydb");
+parameters.set_option(option_connect_timeout, "5");
+session sql(parameters);
+```
+
 ### Environment configuration
 
 The `SOCI_BACKENDS_PATH` environment variable defines the set of paths where the shared libraries will be searched for.

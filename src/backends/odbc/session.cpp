@@ -10,6 +10,7 @@
 #include "soci/session.h"
 
 #include "soci-autostatement.h"
+#include "soci-cstrtoi.h"
 #include "soci-mutex.h"
 #include "soci-ssize.h"
 
@@ -193,6 +194,27 @@ odbc_session_backend::odbc_session_backend(
     {
         throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                               "allocating connection handle");
+    }
+
+    // Login timeout must be set before connecting.
+    std::string timeoutString;
+    if (parameters.get_option(option_connect_timeout, timeoutString))
+    {
+        SQLUINTEGER timeout = 0;
+        if (!cstring_to_unsigned(timeout, timeoutString.c_str()))
+        {
+            throw soci_error("Invalid connection timeout value \"" +
+                             timeoutString + "\": must be a non-negative "
+                             "number of seconds.");
+        }
+
+        rc = SQLSetConnectAttr(hdbc_, SQL_ATTR_LOGIN_TIMEOUT,
+                               (SQLPOINTER)(SQLULEN)timeout, SQL_IS_UINTEGER);
+        if (is_odbc_error(rc))
+        {
+            throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
+                                  "setting login timeout");
+        }
     }
 
     SQLCHAR outConnString[4096];

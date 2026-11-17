@@ -219,4 +219,6 @@ session sql("odbc", "DSN=mydb;odbc.driver_complete=257");
 Note that using `odbc_option_remember_completed` with `SQL_DRIVER_NOPROMPT`
 doesn't make sense, as the connection string is never completed in this case.
 
+The common `option_connect_timeout` option is also supported and its value is used for `SQL_ATTR_LOGIN_TIMEOUT` attribute of the connection. Note that this option can only be set using `connection_parameters` and not specified in the connection string. Also note that some ODBC drivers may ignore this attribute.
+
 Finally, it is also possible to specify the `odbc.parent_window` option to provide a parent window handle (`HWND`) for any dialog boxes shown by the ODBC driver on Windows, e.g. to ensure that these dialog boxes always remain in front of the application window. The value of this option should be the handle value as a string in either decimal or hexadecimal, with "0x" prefix. This option is silently ignored on non-Windows platforms.

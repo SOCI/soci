@@ -51,7 +51,7 @@ The set of parameters used in the connection string for MySQL is:
 * `local_infile` - should be `0` or `1`, `1` means `MYSQL_OPT_LOCAL_INFILE` will be set.
 * `charset`
 * `reconnect` - if set to 1, set `MYSQL_OPT_RECONNECT` to reconnect on connection loss.
-* `connect_timeout` - should be positive integer value that means seconds corresponding to `MYSQL_OPT_CONNECT_TIMEOUT`.
+* `connect_timeout` - should be positive integer value that means seconds corresponding to `MYSQL_OPT_CONNECT_TIMEOUT`. The common `option_connect_timeout` option set using `connection_parameters::set_option()` can be used instead, but the value specified in the connection string takes precedence over it if both are given.
 * `read_timeout` - should be positive integer value that means seconds corresponding to `MYSQL_OPT_READ_TIMEOUT`.
 * `write_timeout` - should be positive integer value that means seconds corresponding to `MYSQL_OPT_WRITE_TIMEOUT`.
 * `ssl_mode` - should be one of the name constants `DISABLED`, `PREFERRED`, `REQUIRED`, `VERIFY_CA` or `VERIFY_IDENTITY` corresponding to `MYSQL_OPT_SSL_MODE` options (note that this option is currently not supported when using MariaDB).

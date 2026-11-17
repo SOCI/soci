@@ -352,6 +352,26 @@ mysql_session_backend::mysql_session_backend(
         &read_timeout, &read_timeout_p,
         &write_timeout, &write_timeout_p,
         &ssl_mode, &ssl_mode_p);
+
+    // Also check for the common connect timeout option, but let the value
+    // specified in the connection string take precedence over it.
+    std::string timeoutString;
+    if (!connect_timeout_p &&
+            parameters.get_option(option_connect_timeout, timeoutString))
+    {
+        if (!cstring_to_unsigned(connect_timeout, timeoutString.c_str()))
+        {
+            throw soci_error("Invalid connection timeout value \"" +
+                             timeoutString + "\": must be a non-negative "
+                             "number of seconds.");
+        }
+
+        // As MySQL doesn't use any timeout by default, there is nothing to do
+        // if it's 0, meaning "no timeout".
+        if (connect_timeout != 0)
+            connect_timeout_p = true;
+    }
+
     conn_ = mysql_init(nullptr);
     if (conn_ == nullptr)
     {
