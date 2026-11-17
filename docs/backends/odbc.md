@@ -40,7 +40,7 @@ or simply:
 session sql(odbc, "filedsn=c:\\my.dsn");
 ```
 
-The set of parameters used in the connection string for ODBC is the same as accepted by the [SQLDriverConnect](https://msdn.microsoft.com/library/default.asp?url=/library/en-us/odbcsql/od_odbc_d_4x4k.asp) function from the ODBC library with the addition of SOCI-specific `odbc.driver_complete` and `odbc.parent_window` options described in the [configuration options](#configuration-options) section below.
+The set of parameters used in the connection string for ODBC is the same as accepted by the [SQLDriverConnect](https://msdn.microsoft.com/library/default.asp?url=/library/en-us/odbcsql/od_odbc_d_4x4k.asp) function from the ODBC library with the addition of SOCI-specific `odbc.connect_timeout`, `odbc.driver_complete` and `odbc.parent_window` options described in the [configuration options](#configuration-options) section below.
 
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 
@@ -219,6 +219,6 @@ session sql("odbc", "DSN=mydb;odbc.driver_complete=257");
 Note that using `odbc_option_remember_completed` with `SQL_DRIVER_NOPROMPT`
 doesn't make sense, as the connection string is never completed in this case.
 
-The common `option_connect_timeout` option is also supported and its value is used for `SQL_ATTR_LOGIN_TIMEOUT` attribute of the connection. Note that this option can only be set using `connection_parameters` and not specified in the connection string. Also note that some ODBC drivers may ignore this attribute.
+The common `option_connect_timeout` option is also supported and its value is used for `SQL_ATTR_LOGIN_TIMEOUT` attribute of the connection. This option can also be specified as `odbc.connect_timeout` in the connection string, e.g. `session sql("odbc", "DSN=mydb;odbc.connect_timeout=5")`, and the value specified in the connection string takes precedence if both are given. This allows using `connection_parameters` to set the default timeout without overriding the one explicitly specified in the connection string. Also note that some ODBC drivers may ignore this attribute.
 
 Finally, it is also possible to specify the `odbc.parent_window` option to provide a parent window handle (`HWND`) for any dialog boxes shown by the ODBC driver on Windows, e.g. to ensure that these dialog boxes always remain in front of the application window. The value of this option should be the handle value as a string in either decimal or hexadecimal, with "0x" prefix. This option is silently ignored on non-Windows platforms.

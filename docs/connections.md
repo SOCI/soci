@@ -71,6 +71,8 @@ parameters.set_option(option_connect_timeout, "5");
 session sql(parameters);
 ```
 
+All backends supporting this option also allow specifying the timeout in the connection string (as `connect_timeout` for MySQL and PostgreSQL and `odbc.connect_timeout` for ODBC) and, if it is specified there, it takes precedence over the value of this option, which can be used to provide the default timeout value.
+
 ### Environment configuration
 
 The `SOCI_BACKENDS_PATH` environment variable defines the set of paths where the shared libraries will be searched for.

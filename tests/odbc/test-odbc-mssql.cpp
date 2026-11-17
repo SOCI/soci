@@ -459,29 +459,30 @@ TEST_CASE("MS SQL connect timeout", "[odbc][mssql][connect][timeout]")
 {
     connection_parameters params(backEnd, connectString);
 
+    auto const getLoginTimeout = [](soci::session& sql)
+    {
+        auto const backend = dynamic_cast<odbc_session_backend*>(sql.get_backend());
+        REQUIRE(backend);
+
+        SQLUINTEGER timeout = 0;
+        SQLRETURN const rc = SQLGetConnectAttr(backend->hdbc_,
+                                               SQL_ATTR_LOGIN_TIMEOUT,
+                                               &timeout, SQL_IS_UINTEGER,
+                                               nullptr);
+        if (is_odbc_error(rc))
+        {
+            throw odbc_soci_error(SQL_HANDLE_DBC, backend->hdbc_,
+                                  "getting login timeout");
+        }
+
+        return timeout;
+    };
+
+    // Use unusual values below to make sure they're not the driver default.
+
     SECTION("Valid timeout")
     {
-        // Use an unusual value to make sure it's not the driver default.
         params.set_option(option_connect_timeout, "17");
-
-        auto const getLoginTimeout = [](soci::session& sql)
-        {
-            auto const backend = dynamic_cast<odbc_session_backend*>(sql.get_backend());
-            REQUIRE(backend);
-
-            SQLUINTEGER timeout = 0;
-            SQLRETURN const rc = SQLGetConnectAttr(backend->hdbc_,
-                                                   SQL_ATTR_LOGIN_TIMEOUT,
-                                                   &timeout, SQL_IS_UINTEGER,
-                                                   nullptr);
-            if (is_odbc_error(rc))
-            {
-                throw odbc_soci_error(SQL_HANDLE_DBC, backend->hdbc_,
-                                      "getting login timeout");
-            }
-
-            return timeout;
-        };
 
         soci::session sql(params);
         CHECK(getLoginTimeout(sql) == 17);
@@ -503,6 +504,32 @@ TEST_CASE("MS SQL connect timeout", "[odbc][mssql][connect][timeout]")
             CHECK_THROWS_WITH(soci::session(params),
                               Catch::Contains("Invalid connection timeout"));
         }
+    }
+
+    SECTION("Timeout in connection string")
+    {
+        soci::session sql(backEnd, connectString + ";odbc.connect_timeout=19");
+        CHECK(getLoginTimeout(sql) == 19);
+
+        sql.close();
+        sql.reconnect();
+        CHECK(getLoginTimeout(sql) == 19);
+    }
+
+    SECTION("Timeout in connection string takes precedence over option")
+    {
+        params.set_connect_string(connectString + ";odbc.connect_timeout=19");
+        params.set_option(option_connect_timeout, "17");
+
+        soci::session sql(params);
+        CHECK(getLoginTimeout(sql) == 19);
+    }
+
+    SECTION("Invalid timeout in connection string")
+    {
+        CHECK_THROWS_WITH(soci::session(backEnd,
+                                        connectString + ";odbc.connect_timeout=abc"),
+                          Catch::Contains("Invalid connection timeout"));
     }
 }
 
