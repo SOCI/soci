@@ -8,12 +8,12 @@
 
 #include "soci/mysql/soci-mysql.h"
 #include "soci/connection-parameters.h"
+
+#include "soci-cstrtoi.h"
+
 // std
 #include <cctype>
-#include <cerrno>
-#include <climits>
 #include <cstdio>
-#include <cstdlib>
 #include <string>
 
 using namespace soci;
@@ -156,36 +156,6 @@ string param_value(string::const_iterator *i,
     return val;
 }
 
-bool valid_int(const string & s)
-{
-    char *tail;
-    const char *cstr = s.c_str();
-    errno = 0;
-    long n = std::strtol(cstr, &tail, 10);
-    if (errno != 0 || n > INT_MAX || n < INT_MIN)
-    {
-        return false;
-    }
-    if (*tail != '\0')
-    {
-        return false;
-    }
-    return true;
-}
-
-bool valid_uint(const string & s)
-{
-    char *tail;
-    const char *cstr = s.c_str();
-    errno = 0;
-    unsigned long n = std::strtoul(cstr, &tail, 10);
-    if (errno != 0 || n == 0 || n > UINT_MAX)
-        return false;
-    if (*tail != '\0')
-        return false;
-    return true;
-}
-
 void parse_connect_string(const string & connectString,
     string *host, bool *host_p,
     string *user, bool *user_p,
@@ -243,12 +213,7 @@ void parse_connect_string(const string & connectString,
         string val = param_value(&i, end);
         if (par == "port" && !*port_p)
         {
-            if (!valid_int(val))
-            {
-                throw soci_error(err);
-            }
-            *port = std::atoi(val.c_str());
-            if (*port < 0)
+            if (!cstring_to_integer(*port, val.c_str()) || *port < 0)
             {
                 throw soci_error(err);
             }
@@ -296,12 +261,8 @@ void parse_connect_string(const string & connectString,
         }
         else if (par == "local_infile" && !*local_infile_p)
         {
-            if (!valid_int(val))
-            {
-                throw soci_error(err);
-            }
-            *local_infile = std::atoi(val.c_str());
-            if (*local_infile != 0 && *local_infile != 1)
+            if (!cstring_to_integer(*local_infile, val.c_str()) ||
+                    (*local_infile != 0 && *local_infile != 1))
             {
                 throw soci_error(err);
             }
@@ -318,24 +279,21 @@ void parse_connect_string(const string & connectString,
             *reconnect_p = true;
         } else if (par == "connect_timeout" && !*connect_timeout_p)
         {
-            if (!valid_uint(val))
+            if (!cstring_to_unsigned(*connect_timeout, val.c_str()) ||
+                    *connect_timeout == 0)
                 throw soci_error(err);
-            char *endp;
-            *connect_timeout = std::strtoul(val.c_str(), &endp, 10);
             *connect_timeout_p = true;
         } else if (par == "read_timeout" && !*read_timeout_p)
         {
-            if (!valid_uint(val))
+            if (!cstring_to_unsigned(*read_timeout, val.c_str()) ||
+                    *read_timeout == 0)
                 throw soci_error(err);
-            char *endp;
-            *read_timeout = std::strtoul(val.c_str(), &endp, 10);
             *read_timeout_p = true;
         } else if (par == "write_timeout" && !*write_timeout_p)
         {
-            if (!valid_uint(val))
+            if (!cstring_to_unsigned(*write_timeout, val.c_str()) ||
+                    *write_timeout == 0)
                 throw soci_error(err);
-            char *endp;
-            *write_timeout = std::strtoul(val.c_str(), &endp, 10);
             *write_timeout_p = true;
         } else if (par == "ssl_mode" && !*ssl_mode_p)
         {
