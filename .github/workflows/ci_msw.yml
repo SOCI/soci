@@ -51,7 +51,14 @@ jobs:
           submodules: 'recursive'
 
       - name: Set up MSVS environment
-        uses: seanmiddleditch/gha-setup-vsdevenv@v5
+        shell: pwsh
+        run: |
+          $vs = & "${env:ProgramFiles(x86)}\Microsoft Visual Studio\Installer\vswhere.exe" -latest -property installationPath
+          $before = @{}
+          Get-ChildItem env: | ForEach-Object { $before[$_.Name] = $_.Value }
+          & "$vs\Common7\Tools\Launch-VsDevShell.ps1" -Arch amd64 -HostArch amd64 -SkipAutomaticLocation
+          Get-ChildItem env: | Where-Object { $before[$_.Name] -ne $_.Value } |
+            ForEach-Object { "$($_.Name)=$($_.Value)" } >> $env:GITHUB_ENV
 
       - name: Set up PostgreSQL
         run: |
