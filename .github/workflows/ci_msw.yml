@@ -93,14 +93,40 @@ jobs:
         run: |
           Get-OdbcDriver -Platform 64-bit | Format-Table -Property Name
 
-          sqllocaldb start MSSQLLocalDB
-          $info = sqllocaldb info MSSQLLocalDB
-          Write-Output $info
-          # Note that "np:" prefix must be kept, at least the legacy "SQL
-          # Server" driver doesn't recognize the pipe name without it.
-          $m = $info | Select-String -Pattern 'pipe name:\s*(np:\S+)'
-          if (-not $m) { throw "Failed to find LocalDB pipe name" }
-          $pipe = $m.Matches[0].Groups[1].Value
+          # Starting LocalDB sometimes fails with an unhelpful "Cannot create
+          # an automatic instance" error, so show the details of what went
+          # wrong and retry after recreating the instance from scratch.
+          $pipe = $null
+          for ($attempt = 1; $attempt -le 3; $attempt++) {
+            $startTime = Get-Date
+            sqllocaldb start MSSQLLocalDB
+            $info = sqllocaldb info MSSQLLocalDB
+            Write-Output $info
+            # Note that "np:" prefix must be kept, at least the legacy "SQL
+            # Server" driver doesn't recognize the pipe name without it.
+            $m = $info | Select-String -Pattern 'pipe name:\s*(np:\S+)'
+            if ($m) {
+              $pipe = $m.Matches[0].Groups[1].Value
+              break
+            }
+
+            Write-Output "::warning::Starting LocalDB failed (attempt $attempt)"
+            Get-WinEvent -ErrorAction SilentlyContinue -FilterHashtable @{
+                LogName = 'Application'; StartTime = $startTime.AddMinutes(-1)
+              } |
+              Where-Object { $_.Level -le 3 -or $_.ProviderName -match 'SQL|LocalDB' } |
+              Format-List TimeCreated, ProviderName, Id, LevelDisplayName, Message
+            $errorLog = "$env:LOCALAPPDATA\Microsoft\Microsoft SQL Server Local DB\Instances\MSSQLLocalDB\error.log"
+            if (Test-Path $errorLog) {
+              Write-Output "Last lines of ${errorLog}:"
+              Get-Content $errorLog -Tail 50
+            }
+
+            sqllocaldb stop MSSQLLocalDB -k
+            sqllocaldb delete MSSQLLocalDB
+            Start-Sleep -Seconds 5
+          }
+          if (-not $pipe) { throw "Failed to start LocalDB" }
 
           $connstr = "Driver={${{ matrix.mssql_driver }}};Server=$pipe;Trusted_Connection=yes"
           $conn = New-Object System.Data.Odbc.OdbcConnection "$connstr;Database=master"
