@@ -20,6 +20,10 @@ namespace soci
 extern SOCI_DECL char const * option_reconnect;
 extern SOCI_DECL char const * option_true;
 
+// Maximal time to wait for the connection to be established, in seconds, with
+// 0 meaning to wait indefinitely. Not yet supported by all backends.
+extern SOCI_DECL char const * option_connect_timeout;
+
 namespace details
 {
 

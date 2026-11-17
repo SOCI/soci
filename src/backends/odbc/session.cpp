@@ -10,6 +10,7 @@
 #include "soci/session.h"
 
 #include "soci-autostatement.h"
+#include "soci-cstrtoi.h"
 #include "soci-mutex.h"
 #include "soci-ssize.h"
 
@@ -24,6 +25,12 @@ char const * soci::odbc_option_parent_window = "odbc.parent_window";
 
 namespace
 {
+
+// Keyword used for specifying the common option_connect_timeout option in
+// ODBC connection string: we can't use just "connect_timeout" there, as it
+// could conflict with a driver-specific keyword, so use "odbc." prefix, as
+// for the other SOCI-specific options.
+constexpr char const* odbc_connect_timeout_keyword = "odbc.connect_timeout";
 
 // Map from the connection strings to their completed version, i.e. with the
 // missing credentials filled in by the user. This is used when the
@@ -215,6 +222,61 @@ odbc_session_backend::odbc_session_backend(
     // mode value.
     bool remember_completed = false;
 
+    // For convenience, SOCI-specific options can also be specified as part of
+    // the connection string itself. Always remove them from it, even if they
+    // are not used below, as they must neither be passed to the driver nor
+    // be part of the key used for completed_connection_strings.
+    std::string completionString = extract_soci_option(connectString,
+                                                       odbc_option_driver_complete);
+    std::string parentWindowString = extract_soci_option(connectString,
+                                                         odbc_option_parent_window);
+    std::string const timeoutFromConnectString =
+        extract_soci_option(connectString, odbc_connect_timeout_keyword);
+
+    // But the options specified in the connection parameters take precedence
+    // (note that get_option() doesn't modify the value if it returns false).
+    parameters.get_option(odbc_option_driver_complete, completionString);
+    parameters.get_option(odbc_option_parent_window, parentWindowString);
+
+    // Except for the timeout, which uses the opposite priority, for
+    // consistency with the other backends, and to allow using the option to
+    // provide the default value which can still be overridden in the
+    // connection string.
+    //
+    // Note that we need to distinguish between the timeout not being
+    // specified at all and being specified with an empty value, which is
+    // invalid, which is why we use get_option() return value here (but we
+    // can't do it for the connection string, as extract_soci_option() returns
+    // an empty string in both cases).
+    std::string timeoutString;
+    bool hasTimeout = parameters.get_option(option_connect_timeout,
+                                            timeoutString);
+    if (!timeoutFromConnectString.empty())
+    {
+        timeoutString = timeoutFromConnectString;
+        hasTimeout = true;
+    }
+
+    // Login timeout must be set before connecting.
+    if (hasTimeout)
+    {
+        SQLUINTEGER timeout = 0;
+        if (!cstring_to_unsigned(timeout, timeoutString.c_str()))
+        {
+            throw soci_error("Invalid connection timeout value \"" +
+                             timeoutString + "\": must be a non-negative "
+                             "number of seconds.");
+        }
+
+        rc = SQLSetConnectAttr(hdbc_, SQL_ATTR_LOGIN_TIMEOUT,
+                               (SQLPOINTER)(SQLULEN)timeout, SQL_IS_UINTEGER);
+        if (is_odbc_error(rc))
+        {
+            throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
+                                  "setting login timeout");
+        }
+    }
+
     if (parameters.is_option_on(option_reconnect))
     {
       completion = SQL_DRIVER_NOPROMPT;
@@ -226,15 +288,6 @@ odbc_session_backend::odbc_session_backend(
     }
     else
     {
-      std::string completionString;
-      if (!parameters.get_option(odbc_option_driver_complete, completionString))
-      {
-        // For convenience, also allow specifying this option as part of the
-        // connection string itself.
-        completionString = extract_soci_option(connectString,
-                                               soci::odbc_option_driver_complete);
-      }
-
       if (!completionString.empty())
       {
         // The value of the option is supposed to be just the integer value of
@@ -256,14 +309,6 @@ odbc_session_backend::odbc_session_backend(
           // connection string and use it if we do.
           complete_connection_string(connectString);
         }
-      }
-
-      // Check for odbc_option_parent_window in the same way.
-      std::string parentWindowString;
-      if (!parameters.get_option(odbc_option_parent_window, parentWindowString))
-      {
-        parentWindowString = extract_soci_option(connectString,
-                                                 soci::odbc_option_parent_window);
       }
 
       if (!parentWindowString.empty())

@@ -16,6 +16,8 @@ char const * soci::option_reconnect = "reconnect";
 
 char const * soci::option_true = "1";
 
+char const * soci::option_connect_timeout = "connect_timeout";
+
 namespace // anonymous
 {
 

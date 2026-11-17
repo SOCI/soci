@@ -50,6 +50,8 @@ The set of parameters used in the connection string for PostgreSQL is the same a
 
 Another parameter is handled specially: while libpq client library supports `tcp_user_timeout` parameter, it only provides support for it under Linux and only since version 12.0 (released in 2019). SOCI also handles this parameter, which can change the time before a broken connection times out (which depends on the system settings but is typically relatively long), under Windows and when using older libpq versions under Linux. It handles it in the same way as libpq itself, i.e. the value of this parameter is expressed in milliseconds, but because Windows sockets only use second granularity, SOCI rounds the value to the nearest second on this platform. In particular, this means that if this parameter is not 0 (which means to use the system default, i.e. is same as not specifying it at all), then it will be always set to at least 1 second. Also note that negative values for this option are currently ignored, but shouldn't be used as their interpretation may change in the future versions of the library.
 
+Note that the common `option_connect_timeout` option is the same as libpq `connect_timeout` parameter, so it can be either specified in the connection string or set using `connection_parameters::set_option()`.
+
 Once you have created a `session` object as shown above, you can use it to access the database, for example:
 
 ```cpp
