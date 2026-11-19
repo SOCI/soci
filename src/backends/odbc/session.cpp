@@ -384,7 +384,7 @@ void odbc_session_backend::configure_connection()
         SQLRETURN rc = SQLGetInfo(hdbc_, SQL_DBMS_VER, product_ver, len, &len);
         if (is_odbc_error(rc))
         {
-            throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
+            throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                                   "getting PostgreSQL ODBC driver version");
         }
 
@@ -411,7 +411,7 @@ void odbc_session_backend::configure_connection()
 
             if (is_odbc_error(rc))
             {
-                throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
+                throw odbc_soci_error(SQL_HANDLE_STMT, st.hstmt_,
                                       "setting extra_float_digits for PostgreSQL");
             }
         }
@@ -799,7 +799,7 @@ odbc_session_backend::get_database_product() const
     SQLRETURN rc = SQLGetInfo(hdbc_, SQL_DBMS_NAME, product_name, len, &len);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                               "getting ODBC driver name");
     }
 
