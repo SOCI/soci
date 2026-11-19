@@ -102,3 +102,12 @@ odbc_soci_error::odbc_soci_error(SQLSMALLINT htype,
     : soci_error(interpret_odbc_error(htype, hndl, msg))
 {
 }
+
+odbc_soci_error::odbc_soci_error(odbc_session_backend& session,
+                                 SQLSMALLINT htype,
+                                 SQLHANDLE hndl,
+                                 std::string const & msg)
+    : odbc_soci_error(htype, hndl, msg)
+{
+    session.connection_may_be_lost();
+}

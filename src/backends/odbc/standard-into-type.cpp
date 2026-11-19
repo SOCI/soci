@@ -160,7 +160,7 @@ void odbc_standard_into_type_backend::define_by_pos(
         static_cast<SQLUSMALLINT>(odbcType_), data, size, &valueLen_);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, fmt::format("binding output column #{}", position_));
+        throw odbc_soci_error(statement_.session_, SQL_HANDLE_STMT, statement_.hstmt_, fmt::format("binding output column #{}", position_));
     }
 }
 
@@ -174,7 +174,8 @@ namespace
 // odbc_standard_type_backend_base::requires_noncompliant_32bit_sqllen().
 template <typename CharT>
 bool
-do_get_long_data(SQLHSTMT hstmt,
+do_get_long_data(odbc_session_backend& session,
+                 SQLHSTMT hstmt,
                  SQLUSMALLINT colNum,
                  SQLSMALLINT cType,
                  bool fix32BitLen,
@@ -185,7 +186,7 @@ do_get_long_data(SQLHSTMT hstmt,
     // characters that were available before this call in avail, unless it is
     // unknown or the value is NULL, in which case avail is set to
     // SQL_NO_TOTAL or SQL_NULL_DATA respectively.
-    auto const get_data = [=](CharT* buf, std::size_t len, SQLLEN& avail)
+    auto const get_data = [=, &session](CharT* buf, std::size_t len, SQLLEN& avail)
     {
         SQLLEN ind = 0;
         SQLRETURN const rc = SQLGetData(hstmt, colNum, cType, buf,
@@ -193,7 +194,7 @@ do_get_long_data(SQLHSTMT hstmt,
                                         &ind);
         if (is_odbc_error(rc))
         {
-            throw odbc_soci_error(SQL_HANDLE_STMT, hstmt,
+            throw odbc_soci_error(session, SQL_HANDLE_STMT, hstmt,
                                   fmt::format("getting data of column #{}", colNum));
         }
 
@@ -322,7 +323,7 @@ bool
 odbc_standard_type_backend_base::get_long_data(SQLUSMALLINT colNum,
                                                std::string& s) const
 {
-    return do_get_long_data(statement_.hstmt_, colNum, SQL_C_CHAR,
+    return do_get_long_data(statement_.session_, statement_.hstmt_, colNum, SQL_C_CHAR,
                             requires_noncompliant_32bit_sqllen(), s);
 }
 
@@ -333,7 +334,7 @@ odbc_standard_type_backend_base::get_long_data(SQLUSMALLINT colNum,
     static_assert(sizeof(SQLWCHAR) == sizeof(char16_t),
                   "SQLWCHAR must be UTF-16 for SQL_C_WCHAR to work");
 
-    return do_get_long_data(statement_.hstmt_, colNum, SQL_C_WCHAR,
+    return do_get_long_data(statement_.session_, statement_.hstmt_, colNum, SQL_C_WCHAR,
                             requires_noncompliant_32bit_sqllen(), s);
 }
 
@@ -383,7 +384,7 @@ void odbc_standard_into_type_backend::get_data()
                               odbcData_, odbcSize_, &valueLen_);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
+        throw odbc_soci_error(statement_.session_, SQL_HANDLE_STMT, statement_.hstmt_,
                               fmt::format("getting data of column #{}", colNum));
     }
 }

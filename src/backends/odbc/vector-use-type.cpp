@@ -496,7 +496,7 @@ void odbc_vector_use_type_backend::pre_use(indicator const *ind)
 
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, fmt::format("binding input vector parameter #{}", position_));
+        throw odbc_soci_error(statement_.session_, SQL_HANDLE_STMT, statement_.hstmt_, fmt::format("binding input vector parameter #{}", position_));
     }
 }
 

@@ -489,6 +489,11 @@ struct SOCI_ODBC_DECL odbc_session_backend : details::session_backend
     // Determine the type of the database we're connected to.
     database_product get_database_product() const;
 
+    // Called by odbc_soci_error ctor to indicate that an error has occurred.
+    // As this may be due to losing the connection, this function makes begin()
+    // check if the connection is still alive the next time it is called.
+    void connection_may_be_lost() noexcept;
+
     // Return full ODBC connection string.
     std::string get_connection_string() const { return connection_string_; }
 
@@ -534,6 +539,10 @@ private:
     void end_transaction(SQLSMALLINT completion, char const* what);
 
     mutable database_product product_;
+
+    // Set by connection_may_be_lost() and reset by begin() after checking
+    // that the connection is still alive.
+    bool check_connection_on_begin_ = false;
 };
 
 class SOCI_ODBC_DECL odbc_soci_error : public soci_error
@@ -544,6 +553,12 @@ class SOCI_ODBC_DECL odbc_soci_error : public soci_error
 
 public:
     odbc_soci_error(SQLSMALLINT htype, SQLHANDLE hndl, std::string const & msg);
+
+    // This ctor must be used for the errors occurring while using an open
+    // connection, as they may be due to losing it: it notifies the session
+    // about it, see odbc_session_backend::connection_may_be_lost().
+    odbc_soci_error(odbc_session_backend& session,
+                    SQLSMALLINT htype, SQLHANDLE hndl, std::string const & msg);
 
     error_category get_error_category() const override;
 
