@@ -469,9 +469,19 @@ bool odbc_session_backend::is_connected()
     return !is_odbc_error(check_connection(st.hstmt_));
 }
 
-void odbc_session_backend::connection_may_be_lost() noexcept
+bool odbc_session_backend::connection_may_be_lost() noexcept
 {
+    // Set the flag in any case: SQL_ATTR_CONNECTION_DEAD is not reliable and
+    // it doesn't cost much to check the real connection state in begin() after
+    // an error.
     check_connection_on_begin_ = true;
+
+    // Ask the driver if it already knows that the connection was lost: this
+    // doesn't contact the server, so it's cheap, but may not detect the loss.
+    SQLUINTEGER dead = SQL_CD_FALSE;
+    SQLRETURN const rc = SQLGetConnectAttr(hdbc_, SQL_ATTR_CONNECTION_DEAD,
+                                           &dead, 0, nullptr);
+    return !is_odbc_error(rc) && dead == SQL_CD_TRUE;
 }
 
 void odbc_session_backend::begin()

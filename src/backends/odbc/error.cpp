@@ -12,6 +12,9 @@ using namespace soci;
 
 soci_error::error_category odbc_soci_error::get_error_category() const
 {
+    if (is_connection_error_)
+        return connection_error;
+
     const char* const s = reinterpret_cast<const char*>(sqlstate_);
 
     if (strncmp(s, "08", 2) == 0 ||
@@ -109,5 +112,20 @@ odbc_soci_error::odbc_soci_error(odbc_session_backend& session,
                                  std::string const & msg)
     : odbc_soci_error(htype, hndl, msg)
 {
-    session.connection_may_be_lost();
+    // Note that this is done after retrieving the error information in the
+    // other ctor, as checking the connection state loses the previous error.
+    if (session.connection_may_be_lost())
+    {
+        // Even if the connection was lost, we still want to report the
+        // original error category if we are able to classify it: if the server
+        // reported a constraint violation and then the connection was lost,
+        // it's just a coincidence and returning connection_error from
+        // get_error_category() would be misleading.
+        //
+        // However if we don't have any information about the error, do return
+        // connection_error for it to allow the application to know that the
+        // connection is no longer usable.
+        if (get_error_category() == unknown)
+            is_connection_error_ = true;
+    }
 }

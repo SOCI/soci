@@ -492,7 +492,10 @@ struct SOCI_ODBC_DECL odbc_session_backend : details::session_backend
     // Called by odbc_soci_error ctor to indicate that an error has occurred.
     // As this may be due to losing the connection, this function makes begin()
     // check if the connection is still alive the next time it is called.
-    void connection_may_be_lost() noexcept;
+    //
+    // Return true if the connection was confirmed to be lost or false if it
+    // may still be alive.
+    bool connection_may_be_lost() noexcept;
 
     // Return full ODBC connection string.
     std::string get_connection_string() const { return connection_string_; }
@@ -550,6 +553,7 @@ class SOCI_ODBC_DECL odbc_soci_error : public soci_error
     SQLCHAR message_[SQL_MAX_MESSAGE_LENGTH + 1];
     SQLCHAR sqlstate_[SQL_SQLSTATE_SIZE + 1];
     SQLINTEGER sqlcode_;
+    bool is_connection_error_ = false;
 
 public:
     odbc_soci_error(SQLSMALLINT htype, SQLHANDLE hndl, std::string const & msg);
