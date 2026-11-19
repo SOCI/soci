@@ -4110,6 +4110,7 @@ extern volatile bool soci_use_test_custom;
 extern volatile bool soci_use_test_dynamic;
 extern volatile bool soci_use_test_lob;
 extern volatile bool soci_use_test_manual;
+extern volatile bool soci_use_test_reconnect;
 extern volatile bool soci_use_test_rowset;
 
 test_context_common::test_context_common()
@@ -4123,6 +4124,7 @@ test_context_common::test_context_common()
     soci_use_test_dynamic = true;
     soci_use_test_lob = true;
     soci_use_test_manual = true;
+    soci_use_test_reconnect = true;
     soci_use_test_rowset = true;
 }
 

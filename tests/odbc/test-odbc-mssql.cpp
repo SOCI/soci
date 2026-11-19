@@ -602,6 +602,31 @@ public:
     {
         return "len(" + s + ")";
     }
+
+    // Note that the functions below require VIEW SERVER STATE and ALTER ANY
+    // CONNECTION permissions.
+    std::string get_session_id_query() const override
+    {
+        return "select cast(@@spid as varchar(10))";
+    }
+
+    std::string get_kill_session_statement(std::string const& id) const override
+    {
+        return "kill " + id;
+    }
+
+    std::string get_session_alive_query(std::string const& id) const override
+    {
+        return "select count(*) from sys.dm_exec_sessions "
+               "where session_id = " + id;
+    }
+
+    std::string get_connect_string_disabling_autoreconnect() const override
+    {
+        // Recent Microsoft drivers reopen a lost connection on their own by
+        // default, which would hide its loss.
+        return get_connect_string() + ";ConnectRetryCount=0";
+    }
 };
 
 test_context tc_odbc_mssql;

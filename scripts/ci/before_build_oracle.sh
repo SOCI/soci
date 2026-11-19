@@ -18,6 +18,9 @@ create user travis identified by travis;
 grant connect, resource to travis;
 grant execute on sys.dbms_lock to travis;
 grant create session, alter any procedure to travis;
+-- required by the connection loss tests, which kill the session being tested
+grant select on v_\$session to travis;
+grant alter system to travis;
 SQL
 
 # increase default=40 value of processes to prevent ORA-12520 failures while testing
