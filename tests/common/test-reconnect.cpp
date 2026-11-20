@@ -31,53 +31,158 @@ volatile bool soci_use_test_reconnect = false;
 // they only run for the backends implementing the corresponding functions of
 // test_context_base.
 
-// Losing the connection in the middle of a transaction must be reported and it
-// must be possible to reconnect and use the session normally after it.
-TEST_CASE_METHOD(common_tests, "Connection loss in transaction",
-                 "[core][connect][reconnect]")
+namespace
 {
-    std::string const sessionIdQuery = tc_.get_session_id_query();
-    if (sessionIdQuery.empty())
+
+// Fixture creating the session to be killed and another one used for killing
+// it, which also owns the test table, so that it remains usable even if the
+// session being tested can't reconnect.
+class connection_loss_tests : public common_tests
+{
+protected:
+    // Must be called first and the test must be skipped if it returns false.
+    bool init()
     {
-        WARN("Killing sessions not supported by this backend, skipping.");
-        return;
+        std::string const sessionIdQuery = tc_.get_session_id_query();
+        if (sessionIdQuery.empty())
+        {
+            WARN("Killing sessions not supported by this backend, skipping.");
+            return false;
+        }
+
+        mainSession_.open(backEndFactory_, connectString_);
+
+        tableCreator_.reset(tc_.table_creator_1(mainSession_));
+        {
+            soci::transaction tr(mainSession_);
+            mainSession_ << "insert into soci_test(id) values (17)";
+            tr.commit();
+        }
+
+        sql_.open(backEndFactory_,
+                  tc_.get_connect_string_disabling_autoreconnect());
+
+        sql_ << sessionIdQuery, into(id_);
+        REQUIRE(!id_.empty());
+
+        // If this fails, the database user probably lacks the permissions
+        // needed to see (and kill) the other sessions, see the test context
+        // functions.
+        INFO("Checking that session " << id_ << " can be found from another one");
+        REQUIRE(is_session_alive());
+
+        return true;
     }
 
-    // This session is used to kill the other one and also owns the table, so
-    // that it remains usable even if the other session can't reconnect.
-    soci::session mainSession(backEndFactory_, connectString_);
-
-    auto_table_creator tableCreator(tc_.table_creator_1(mainSession));
+    // Kill the session being tested and wait until it's really gone.
+    void kill_session()
     {
-        soci::transaction tr(mainSession);
-        mainSession << "insert into soci_test(id) values (17)";
+        // Don't fail just because the statement killing the session threw, as
+        // it may still be killed (e.g. Oracle may give ORA-00031 "session
+        // marked for kill" error), but remember the error to show it if the
+        // session is not killed.
+        std::string killError;
+        try
+        {
+            mainSession_ << tc_.get_kill_session_statement(id_);
+        }
+        catch (soci_error const& e)
+        {
+            killError = e.what();
+        }
+
+        bool killed = false;
+        for (int i = 0; i < 100; ++i)
+        {
+            if (!is_session_alive())
+            {
+                killed = true;
+                break;
+            }
+
+            std::this_thread::sleep_for(std::chrono::milliseconds(100));
+        }
+
+        INFO("Error killing session " << id_ << ": " << killError);
+        REQUIRE(killed);
+    }
+
+    // Check that starting a new transaction fails after losing the connection
+    // and doesn't succeed without contacting the server, as this would make
+    // the error happen only later, when executing the first statement of the
+    // new transaction, which is too late to transparently reconnect and retry.
+    void check_begin_fails()
+    {
+        try
+        {
+            sql_.begin();
+            FAIL_CHECK("Starting a transaction after losing the connection "
+                       "unexpectedly succeeded");
+
+            // Don't leave the transaction open, whatever happens.
+            try
+            {
+                sql_.rollback();
+            }
+            catch (soci_error const&)
+            {
+            }
+        }
+        catch (soci_error const& e)
+        {
+            INFO("Error starting transaction after losing the connection: "
+                 << e.what());
+            CHECK(!sql_.is_connected());
+        }
+    }
+
+    // Check that the session can be used again after reconnecting.
+    void check_reconnect()
+    {
+        REQUIRE_NOTHROW(sql_.reconnect());
+        CHECK(sql_.is_connected());
+
+        soci::transaction tr(sql_);
+
+        int n = 0;
+        sql_ << "select id from soci_test", into(n);
+        CHECK(n == 17);
+
         tr.commit();
     }
 
-    soci::session
-        sql(backEndFactory_, tc_.get_connect_string_disabling_autoreconnect());
+    // The session being tested.
+    soci::session sql_;
 
-    std::string id;
-    sql << sessionIdQuery, into(id);
-    REQUIRE(!id.empty());
-    INFO("Session ID: " << id);
-
-    auto const isSessionAlive = [&]()
+private:
+    bool is_session_alive()
     {
         int count = 0;
-        mainSession << tc_.get_session_alive_query(id), into(count);
+        mainSession_ << tc_.get_session_alive_query(id_), into(count);
         return count != 0;
-    };
+    }
 
-    // If this fails, the database user probably lacks the permissions needed
-    // to see (and kill) the other sessions, see the test context functions.
-    INFO("Checking that the session can be found from another one");
-    REQUIRE(isSessionAlive());
+    soci::session mainSession_;
+    auto_table_creator tableCreator_;
+
+    // ID of sql_ session as returned by get_session_id_query().
+    std::string id_;
+};
+
+} // anonymous namespace
+
+// Losing the connection in the middle of a transaction must be reported and it
+// must be possible to reconnect and use the session normally after it.
+TEST_CASE_METHOD(connection_loss_tests, "Connection loss in transaction",
+                 "[core][connect][reconnect]")
+{
+    if (!init())
+        return;
 
     {
         // Use begin() and rollback() directly instead of soci::transaction, as
         // we need to check what happens when they fail.
-        sql.begin();
+        sql_.begin();
 
         // Read using either one-time queries or the same prepared statement
         // executed with different parameters, as both can behave differently.
@@ -89,13 +194,13 @@ TEST_CASE_METHOD(common_tests, "Connection loss in transaction",
         {
             read = [&]()
             {
-                sql << "select id from soci_test where id = :id",
+                sql_ << "select id from soci_test where id = :id",
                     use(idToRead), into(n);
             };
         }
         SECTION("Prepared statement")
         {
-            st.reset(new statement((sql.prepare <<
+            st.reset(new statement((sql_.prepare <<
                 "select id from soci_test where id = :id",
                 use(idToRead), into(n))));
             read = [&]() { st->execute(true); };
@@ -106,34 +211,7 @@ TEST_CASE_METHOD(common_tests, "Connection loss in transaction",
         read();
         CHECK(n == 17);
 
-        // Don't fail just because the statement killing the session threw, as
-        // it may still be killed (e.g. Oracle may give ORA-00031 "session
-        // marked for kill" error), but remember the error to show it if the
-        // session is not killed.
-        std::string killError;
-        try
-        {
-            mainSession << tc_.get_kill_session_statement(id);
-        }
-        catch (soci_error const& e)
-        {
-            killError = e.what();
-        }
-
-        bool killed = false;
-        for (int i = 0; i < 100; ++i)
-        {
-            if (!isSessionAlive())
-            {
-                killed = true;
-                break;
-            }
-
-            std::this_thread::sleep_for(std::chrono::milliseconds(100));
-        }
-
-        INFO("Error killing the session: " << killError);
-        REQUIRE(killed);
+        kill_session();
 
         // Check that the error is really due to the connection loss, as
         // reading could fail for any other reason too.
@@ -148,7 +226,7 @@ TEST_CASE_METHOD(common_tests, "Connection loss in transaction",
         catch (soci_error const& e)
         {
             INFO("Error after losing the connection: " << e.what());
-            CHECK(!sql.is_connected());
+            CHECK(!sql_.is_connected());
             CHECK(e.get_error_category() == soci_error::connection_error);
         }
 
@@ -161,7 +239,7 @@ TEST_CASE_METHOD(common_tests, "Connection loss in transaction",
         // in a state in which the loss can't be detected any more.
         try
         {
-            sql.rollback();
+            sql_.rollback();
         }
         catch (soci_error const& e)
         {
@@ -169,45 +247,30 @@ TEST_CASE_METHOD(common_tests, "Connection loss in transaction",
         }
     }
 
-    // Starting a new transaction must fail as well, and not succeed without
-    // contacting the server, as this would make the error happen only later,
-    // when executing the first statement of the new transaction, which is too
-    // late to transparently reconnect and retry.
-    try
-    {
-        sql.begin();
-        FAIL_CHECK("Starting a transaction after losing the connection "
-                   "unexpectedly succeeded");
+    check_begin_fails();
 
-        // Don't leave the transaction open, whatever happens.
-        try
-        {
-            sql.rollback();
-        }
-        catch (soci_error const&)
-        {
-        }
-    }
-    catch (soci_error const& e)
-    {
-        INFO("Error starting transaction after losing the connection: "
-             << e.what());
-        CHECK(!sql.is_connected());
-    }
+    check_reconnect();
+}
 
-    // But the session can be used again after reconnecting.
-    REQUIRE_NOTHROW(sql.reconnect());
-    CHECK(sql.is_connected());
+// Losing the connection while not using the session at all can only be
+// detected by is_connected(), which can be called by the application to check
+// if the connection is still alive, and starting a transaction after it must
+// fail too, even if no errors had been reported before.
+TEST_CASE_METHOD(connection_loss_tests, "Connection loss detected by polling",
+                 "[core][connect][reconnect]")
+{
+    if (!init())
+        return;
 
-    {
-        soci::transaction tr(sql);
+    kill_session();
 
-        int n = 0;
-        sql << "select id from soci_test", into(n);
-        CHECK(n == 17);
+    // Calling is_connected() repeatedly must keep returning false.
+    CHECK(!sql_.is_connected());
+    CHECK(!sql_.is_connected());
 
-        tr.commit();
-    }
+    check_begin_fails();
+
+    check_reconnect();
 }
 
 } // namespace tests

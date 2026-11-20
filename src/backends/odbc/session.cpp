@@ -466,7 +466,15 @@ bool odbc_session_backend::is_connected()
 {
     details::auto_statement<odbc_statement_backend> st(*this);
 
-    return !is_odbc_error(check_connection(st.hstmt_));
+    if (is_odbc_error(check_connection(st.hstmt_)))
+    {
+        // Connection was lost, make sure begin() checks whether it has come
+        // back by the time it is called.
+        check_connection_on_begin_ = true;
+        return false;
+    }
+
+    return true;
 }
 
 bool odbc_session_backend::connection_may_be_lost() noexcept
