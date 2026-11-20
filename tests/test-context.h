@@ -326,6 +326,24 @@ protected:
     SOCI_NOT_COPYABLE(common_tests)
 };
 
+// Return the name of the error category for use in diagnostic messages.
+inline char const* get_error_category_name(soci_error::error_category cat)
+{
+    switch (cat)
+    {
+        case soci_error::connection_error:          return "connection_error";
+        case soci_error::invalid_statement:         return "invalid_statement";
+        case soci_error::no_privilege:              return "no_privilege";
+        case soci_error::no_data:                   return "no_data";
+        case soci_error::constraint_violation:      return "constraint_violation";
+        case soci_error::unknown_transaction_state: return "unknown_transaction_state";
+        case soci_error::system_error:              return "system_error";
+        case soci_error::unknown:                   return "unknown";
+    }
+
+    return "invalid";
+}
+
 } // namespace tests
 
 } // namespace soci

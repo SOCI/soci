@@ -12,6 +12,7 @@
 #include <chrono>
 #include <functional>
 #include <memory>
+#include <sstream>
 #include <string>
 #include <thread>
 
@@ -33,6 +34,29 @@ volatile bool soci_use_test_reconnect = false;
 
 namespace
 {
+
+// Return the error message with all the available details about the error.
+std::string describe_error(soci_error const& e)
+{
+    std::ostringstream os;
+    os << e.what() << "\n"
+       << "Error category: " << get_error_category_name(e.get_error_category());
+
+    std::string const backend = e.get_backend_name();
+    if (!backend.empty())
+    {
+        os << "\nBackend: " << backend;
+
+        if (int const code = e.get_backend_error_code())
+            os << ", error code " << code;
+
+        std::string const sqlstate = e.get_sqlstate();
+        if (!sqlstate.empty())
+            os << ", SQL state " << sqlstate;
+    }
+
+    return os.str();
+}
 
 // Fixture creating the session to be killed and another one used for killing
 // it, which also owns the test table, so that it remains usable even if the
@@ -88,7 +112,7 @@ protected:
         }
         catch (soci_error const& e)
         {
-            killError = e.what();
+            killError = describe_error(e);
         }
 
         bool killed = false;
@@ -131,7 +155,7 @@ protected:
         catch (soci_error const& e)
         {
             INFO("Error starting transaction after losing the connection: "
-                 << e.what());
+                 << describe_error(e));
             CHECK(!sql_.is_connected());
         }
     }
@@ -225,7 +249,7 @@ TEST_CASE_METHOD(connection_loss_tests, "Connection loss in transaction",
         }
         catch (soci_error const& e)
         {
-            INFO("Error after losing the connection: " << e.what());
+            INFO("Error after losing the connection: " << describe_error(e));
             CHECK(!sql_.is_connected());
             CHECK(e.get_error_category() == soci_error::connection_error);
         }
@@ -243,7 +267,8 @@ TEST_CASE_METHOD(connection_loss_tests, "Connection loss in transaction",
         }
         catch (soci_error const& e)
         {
-            INFO("Error rolling back after losing the connection: " << e.what());
+            INFO("Error rolling back after losing the connection: "
+                 << describe_error(e));
         }
     }
 
