@@ -389,13 +389,15 @@ void oracle_session_backend::commit()
 
 void oracle_session_backend::rollback()
 {
+    // Do it first because we won't have an explicitly started transaction even
+    // if the rollback fails (e.g. because the connection is lost).
+    explicitTransaction_ = false;
+
     sword res = OCITransRollback(svchp_, errhp_, OCI_DEFAULT);
     if (res != OCI_SUCCESS)
     {
         throw oracle_soci_error(res, errhp_);
     }
-
-    explicitTransaction_ = false;
 }
 
 void oracle_session_backend::close()

@@ -1592,6 +1592,21 @@ public:
     {
         return "char_length(" + s + ")";
     }
+
+    std::string get_session_id_query() const override
+    {
+        return "select cast(pg_backend_pid() as text)";
+    }
+
+    std::string get_kill_session_statement(std::string const& id) const override
+    {
+        return "select pg_terminate_backend(" + id + ")";
+    }
+
+    std::string get_session_alive_query(std::string const& id) const override
+    {
+        return "select count(*) from pg_stat_activity where pid = " + id;
+    }
 };
 
 test_context tc_postgresql;

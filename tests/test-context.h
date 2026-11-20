@@ -253,6 +253,39 @@ public:
     // in practice and sometimes even worse (thanks Oracle).
     virtual std::string sql_length(std::string const& s) const = 0;
 
+    // The functions below are used by the tests checking what happens when
+    // the connection to the database is lost: this is simulated by killing
+    // the session from another one, which is only supported by the backends
+    // overriding them.
+
+    // Return the query returning a string uniquely identifying the current
+    // session on the server or an empty string if killing sessions is not
+    // supported.
+    virtual std::string get_session_id_query() const { return {}; }
+
+    // Return the statement killing the session with the given ID, as returned
+    // by the query above.
+    virtual std::string get_kill_session_statement(std::string const&) const
+    {
+        return {};
+    }
+
+    // Return the query returning non-zero count if the session with the given
+    // ID still exists and is usable.
+    virtual std::string get_session_alive_query(std::string const&) const
+    {
+        return {};
+    }
+
+    // Return the connection string to use for the session which will lose
+    // connection: this can be overridden to disable any transparent
+    // reconnection done by the client library, which would prevent the
+    // connection loss from being noticed.
+    virtual std::string get_connect_string_disabling_autoreconnect() const
+    {
+        return connectString_;
+    }
+
     virtual ~test_context_base()
     {
         the_test_context_ = nullptr;
@@ -292,6 +325,24 @@ protected:
 
     SOCI_NOT_COPYABLE(common_tests)
 };
+
+// Return the name of the error category for use in diagnostic messages.
+inline char const* get_error_category_name(soci_error::error_category cat)
+{
+    switch (cat)
+    {
+        case soci_error::connection_error:          return "connection_error";
+        case soci_error::invalid_statement:         return "invalid_statement";
+        case soci_error::no_privilege:              return "no_privilege";
+        case soci_error::no_data:                   return "no_data";
+        case soci_error::constraint_violation:      return "constraint_violation";
+        case soci_error::unknown_transaction_state: return "unknown_transaction_state";
+        case soci_error::system_error:              return "system_error";
+        case soci_error::unknown:                   return "unknown";
+    }
+
+    return "invalid";
+}
 
 } // namespace tests
 
