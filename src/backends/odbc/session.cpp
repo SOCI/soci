@@ -495,7 +495,7 @@ bool odbc_session_backend::connection_may_be_lost() noexcept
 void odbc_session_backend::begin()
 {
     // Starting a transaction only changes the auto-commit mode, which doesn't
-    // require contacting the server and so succeeds even if the connection
+    // require contacting the server and so may succeed even if the connection
     // has been lost, which results in the first statement of the transaction
     // failing instead. This is undesirable, as it's too late to reconnect and
     // retry transparently by then, so check the connection explicitly if it
