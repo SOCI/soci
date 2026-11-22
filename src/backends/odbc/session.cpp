@@ -172,6 +172,19 @@ std::string roll_back_transaction_ended_by_server(odbc_session_backend& session)
     return {};
 }
 
+// Execute a request requiring a round trip to the server using the given
+// statement handle and return its result.
+SQLRETURN check_connection(SQLHSTMT hstmt)
+{
+    // The name of the table we check for is irrelevant, as long as we have a
+    // working connection, it should still find (or, hopefully, not) something.
+    return SQLTables(hstmt,
+                     nullptr, SQL_NTS,
+                     nullptr, SQL_NTS,
+                     sqlchar_cast("bloordyblop"), SQL_NTS,
+                     nullptr, SQL_NTS);
+}
+
 } // anonymous namespace
 
 odbc_session_backend::odbc_session_backend(
@@ -429,7 +442,7 @@ void odbc_session_backend::configure_connection()
         SQLRETURN rc = SQLGetInfo(hdbc_, SQL_DBMS_VER, product_ver, len, &len);
         if (is_odbc_error(rc))
         {
-            throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
+            throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                                   "getting PostgreSQL ODBC driver version");
         }
 
@@ -456,7 +469,7 @@ void odbc_session_backend::configure_connection()
 
             if (is_odbc_error(rc))
             {
-                throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
+                throw odbc_soci_error(SQL_HANDLE_STMT, st.hstmt_,
                                       "setting extra_float_digits for PostgreSQL");
             }
         }
@@ -498,22 +511,58 @@ bool odbc_session_backend::is_connected()
 {
     details::auto_statement<odbc_statement_backend> st(*this);
 
-    // The name of the table we check for is irrelevant, as long as we have a
-    // working connection, it should still find (or, hopefully, not) something.
-    return !is_odbc_error(SQLTables(st.hstmt_,
-                                    nullptr, SQL_NTS,
-                                    nullptr, SQL_NTS,
-                                    sqlchar_cast("bloordyblop"), SQL_NTS,
-                                    nullptr, SQL_NTS));
+    if (is_odbc_error(check_connection(st.hstmt_)))
+    {
+        // Connection was lost, make sure begin() checks whether it has come
+        // back by the time it is called.
+        check_connection_on_begin_ = true;
+        return false;
+    }
+
+    return true;
+}
+
+bool odbc_session_backend::connection_may_be_lost() noexcept
+{
+    // Set the flag in any case: SQL_ATTR_CONNECTION_DEAD is not reliable and
+    // it doesn't cost much to check the real connection state in begin() after
+    // an error.
+    check_connection_on_begin_ = true;
+
+    // Ask the driver if it already knows that the connection was lost: this
+    // doesn't contact the server, so it's cheap, but may not detect the loss.
+    SQLUINTEGER dead = SQL_CD_FALSE;
+    SQLRETURN const rc = SQLGetConnectAttr(hdbc_, SQL_ATTR_CONNECTION_DEAD,
+                                           &dead, 0, nullptr);
+    return !is_odbc_error(rc) && dead == SQL_CD_TRUE;
 }
 
 void odbc_session_backend::begin()
 {
+    // Starting a transaction only changes the auto-commit mode, which doesn't
+    // require contacting the server and so may succeed even if the connection
+    // has been lost, which results in the first statement of the transaction
+    // failing instead. This is undesirable, as it's too late to reconnect and
+    // retry transparently by then, so check the connection explicitly if it
+    // could have been lost, i.e. if any error happened since the last check.
+    if (check_connection_on_begin_)
+    {
+        details::auto_statement<odbc_statement_backend> st(*this);
+        if (is_odbc_error(check_connection(st.hstmt_)))
+        {
+            throw odbc_soci_error(*this, SQL_HANDLE_STMT, st.hstmt_,
+                                  "beginning transaction");
+        }
+
+        check_connection_on_begin_ = false;
+    }
+
     SQLRETURN rc = SQLSetConnectAttr( hdbc_, SQL_ATTR_AUTOCOMMIT,
                     (SQLPOINTER)SQL_AUTOCOMMIT_OFF, 0 );
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "beginning transaction");
+        throw odbc_soci_error(*this, SQL_HANDLE_DBC, hdbc_,
+                              "beginning transaction");
     }
 }
 
@@ -523,7 +572,7 @@ odbc_session_backend::end_transaction(SQLSMALLINT completion, char const* what)
     SQLRETURN rc = SQLEndTran(SQL_HANDLE_DBC, hdbc_, completion);
     if (is_odbc_error(rc))
     {
-        odbc_soci_error e(SQL_HANDLE_DBC, hdbc_, what);
+        odbc_soci_error e(*this, SQL_HANDLE_DBC, hdbc_, what);
         if (is_transaction_ended_by_server(*this, e))
         {
             // Even when rolling back, this is still an error: the statements
@@ -761,7 +810,8 @@ void odbc_session_backend::reset_transaction()
                     (SQLPOINTER)SQL_AUTOCOMMIT_ON, 0 );
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_, "enabling auto commit");
+        throw odbc_soci_error(*this, SQL_HANDLE_DBC, hdbc_,
+                              "enabling auto commit");
     }
 }
 
@@ -844,7 +894,7 @@ odbc_session_backend::get_database_product() const
     SQLRETURN rc = SQLGetInfo(hdbc_, SQL_DBMS_NAME, product_name, len, &len);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, henv_,
+        throw odbc_soci_error(SQL_HANDLE_DBC, hdbc_,
                               "getting ODBC driver name");
     }
 

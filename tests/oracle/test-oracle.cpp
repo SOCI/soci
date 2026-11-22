@@ -1676,6 +1676,28 @@ public:
         // nvl() explicitly to achieve this.
         return "nvl(length(" + s + "), 0)";
     }
+
+    // Note that the functions below require SELECT privilege on V$SESSION and
+    // ALTER SYSTEM privilege.
+    std::string get_session_id_query() const override
+    {
+        return "select sid || ',' || serial# from v$session "
+               "where sid = sys_context('USERENV', 'SID')";
+    }
+
+    std::string get_kill_session_statement(std::string const& id) const override
+    {
+        return "alter system kill session '" + id + "' immediate";
+    }
+
+    std::string get_session_alive_query(std::string const& id) const override
+    {
+        // A killed session may remain listed for some time, but it can't be
+        // used any more.
+        return "select count(*) from v$session "
+               "where sid || ',' || serial# = '" + id + "' "
+               "and status <> 'KILLED'";
+    }
 };
 
 test_context tc_oracle;

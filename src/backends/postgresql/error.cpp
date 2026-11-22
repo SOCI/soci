@@ -25,7 +25,8 @@ postgresql_soci_error::postgresql_soci_error(
 
 soci_error::error_category postgresql_soci_error::get_error_category() const
 {
-    if (std::memcmp(sqlstate_, "08", 2) == 0)
+    if (std::memcmp(sqlstate_, "08", 2) == 0 ||
+        std::memcmp(sqlstate_, "57P", 3) == 0)
     {
         return connection_error;
     }

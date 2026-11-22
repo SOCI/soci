@@ -261,7 +261,7 @@ void odbc_vector_into_type_backend::rebind_row(std::size_t rowInd)
             static_cast<SQLPOINTER>(elementPtr), size, &indHolderVec_[rowInd]);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_, fmt::format("binding output vector item at index {} of column #{}", rowInd, pos));
+        throw odbc_soci_error(statement_.session_, SQL_HANDLE_STMT, statement_.hstmt_, fmt::format("binding output vector item at index {} of column #{}", rowInd, pos));
     }
 }
 
@@ -326,7 +326,7 @@ void odbc_vector_into_type_backend::get_data(std::size_t rowInd)
                               elementPtr, size, &ind);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, statement_.hstmt_,
+        throw odbc_soci_error(statement_.session_, SQL_HANDLE_STMT, statement_.hstmt_,
                               fmt::format("getting data of vector item at index {} of column #{}", rowInd, pos));
     }
 

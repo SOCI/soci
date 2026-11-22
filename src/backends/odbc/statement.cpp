@@ -32,7 +32,7 @@ void odbc_statement_backend::alloc()
     rc = SQLAllocHandle(SQL_HANDLE_STMT, session_.hdbc_, &hstmt_);
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_DBC, session_.hdbc_,
+        throw odbc_soci_error(session_, SQL_HANDLE_DBC, session_.hdbc_,
                               "allocating statement");
     }
 }
@@ -128,7 +128,7 @@ void odbc_statement_backend::prepare(std::string const & query,
     SQLRETURN rc = SQLPrepare(hstmt_, sqlchar_cast(query_), (SQLINTEGER)query_.size());
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, fmt::format("preparing query \"{}\"", query_));
+        throw odbc_soci_error(session_, SQL_HANDLE_STMT, hstmt_, fmt::format("preparing query \"{}\"", query_));
     }
 
     // reset any old into buffers, they will be added later if they're used
@@ -176,7 +176,7 @@ odbc_statement_backend::execute(int number)
     {
         // Construct the error object immediately, before calling any other
         // ODBC functions, in order to not lose the error message.
-        const odbc_soci_error err(SQL_HANDLE_STMT, hstmt_, "executing statement");
+        const odbc_soci_error err(session_, SQL_HANDLE_STMT, hstmt_, "executing statement");
 
         bool error = true;
 
@@ -248,7 +248,7 @@ odbc_statement_backend::execute(int number)
         rc = SQLRowCount(hstmt_, &res);
         if (is_odbc_error(rc))
         {
-            throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_,
+            throw odbc_soci_error(session_, SQL_HANDLE_STMT, hstmt_,
                                   "getting number of affected rows");
         }
 
@@ -279,7 +279,7 @@ odbc_statement_backend::do_fetch(int beginRow, int endRow)
 
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, "fetching data");
+        throw odbc_soci_error(session_, SQL_HANDLE_STMT, hstmt_, "fetching data");
     }
 
     // This must be done in the column order, as some drivers -- notably
@@ -416,7 +416,7 @@ void odbc_statement_backend::describe_column(int colNum,
 
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, fmt::format("getting description of column at position {}", colNum));
+        throw odbc_soci_error(session_, SQL_HANDLE_STMT, hstmt_, fmt::format("getting description of column at position {}", colNum));
     }
 
     char const *name = reinterpret_cast<char const *>(colNameBuffer);
@@ -428,7 +428,7 @@ void odbc_statement_backend::describe_column(int colNum,
 
     if (is_odbc_error(rc_colattr))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, fmt::format("getting \"unsigned\" column attribute of the column at position {}", colNum));
+        throw odbc_soci_error(session_, SQL_HANDLE_STMT, hstmt_, fmt::format("getting \"unsigned\" column attribute of the column at position {}", colNum));
     }
 
     switch (dataType)
@@ -499,7 +499,7 @@ std::size_t odbc_statement_backend::column_size(int colNum)
 
     if (is_odbc_error(rc))
     {
-        throw odbc_soci_error(SQL_HANDLE_STMT, hstmt_, fmt::format("getting size of column at position {}", colNum));
+        throw odbc_soci_error(session_, SQL_HANDLE_STMT, hstmt_, fmt::format("getting size of column at position {}", colNum));
     }
 
     return colSize;

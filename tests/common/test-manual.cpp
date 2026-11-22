@@ -178,23 +178,9 @@ TEST_CASE_METHOD(common_tests, "Execute", "[.]")
     }
     catch (soci_error const& e)
     {
-        char const* const categories[] =
-        {
-            "connection_error",
-            "invalid_statement",
-            "no_privilege",
-            "no_data",
-            "constraint_violation",
-            "unknown_transaction_state",
-            "system_error",
-            "unknown"
-        };
-
-        unsigned const cat = e.get_error_category();
-        REQUIRE(cat < sizeof(categories) / sizeof(categories[0]));
-
         WARN("Statement execution failed: " << e.what() << "\n"
-             "Error category: " << categories[cat] << "\n");
+             "Error category: "
+             << get_error_category_name(e.get_error_category()) << "\n");
 
         auto const& backend = e.get_backend_name();
         if ( !backend.empty() )

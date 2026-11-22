@@ -9,6 +9,7 @@ add_library(soci_tests_common
     "test-lob.cpp"
     "test-main.cpp"
     "test-manual.cpp"
+    "test-reconnect.cpp"
     "test-rowset.cpp"
     "test-unicode.cpp"
 )
