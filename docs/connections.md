@@ -123,13 +123,13 @@ It is possible to have many active `session`s at the same time, even using diffe
 
 The following backend factories are currently (as of 3.1.0 release) available:
 
-* [mysql](backends/mysql.md) (requires `#include <soci/mysql/soci-mysql.h>`)
-* [oracle](backends/oracle.md) (requires `#include <soci/oracle/soci-oracle.h>`)
-* [postgresql](backends/postgresql.md) (requires `#include <soci/postgresql/soci-postgresql.h>`)
-* [sqlite3](backends/sqlite3.md) (requires `#include <soci/sqlite3/soci-sqlite3.h>`)
-* [odbc](backends/odbc.md) (requires `#include <soci/odbc/soci-odbc.h>`)
-* [firebird](backends/firebird.md) (requires `#include <soci/firebird/soci-firebird.h>`)
-* [db2](backends/db2.md) (requires `#include <soci/db2/soci-db2.h>`)
+- [mysql](backends/mysql.md) (requires `#include <soci/mysql/soci-mysql.h>`)
+- [oracle](backends/oracle.md) (requires `#include <soci/oracle/soci-oracle.h>`)
+- [postgresql](backends/postgresql.md) (requires `#include <soci/postgresql/soci-postgresql.h>`)
+- [sqlite3](backends/sqlite3.md) (requires `#include <soci/sqlite3/soci-sqlite3.h>`)
+- [odbc](backends/odbc.md) (requires `#include <soci/odbc/soci-odbc.h>`)
+- [firebird](backends/firebird.md) (requires `#include <soci/firebird/soci-firebird.h>`)
+- [db2](backends/db2.md) (requires `#include <soci/db2/soci-db2.h>`)
 
 ## Connection failover
 
